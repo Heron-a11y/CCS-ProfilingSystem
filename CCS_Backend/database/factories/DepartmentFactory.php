@@ -1,0 +1,30 @@
+<?php
+
+namespace Database\Factories;
+
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Department>
+ */
+class DepartmentFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'department_name' => fake()->unique()->randomElement([
+                'Computer Science', 
+                'Information Technology', 
+                'Information Systems', 
+                'Computer Engineering'
+            ]),
+            'office_location' => 'Building ' . fake()->randomLetter() . ', Room ' . fake()->numberBetween(100, 999),
+            'contact_number' => fake()->phoneNumber(),
+        ];
+    }
+}
