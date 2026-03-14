@@ -3,65 +3,279 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\MedicalHistory;
+use App\Models\Violation;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $students = Student::with(['course.department', 'guardians', 'medicalHistories', 'academicHistories', 'affiliations', 'violations', 'skills', 'events'])->get();
         return response()->json($students);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+    public function create() {}
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'first_name'               => 'required|string|max:255',
+            'middle_name'              => 'nullable|string|max:255',
+            'last_name'                => 'required|string|max:255',
+            'suffix'                   => 'nullable|string|max:50',
+            'gender'                   => 'required|string|max:50',
+            'birth_date'               => 'required|date',
+            'place_of_birth'           => 'required|string|max:255',
+            'nationality'              => 'required|string|max:100',
+            'civil_status'             => 'required|string|max:50',
+            'religion'                 => 'nullable|string|max:100',
+            'email'                    => 'required|email|unique:students,email|max:255',
+            'contact_number'           => 'required|string|max:50',
+            'alternate_contact_number' => 'nullable|string|max:50',
+            'street'                   => 'nullable|string|max:255',
+            'barangay'                 => 'nullable|string|max:255',
+            'city'                     => 'required|string|max:255',
+            'province'                 => 'nullable|string|max:255',
+            'zip_code'                 => 'nullable|string|max:20',
+            'year_level'               => 'required|string|max:50',
+            'section'                  => 'nullable|string|max:50',
+            'student_type'             => 'required|string|max:50',
+            'enrollment_status'        => 'required|string|max:50',
+            'date_enrolled'            => 'required|date',
+            'program'                  => 'nullable|string|max:255',
+            'course_id'                => 'nullable|exists:courses,id',
+            'department_id'            => 'nullable|exists:departments,id',
+            'lrn'                      => 'nullable|string|max:12',
+            'last_school_attended'     => 'nullable|string|max:255',
+            'last_year_attended'       => 'nullable|string|max:20',
+            'honors_received'          => 'nullable|string',
+        ]);
+        $student = Student::create($validatedData);
+        return response()->json($student, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show($id)
     {
         $student = Student::with(['course.department', 'guardians', 'medicalHistories', 'academicHistories', 'affiliations', 'violations', 'skills', 'events'])->findOrFail($id);
         return response()->json($student);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Student $student)
-    {
-        //
-    }
+    public function edit(Student $student) {}
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Student $student)
     {
-        //
+        $validatedData = $request->validate([
+            'first_name'               => 'required|string|max:255',
+            'middle_name'              => 'nullable|string|max:255',
+            'last_name'                => 'required|string|max:255',
+            'suffix'                   => 'nullable|string|max:50',
+            'gender'                   => 'required|string|max:50',
+            'birth_date'               => 'required|date',
+            'place_of_birth'           => 'required|string|max:255',
+            'nationality'              => 'required|string|max:100',
+            'civil_status'             => 'required|string|max:50',
+            'religion'                 => 'nullable|string|max:100',
+            'email'                    => 'required|email|max:255|unique:students,email,' . $student->id,
+            'contact_number'           => 'required|string|max:50',
+            'alternate_contact_number' => 'nullable|string|max:50',
+            'street'                   => 'nullable|string|max:255',
+            'barangay'                 => 'nullable|string|max:255',
+            'city'                     => 'required|string|max:255',
+            'province'                 => 'nullable|string|max:255',
+            'zip_code'                 => 'nullable|string|max:20',
+            'year_level'               => 'required|string|max:50',
+            'section'                  => 'nullable|string|max:50',
+            'student_type'             => 'required|string|max:50',
+            'enrollment_status'        => 'required|string|max:50',
+            'date_enrolled'            => 'required|date',
+            'program'                  => 'nullable|string|max:255',
+            'course_id'                => 'nullable|exists:courses,id',
+            'department_id'            => 'nullable|exists:departments,id',
+            'lrn'                      => 'nullable|string|max:12',
+            'last_school_attended'     => 'nullable|string|max:255',
+            'last_year_attended'       => 'nullable|string|max:20',
+            'honors_received'          => 'nullable|string',
+        ]);
+        $student->update($validatedData);
+        return response()->json($student);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Student $student)
     {
-        //
+        $student->delete();
+        return response()->json(null, 204);
+    }
+
+    // ─── Medical Histories ────────────────────────────────────────────────────
+
+    public function storeMedical(Request $request, Student $student)
+    {
+        $data = $request->validate([
+            'bloodtype'                => 'nullable|string|max:10',
+            'existing_conditions'      => 'nullable|string',
+            'emergency_contact_name'   => 'nullable|string|max:255',
+            'emergency_contact_number' => 'nullable|string|max:50',
+        ]);
+        $record = $student->medicalHistories()->create($data);
+        return response()->json($record, 201);
+    }
+
+    public function updateMedical(Request $request, Student $student, MedicalHistory $medical)
+    {
+        $data = $request->validate([
+            'bloodtype'                => 'nullable|string|max:10',
+            'existing_conditions'      => 'nullable|string',
+            'emergency_contact_name'   => 'nullable|string|max:255',
+            'emergency_contact_number' => 'nullable|string|max:50',
+        ]);
+        $medical->update($data);
+        return response()->json($medical);
+    }
+
+    public function destroyMedical(Student $student, MedicalHistory $medical)
+    {
+        $medical->delete();
+        return response()->json(null, 204);
+    }
+
+    // ─── Violations ──────────────────────────────────────────────────────────
+
+    public function storeViolation(Request $request, Student $student)
+    {
+        $data = $request->validate([
+            'violation_type'  => 'required|string|max:255',
+            'description'     => 'nullable|string',
+            'date_reported'   => 'required|date',
+            'reported_by'     => 'nullable|string|max:255',
+            'severity_level'  => 'required|in:Low,Medium,High',
+            'action_taken'    => 'nullable|string',
+            'status'          => 'required|in:Pending,Resolved,Under Review',
+            'resolution_date' => 'nullable|date',
+        ]);
+        $record = $student->violations()->create($data);
+        return response()->json($record, 201);
+    }
+
+    public function updateViolation(Request $request, Student $student, Violation $violation)
+    {
+        $data = $request->validate([
+            'violation_type'  => 'required|string|max:255',
+            'description'     => 'nullable|string',
+            'date_reported'   => 'required|date',
+            'reported_by'     => 'nullable|string|max:255',
+            'severity_level'  => 'required|in:Low,Medium,High',
+            'action_taken'    => 'nullable|string',
+            'status'          => 'required|in:Pending,Resolved,Under Review',
+            'resolution_date' => 'nullable|date',
+        ]);
+        $violation->update($data);
+        return response()->json($violation);
+    }
+
+    public function destroyViolation(Student $student, Violation $violation)
+    {
+        $violation->delete();
+        return response()->json(null, 204);
+    }
+
+    // ─── Skills (sync pivot) ─────────────────────────────────────────────────
+
+    public function syncSkills(Request $request, Student $student)
+    {
+        $request->validate([
+            'skills'                      => 'array',
+            'skills.*.skill_id'           => 'required|exists:skills,id',
+            'skills.*.skill_level'        => 'nullable|string|max:50',
+            'skills.*.certification'      => 'nullable|boolean',
+            'skills.*.certification_name' => 'nullable|string|max:255',
+            'skills.*.certification_date' => 'nullable|date',
+        ]);
+
+        $syncData = [];
+        foreach ($request->skills as $skill) {
+            $syncData[$skill['skill_id']] = [
+                'skill_level'        => $skill['skill_level'] ?? null,
+                'certification'      => $skill['certification'] ?? false,
+                'certification_name' => $skill['certification_name'] ?? null,
+                'certification_date' => $skill['certification_date'] ?? null,
+            ];
+        }
+        $student->skills()->sync($syncData);
+        return response()->json(['message' => 'Skills updated successfully']);
+    }
+
+    // ─── Export ──────────────────────────────────────────────────────────────
+
+    public function export()
+    {
+        $students = Student::with(['course.department'])->get();
+        $headers  = [
+            'Content-type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=students.csv',
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+        $columns = ['ID', 'First Name', 'Middle Name', 'Last Name', 'Course', 'Department', 'Year Level', 'Enrollment Status', 'Email', 'Contact Number'];
+        $callback = function () use ($students, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+            foreach ($students as $student) {
+                fputcsv($file, [
+                    $student->id,
+                    $student->first_name,
+                    $student->middle_name,
+                    $student->last_name,
+                    $student->course ? $student->course->course_code : 'N/A',
+                    ($student->course && $student->course->department) ? $student->course->department->department_name : 'N/A',
+                    $student->year_level,
+                    $student->enrollment_status,
+                    $student->email,
+                    $student->contact_number,
+                ]);
+            }
+            fclose($file);
+        };
+        return response()->stream($callback, 200, $headers);
+    }
+
+    // ─── Advanced Search ─────────────────────────────────────────────────────
+
+    public function advancedSearch(Request $request)
+    {
+        $query = Student::with(['course.department', 'guardians', 'medicalHistories', 'academicHistories', 'affiliations', 'violations', 'skills', 'events']);
+
+        if ($request->has('searchQuery') && !empty($request->searchQuery)) {
+            $sq = $request->searchQuery;
+            $query->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($sq) {
+                $q->where('first_name', 'like', "%{$sq}%")
+                  ->orWhere('last_name', 'like', "%{$sq}%")
+                  ->orWhere('email', 'like', "%{$sq}%");
+            });
+        }
+
+        if ($request->has('skills') && is_array($request->skills) && count($request->skills) > 0) {
+            foreach ($request->skills as $skillId) {
+                $query->whereHas('skills', fn($q) => $q->where('skills.id', $skillId));
+            }
+        }
+
+        if ($request->has('affiliations') && is_array($request->affiliations) && count($request->affiliations) > 0) {
+            foreach ($request->affiliations as $name) {
+                $query->whereHas('affiliations', fn($q) => $q->where('organization_name', $name));
+            }
+        }
+
+        if ($request->has('events') && is_array($request->events) && count($request->events) > 0) {
+            $query->whereHas('events', fn($q) => $q->whereIn('events.id', $request->events));
+        }
+
+        if ($request->has('violations')) {
+            $hasViolations = filter_var($request->violations, FILTER_VALIDATE_BOOLEAN);
+            $hasViolations ? $query->whereHas('violations') : $query->doesntHave('violations');
+        }
+
+        return response()->json($query->get());
     }
 }

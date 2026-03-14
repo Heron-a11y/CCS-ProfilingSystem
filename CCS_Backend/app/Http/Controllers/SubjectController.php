@@ -25,4 +25,34 @@ class SubjectController extends Controller
         $subject = \App\Models\Subject::create($validated);
         return response()->json($subject, 201);
     }
+
+    public function show($id)
+    {
+        $subject = \App\Models\Subject::findOrFail($id);
+        return response()->json($subject);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $subject = \App\Models\Subject::findOrFail($id);
+
+        $validated = $request->validate([
+            'subject_code' => 'required|string|unique:subjects,subject_code,' . $subject->id,
+            'descriptive_title' => 'required|string',
+            'lab_units' => 'required|integer|min:0',
+            'lec_units' => 'required|integer|min:0',
+            'pre_requisites' => 'nullable|string',
+        ]);
+        
+        $validated['total_units'] = $validated['lab_units'] + $validated['lec_units'];
+        $subject->update($validated);
+        return response()->json($subject);
+    }
+
+    public function destroy($id)
+    {
+        $subject = \App\Models\Subject::findOrFail($id);
+        $subject->delete();
+        return response()->json(null, 204);
+    }
 }

@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 import AddEventModal from './AddEventModal';
+import EditEventModal from './EditEventModal';
+import { useDarkMode } from '../../context/DarkModeContext';
 
 const EventsModule = () => {
+  const dark = useDarkMode();
+  const card      = dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-100';
+  const boldText  = dark ? 'text-slate-100' : 'text-slate-800';
+  const subText   = dark ? 'text-slate-400' : 'text-slate-500';
+  const tableBar  = dark ? 'bg-slate-800/60 border-slate-700/60' : 'bg-slate-50/50 border-slate-100';
+  const evCard    = dark ? 'bg-slate-800 border-slate-700/60' : 'bg-white border-slate-200';
+  const infoBox   = dark ? 'bg-slate-700/50 border-slate-600 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600';
+  const footerBdr = dark ? 'border-slate-700' : 'border-slate-100';
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
     fetchEvents();
@@ -25,14 +37,29 @@ const EventsModule = () => {
     }
   };
 
+  const handleDeleteEvent = async (id) => {
+    if (window.confirm('Are you sure you want to delete this event?')) {
+      try {
+        await api.events.delete(id);
+        fetchEvents();
+      } catch (err) {
+        alert(err.message || 'Failed to delete event');
+      }
+    }
+  };
+
+  const openEditModal = (event) => {
+    setSelectedEvent(event);
+    setIsEditModalOpen(true);
+  };
+
   const getStatusColor = (status) => {
-    const colors = {
-      'Upcoming': 'bg-blue-100 text-blue-700',
-      'Ongoing': 'bg-brand-100 text-brand-700',
-      'Completed': 'bg-green-100 text-green-700',
-      'Cancelled': 'bg-red-100 text-red-700'
-    };
-    return colors[status] || 'bg-slate-100 text-slate-700';
+    if (dark) {
+      const c = { 'Upcoming':'bg-blue-500/15 text-blue-400','Ongoing':'bg-brand-500/15 text-brand-400','Completed':'bg-green-500/15 text-green-400','Cancelled':'bg-red-500/15 text-red-400' };
+      return c[status] || 'bg-slate-700 text-slate-300';
+    }
+    const c = { 'Upcoming':'bg-blue-100 text-blue-700','Ongoing':'bg-brand-100 text-brand-700','Completed':'bg-green-100 text-green-700','Cancelled':'bg-red-100 text-red-700' };
+    return c[status] || 'bg-slate-100 text-slate-700';
   };
 
   const getTypeIcon = (type) => {
@@ -49,39 +76,33 @@ const EventsModule = () => {
     <div className="space-y-6">
       {/* Header & Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center">
-          <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center mr-4">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+        <div className={`rounded-2xl p-6 shadow-sm border flex items-center transition-colors duration-300 ${card}`}>
+          <div className={`w-14 h-14 rounded-xl flex items-center justify-center mr-4 ${dark ? 'bg-brand-900/40 text-brand-400' : 'bg-brand-50 text-brand-600'}`}>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500">Total Events Hosted</p>
-            <h3 className="text-3xl font-bold text-slate-800">{events.length}</h3>
+            <p className={`text-sm font-medium ${subText}`}>Total Events Hosted</p>
+            <h3 className={`text-3xl font-bold ${boldText}`}>{events.length}</h3>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center">
-          <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mr-4">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-            </svg>
+        <div className={`rounded-2xl p-6 shadow-sm border flex items-center transition-colors duration-300 ${card}`}>
+          <div className={`w-14 h-14 rounded-xl flex items-center justify-center mr-4 ${dark ? 'bg-blue-900/40 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500">Upcoming Activities</p>
-            <h3 className="text-3xl font-bold text-slate-800">
-              {events.filter(e => e.status === 'Upcoming').length}
-            </h3>
+            <p className={`text-sm font-medium ${subText}`}>Upcoming Activities</p>
+            <h3 className={`text-3xl font-bold ${boldText}`}>{events.filter(e => e.status === 'Upcoming').length}</h3>
           </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[calc(100vh-280px)]">
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+      <div className={`rounded-2xl shadow-sm border overflow-hidden flex flex-col h-[calc(100vh-280px)] transition-colors duration-300 ${card}`}>
+        <div className={`p-6 border-b flex justify-between items-center transition-colors duration-300 ${tableBar}`}>
           <div>
-            <h2 className="text-xl font-bold text-slate-800">Events Dashboard</h2>
-            <p className="text-sm text-slate-500 mt-1">Track departmental activities and student participation.</p>
+            <h2 className={`text-xl font-bold ${boldText}`}>Events Dashboard</h2>
+            <p className={`text-sm mt-1 ${subText}`}>Track departmental activities and student participation.</p>
           </div>
           <button 
             onClick={() => setIsAddModalOpen(true)}
@@ -100,15 +121,15 @@ const EventsModule = () => {
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
+        <div className={`flex-1 overflow-y-auto p-6 ${dark ? 'bg-slate-950/30' : 'bg-slate-50/30'}`}>
           {isLoading ? (
             <div className="h-full flex items-center justify-center">
-              <div className="w-10 h-10 border-4 border-slate-200 border-t-brand-600 rounded-full animate-spin"></div>
+              <div className="w-10 h-10 border-4 border-slate-700 border-t-brand-500 rounded-full animate-spin"></div>
             </div>
           ) : events.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {events.map((event) => (
-                <div key={event.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow group relative">
+                <div key={event.id} className={`border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all group relative ${evCard}`}>
                   
                   {/* Status Badge */}
                   <div className="absolute top-5 right-5">
@@ -124,20 +145,12 @@ const EventsModule = () => {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-800 text-lg leading-tight mb-1 group-hover:text-brand-600 transition-colors">
-                        {event.eventName}
-                      </h3>
-                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        {event.eventType}
-                      </p>
+                      <h3 className={`font-bold text-lg leading-tight mb-1 group-hover:text-brand-500 transition-colors ${boldText}`}>{event.eventName}</h3>
+                      <p className={`text-xs font-medium uppercase tracking-wider ${subText}`}>{event.eventType}</p>
                     </div>
                   </div>
-
-                  <p className="text-sm text-slate-600 mb-5 line-clamp-2 min-h-[40px]">
-                    {event.description || 'No description provided for this event.'}
-                  </p>
-
-                  <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <p className={`text-sm mb-5 line-clamp-2 min-h-[40px] ${subText}`}>{event.description || 'No description provided.'}</p>
+                  <div className={`space-y-3 p-4 rounded-xl border ${infoBox}`}>
                     <div className="flex items-center text-sm text-slate-600">
                       <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -153,18 +166,18 @@ const EventsModule = () => {
                     </div>
                   </div>
                   
-                  <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
-                    <button className="text-sm font-semibold text-brand-600 hover:text-brand-700 flex items-center transition-colors">
-                      View Attendees
-                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                      </svg>
+                  <div className={`mt-4 pt-4 border-t flex justify-between items-center ${footerBdr}`}>
+                    <button className="text-sm font-semibold text-brand-500 hover:text-brand-400 flex items-center">
+                      View Attendees <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
                     </button>
-                    <button className="p-1.5 text-slate-400 hover:text-brand-600 transition-colors rounded-md hover:bg-brand-50" title="Edit Event">
-                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                       </svg>
-                     </button>
+                    <div className="flex space-x-1">
+                      <button onClick={() => openEditModal(event)} className={`p-1.5 rounded-md transition-colors hover:bg-brand-500/10 ${dark ? 'text-slate-400 hover:text-brand-400' : 'text-slate-400 hover:text-brand-600'}`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                      </button>
+                      <button onClick={() => handleDeleteEvent(event.id)} className={`p-1.5 rounded-md transition-colors hover:bg-red-500/10 ${dark ? 'text-slate-400 hover:text-red-400' : 'text-slate-400 hover:text-red-600'}`}>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -186,6 +199,18 @@ const EventsModule = () => {
         onClose={() => setIsAddModalOpen(false)} 
         onSuccess={fetchEvents} 
       />
+
+      {isEditModalOpen && selectedEvent && (
+        <EditEventModal
+          isOpen={isEditModalOpen}
+          initialData={selectedEvent}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          onSuccess={fetchEvents}
+        />
+      )}
     </div>
   );
 };

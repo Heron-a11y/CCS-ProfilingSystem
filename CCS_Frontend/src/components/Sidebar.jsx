@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Sidebar = ({ currentModule, setCurrentModule, isOpen, setIsOpen }) => {
+const Sidebar = ({ currentModule, setCurrentModule, isOpen, setIsOpen, user, onLogout }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isVisible = isOpen || isHovered;
   const modules = [
@@ -16,7 +16,7 @@ const Sidebar = ({ currentModule, setCurrentModule, isOpen, setIsOpen }) => {
     <>
       {/* Sidebar Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-30 flex flex-col h-full bg-slate-900 border-r border-slate-800 transition-all duration-300 ease-in-out ${isVisible ? 'w-64 shadow-2xl shadow-slate-900/50' : 'w-16'}`}
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col h-full bg-slate-900 border-r border-slate-800 transition-all duration-300 ease-in-out ${isVisible ? 'w-64 shadow-2xl shadow-slate-900/50' : 'w-16'}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -86,14 +86,34 @@ const Sidebar = ({ currentModule, setCurrentModule, isOpen, setIsOpen }) => {
           ))}
         </div>
 
-        <div className="p-3 border-t border-slate-800">
+        <div className="p-3 border-t border-slate-800 space-y-2">
+          {/* Logout Button */}
+          <button
+            onClick={onLogout}
+            title="Log Out"
+            className={`w-full flex items-center rounded-xl transition-all duration-300 group text-slate-400 hover:bg-red-500/10 hover:text-red-400 border border-transparent hover:border-red-500/20 ${isVisible ? 'px-4 py-3' : 'px-0 py-3 justify-center'}`}
+          >
+            <svg
+              className={`w-5 h-5 shrink-0 transition-colors duration-300 group-hover:text-red-400 ${isVisible ? 'mr-3' : 'mr-0'}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span className={`font-medium tracking-wide whitespace-nowrap transition-all duration-300 ${isVisible ? 'opacity-100 w-auto inline-block' : 'opacity-0 w-0 hidden'}`}>
+              Log Out
+            </span>
+          </button>
+
+          {/* User Card */}
           <div className={`flex items-center rounded-xl bg-slate-800/50 border border-slate-700/50 transition-all duration-300 ${isVisible ? 'p-3' : 'p-2 justify-center'}`}>
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-md shrink-0">
-              AD
+              {user ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'AD'}
             </div>
             <div className={`whitespace-nowrap transition-all duration-300 ${isVisible ? 'ml-3 opacity-100 w-auto block' : 'ml-0 opacity-0 w-0 hidden'}`}>
-              <p className="text-sm font-medium text-slate-200 leading-none">Admin User</p>
-              <p className="text-xs text-slate-500 mt-1">Administrator</p>
+              <p className="text-sm font-medium text-slate-200 leading-none">{user?.name ?? 'Admin User'}</p>
+              <p className="text-xs text-slate-500 mt-1">{user?.role ?? 'Administrator'}</p>
             </div>
           </div>
         </div>
