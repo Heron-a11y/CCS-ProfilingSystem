@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 import { useDarkMode } from '../../context/DarkModeContext';
 
-const AddSubjectModal = ({ isOpen, onClose, onSuccess }) => {
+const EditSubjectModal = ({ isOpen, onClose, onSuccess, initialData }) => {
   const dark = useDarkMode();
   const [formData, setFormData] = useState({
     subject_code: '',
@@ -13,6 +13,18 @@ const AddSubjectModal = ({ isOpen, onClose, onSuccess }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setFormData({
+        subject_code: initialData.subject_code || '',
+        descriptive_title: initialData.descriptive_title || '',
+        lec_units: initialData.lec_units || 0,
+        lab_units: initialData.lab_units || 0,
+        pre_requisites: initialData.pre_requisites || ''
+      });
+    }
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
@@ -25,7 +37,6 @@ const AddSubjectModal = ({ isOpen, onClose, onSuccess }) => {
   const inputCls = dark
     ? 'bg-slate-800 border-slate-600 text-slate-100 placeholder-slate-500 focus:ring-brand-400/50 focus:border-brand-500'
     : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-brand-500/50';
-  const secHead  = dark ? 'text-slate-400'       : 'text-slate-500';
   const divider  = dark ? 'border-slate-700/60'  : 'border-slate-100';
   const cancelBtn= dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-600 hover:bg-slate-100';
   const errBox   = dark ? 'bg-red-900/30 border-red-800/50 text-red-300' : 'bg-red-50 border-red-100 text-red-600';
@@ -42,11 +53,11 @@ const AddSubjectModal = ({ isOpen, onClose, onSuccess }) => {
     try {
       if (!formData.subject_code || !formData.descriptive_title)
         throw new Error('Subject code and descriptive title are required.');
-      await api.subjects.create({ ...formData, pre_requisites: formData.pre_requisites || null });
+      await api.subjects.update(initialData.id, { ...formData, pre_requisites: formData.pre_requisites || null });
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to add subject');
+      setError(err.message || 'Failed to update subject');
     } finally {
       setIsSubmitting(false);
     }
@@ -58,7 +69,7 @@ const AddSubjectModal = ({ isOpen, onClose, onSuccess }) => {
 
         {/* Header */}
         <div className={`flex justify-between items-center p-6 border-b ${headerBg}`}>
-          <h2 className={`text-xl font-bold ${titleClr}`}>Add New Subject</h2>
+          <h2 className={`text-xl font-bold ${titleClr}`}>Edit Subject</h2>
           <button onClick={onClose} className={`p-2 rounded-lg transition-colors ${closeBtn}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -78,15 +89,15 @@ const AddSubjectModal = ({ isOpen, onClose, onSuccess }) => {
 
           <div className="space-y-4">
             {[
-              { name: 'subject_code', label: 'Subject Code', placeholder: 'e.g. IT 111', type: 'text', required: true },
-              { name: 'descriptive_title', label: 'Descriptive Title', placeholder: 'e.g. Introduction to Computing', type: 'text', required: true },
+              { name: 'subject_code', label: 'Subject Code', placeholder: 'e.g. IT 111', required: true },
+              { name: 'descriptive_title', label: 'Descriptive Title', placeholder: 'e.g. Introduction to Computing', required: true },
             ].map(f => (
               <div key={f.name}>
                 <label className={`block text-sm font-semibold mb-1 ${labelClr}`}>
                   {f.label} {f.required && <span className="text-red-500">*</span>}
                 </label>
                 <input
-                  type={f.type} name={f.name} value={formData[f.name]}
+                  type="text" name={f.name} value={formData[f.name]}
                   onChange={handleChange} placeholder={f.placeholder} required={f.required}
                   className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 transition-all font-medium ${inputCls}`}
                 />
@@ -94,10 +105,7 @@ const AddSubjectModal = ({ isOpen, onClose, onSuccess }) => {
             ))}
 
             <div className="grid grid-cols-2 gap-4">
-              {[
-                { name: 'lec_units', label: 'Lec Units' },
-                { name: 'lab_units', label: 'Lab Units' },
-              ].map(f => (
+              {[{ name: 'lec_units', label: 'Lec Units' }, { name: 'lab_units', label: 'Lab Units' }].map(f => (
                 <div key={f.name}>
                   <label className={`block text-sm font-semibold mb-1 ${labelClr}`}>
                     {f.label} <span className="text-red-500">*</span>
@@ -130,7 +138,7 @@ const AddSubjectModal = ({ isOpen, onClose, onSuccess }) => {
               className="px-5 py-2.5 rounded-xl bg-brand-600 text-white font-medium hover:bg-brand-700 transition-colors shadow-sm shadow-brand-500/30 disabled:opacity-50 flex items-center">
               {isSubmitting ? (
                 <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />Saving...</>
-              ) : 'Save Subject'}
+              ) : 'Save Changes'}
             </button>
           </div>
         </form>
@@ -139,4 +147,4 @@ const AddSubjectModal = ({ isOpen, onClose, onSuccess }) => {
   );
 };
 
-export default AddSubjectModal;
+export default EditSubjectModal;

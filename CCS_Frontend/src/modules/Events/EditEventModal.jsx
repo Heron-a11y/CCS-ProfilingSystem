@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 import { useDarkMode } from '../../context/DarkModeContext';
 
-const AddEventModal = ({ isOpen, onClose, onSuccess }) => {
+const EditEventModal = ({ isOpen, onClose, onSuccess, initialData }) => {
   const dark = useDarkMode();
   const [formData, setFormData] = useState({
     eventName: '',
@@ -14,6 +14,19 @@ const AddEventModal = ({ isOpen, onClose, onSuccess }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setFormData({
+        eventName: initialData.eventName || '',
+        description: initialData.description || '',
+        eventType: initialData.eventType || 'Academic',
+        eventDate: initialData.eventDate ? new Date(initialData.eventDate).toISOString().slice(0, 16) : '',
+        location: initialData.location || '',
+        status: initialData.status || 'Upcoming'
+      });
+    }
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
@@ -45,11 +58,11 @@ const AddEventModal = ({ isOpen, onClose, onSuccess }) => {
     try {
       if (!formData.eventName || !formData.eventDate || !formData.location)
         throw new Error('Name, date, and location are required.');
-      await api.events.create({ ...formData });
+      await api.events.update(initialData.id, { ...formData });
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to add event');
+      setError(err.message || 'Failed to update event');
     } finally {
       setIsSubmitting(false);
     }
@@ -61,7 +74,7 @@ const AddEventModal = ({ isOpen, onClose, onSuccess }) => {
 
         {/* Header */}
         <div className={`flex justify-between items-center p-6 border-b ${headerBg}`}>
-          <h2 className={`text-xl font-bold ${titleClr}`}>Schedule New Event</h2>
+          <h2 className={`text-xl font-bold ${titleClr}`}>Edit Event</h2>
           <button onClick={onClose} className={`p-2 rounded-lg transition-colors ${closeBtn}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -155,8 +168,8 @@ const AddEventModal = ({ isOpen, onClose, onSuccess }) => {
             <button type="submit" disabled={isSubmitting}
               className="px-5 py-2.5 rounded-xl bg-brand-600 text-white font-medium hover:bg-brand-700 transition-colors shadow-sm shadow-brand-500/30 disabled:opacity-50 flex items-center">
               {isSubmitting ? (
-                <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />Scheduling...</>
-              ) : 'Schedule Event'}
+                <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />Saving...</>
+              ) : 'Save Changes'}
             </button>
           </div>
         </form>
@@ -165,4 +178,4 @@ const AddEventModal = ({ isOpen, onClose, onSuccess }) => {
   );
 };
 
-export default AddEventModal;
+export default EditEventModal;

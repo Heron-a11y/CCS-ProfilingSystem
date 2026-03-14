@@ -12,8 +12,9 @@ class SkillController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(Skill::orderBy('skill_category')->orderBy('skill_name')->get());
     }
+
 
     /**
      * Show the form for creating a new resource.

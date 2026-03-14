@@ -2,25 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 import { useDarkMode } from '../../context/DarkModeContext';
 
-const AssignScheduleModal = ({ isOpen, onClose, onSuccess }) => {
+const EditScheduleModal = ({ isOpen, onClose, onSuccess, initialData }) => {
   const dark = useDarkMode();
   const [formData, setFormData] = useState({
-    day_of_week: 'Monday',
-    start_time: '08:00',
-    end_time: '10:00',
-    room: '',
-    subject_id: '',
-    faculty_id: '',
-    section_id: ''
+    day_of_week: 'Monday', start_time: '08:00', end_time: '10:00',
+    room: '', subject_id: '', faculty_id: '', section_id: ''
   });
   const [options, setOptions] = useState({ subjects: [], faculties: [], sections: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  useEffect(() => { if (isOpen) fetchOptions(); }, [isOpen]);
+
   useEffect(() => {
-    if (isOpen) fetchOptions();
-  }, [isOpen]);
+    if (isOpen && initialData && !isLoading && options.subjects.length > 0) {
+      setFormData({
+        day_of_week: initialData.day_of_week || 'Monday',
+        start_time: initialData.start_time ? initialData.start_time.slice(0, 5) : '08:00',
+        end_time: initialData.end_time ? initialData.end_time.slice(0, 5) : '10:00',
+        room: initialData.room || '',
+        subject_id: initialData.subject_id || '',
+        faculty_id: initialData.faculty_id || '',
+        section_id: initialData.section_id || ''
+      });
+    }
+  }, [isOpen, initialData, isLoading, options]);
 
   const fetchOptions = async () => {
     try {
@@ -29,12 +36,14 @@ const AssignScheduleModal = ({ isOpen, onClose, onSuccess }) => {
         api.subjects.getAll(), api.faculties.getAll(), api.sections.getAll()
       ]);
       setOptions({ subjects, faculties, sections });
-      setFormData(prev => ({
-        ...prev,
-        subject_id: subjects.length ? subjects[0].id : '',
-        faculty_id: faculties.length ? faculties[0].id : '',
-        section_id: sections.length ? sections[0].id : ''
-      }));
+      if (!initialData) {
+        setFormData(prev => ({
+          ...prev,
+          subject_id: subjects.length ? subjects[0].id : '',
+          faculty_id: faculties.length ? faculties[0].id : '',
+          section_id: sections.length ? sections[0].id : ''
+        }));
+      }
     } catch {
       setError('Failed to load form options.');
     } finally {
@@ -52,11 +61,11 @@ const AssignScheduleModal = ({ isOpen, onClose, onSuccess }) => {
     setIsSubmitting(true);
     setError(null);
     try {
-      await api.schedules.create({ ...formData });
+      await api.schedules.update(initialData.id, { ...formData });
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to assign schedule');
+      setError(err.message || 'Failed to update schedule');
     } finally {
       setIsSubmitting(false);
     }
@@ -65,22 +74,22 @@ const AssignScheduleModal = ({ isOpen, onClose, onSuccess }) => {
   if (!isOpen) return null;
 
   // Dark mode tokens
-  const modalBg  = dark ? 'bg-slate-900'        : 'bg-white';
-  const headerBg = dark ? 'bg-slate-800/60 border-slate-700/60' : 'bg-slate-50/50 border-slate-100';
-  const titleClr = dark ? 'text-slate-100'       : 'text-slate-800';
-  const closeBtn = dark ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100';
-  const labelClr = dark ? 'text-slate-300'       : 'text-slate-700';
-  const secHead  = dark ? 'text-slate-500'        : 'text-slate-500';
-  const inputCls = dark
+  const modalBg   = dark ? 'bg-slate-900'        : 'bg-white';
+  const headerBg  = dark ? 'bg-slate-800/60 border-slate-700/60' : 'bg-slate-50/50 border-slate-100';
+  const titleClr  = dark ? 'text-slate-100'       : 'text-slate-800';
+  const closeBtn  = dark ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100';
+  const labelClr  = dark ? 'text-slate-300'       : 'text-slate-700';
+  const secHead   = dark ? 'text-slate-500'        : 'text-slate-500';
+  const inputCls  = dark
     ? 'bg-slate-800 border-slate-600 text-slate-100 placeholder-slate-500 focus:ring-brand-400/50'
     : 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-brand-500/50';
   const selectCls = dark
     ? 'bg-slate-800 border-slate-600 text-slate-100 focus:ring-brand-400/50'
     : 'bg-white border-slate-200 text-slate-800 focus:ring-brand-500/50';
-  const divider  = dark ? 'border-slate-700/60'  : 'border-slate-100';
-  const cancelBtn= dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-600 hover:bg-slate-100';
-  const errBox   = dark ? 'bg-red-900/30 border-red-800/50 text-red-300' : 'bg-red-50 border-red-100 text-red-600';
-  const spinBorder = dark ? 'border-slate-700 border-t-brand-500' : 'border-slate-200 border-t-brand-600';
+  const divider   = dark ? 'border-slate-700/60'  : 'border-slate-100';
+  const cancelBtn = dark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-600 hover:bg-slate-100';
+  const errBox    = dark ? 'bg-red-900/30 border-red-800/50 text-red-300' : 'bg-red-50 border-red-100 text-red-600';
+  const spinBorder= dark ? 'border-slate-700 border-t-brand-500' : 'border-slate-200 border-t-brand-600';
 
   const Field = ({ label, required, children }) => (
     <div>
@@ -97,7 +106,7 @@ const AssignScheduleModal = ({ isOpen, onClose, onSuccess }) => {
 
         {/* Header */}
         <div className={`flex justify-between items-center p-6 border-b ${headerBg}`}>
-          <h2 className={`text-xl font-bold ${titleClr}`}>Assign New Schedule</h2>
+          <h2 className={`text-xl font-bold ${titleClr}`}>Edit Schedule</h2>
           <button onClick={onClose} className={`p-2 rounded-lg transition-colors ${closeBtn}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -186,7 +195,7 @@ const AssignScheduleModal = ({ isOpen, onClose, onSuccess }) => {
                 className="px-5 py-2.5 rounded-xl bg-brand-600 text-white font-medium hover:bg-brand-700 transition-colors shadow-sm shadow-brand-500/30 disabled:opacity-50 flex items-center">
                 {isSubmitting ? (
                   <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />Saving...</>
-                ) : 'Assign Schedule'}
+                ) : 'Save Changes'}
               </button>
             </div>
           </form>
@@ -196,4 +205,4 @@ const AssignScheduleModal = ({ isOpen, onClose, onSuccess }) => {
   );
 };
 
-export default AssignScheduleModal;
+export default EditScheduleModal;

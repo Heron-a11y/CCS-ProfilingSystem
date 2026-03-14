@@ -28,7 +28,25 @@ class FacultyController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'position' => 'required|string|max:255',
+            'employment_status' => 'required|string|max:255',
+            'hire_date' => 'required|date',
+            'email' => 'required|email|unique:faculties,email|max:255',
+            'contact_number' => 'nullable|string|max:255',
+            'office_location' => 'nullable|string|max:255',
+            'department_id' => 'required|exists:departments,id',
+        ]);
+
+        $faculty = Faculty::create($validatedData);
+
+        // Load relationships to return a complete resource if needed, like department
+        $faculty->load('department');
+
+        return response()->json($faculty, 201);
     }
 
     /**
@@ -61,5 +79,61 @@ class FacultyController extends Controller
     public function destroy(Faculty $faculty)
     {
         //
+    }
+
+    /**
+     * Export a listing of the resource to CSV.
+     */
+    public function export()
+    {
+        $faculties = Faculty::with('department')->get();
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=faculties.csv",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = [
+            'ID', 
+            'First Name', 
+            'Middle Name', 
+            'Last Name', 
+            'Position', 
+            'Department', 
+            'Employment Status', 
+            'Hire Date', 
+            'Email', 
+            'Contact Number', 
+            'Office Location'
+        ];
+
+        $callback = function() use($faculties, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($faculties as $faculty) {
+                $row = [
+                    $faculty->id,
+                    $faculty->first_name,
+                    $faculty->middle_name,
+                    $faculty->last_name,
+                    $faculty->position,
+                    $faculty->department ? $faculty->department->department_name : 'N/A',
+                    $faculty->employment_status,
+                    $faculty->hire_date,
+                    $faculty->email,
+                    $faculty->contact_number,
+                    $faculty->office_location
+                ];
+                fputcsv($file, $row);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }
