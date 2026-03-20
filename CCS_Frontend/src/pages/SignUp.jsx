@@ -181,22 +181,9 @@ const SignUp = ({ onSignUp, onGoToLogin }) => {
           password: form.password,
           password_confirmation: form.password_confirmation,
           first_name: form.first_name, middle_name: form.middle_name,
-          last_name: form.last_name, suffix: form.suffix,
-          gender: form.gender, civil_status: form.civil_status,
-          nationality: form.nationality, religion: form.religion,
-          birth_date: form.birth_date, place_of_birth: form.place_of_birth,
+          last_name: form.last_name,
+          gender: form.gender,
           contact_number: form.contact_number,
-          street: form.street, barangay: form.barangay,
-          city: form.city, province: form.province, zip_code: form.zip_code,
-          program: form.program, year_level: form.year_level,
-          student_type: form.student_type, enrollment_status: form.enrollment_status,
-          date_enrolled: form.date_enrolled,
-          course_id: form.course_id,
-          last_school_attended: form.last_school_attended,
-          last_year_attended: form.last_year_attended, lrn: form.lrn,
-          father_name: form.father_name, father_occupation: form.father_occupation,
-          mother_name: form.mother_name, mother_occupation: form.mother_occupation,
-          guardian_contact: form.guardian_contact,
         };
       } else {
         payload = {
@@ -254,20 +241,12 @@ const SignUp = ({ onSignUp, onGoToLogin }) => {
       }
       if (!form.first_name || !form.last_name) { setError('First and last name are required.'); return; }
       if (!form.gender)       { setError('Please select your gender.'); return; }
-      if (!form.civil_status) { setError('Please select your civil status.'); return; }
-      if (!form.birth_date)   { setError('Date of birth is required.'); return; }
       if (!form.contact_number) { setError('Contact number is required.'); return; }
       if (!/^09\d{9}$/.test(form.contact_number)) { setError('Mobile number must be 11 digits starting with 09 (e.g. 09XXXXXXXXX).'); return; }
-      if (!form.city)         { setError('City is required.'); return; }
-      if (!form.course_id)    { setError('Please select a course.'); return; }
     }
 
     if (form.role === 'faculty') {
       if (!form.first_name || !form.last_name) { setError('First and last name are required.'); return; }
-      if (!form.position)           { setError('Position is required.'); return; }
-      if (!form.employment_status)  { setError('Employment status is required.'); return; }
-      if (!form.hire_date)          { setError('Hire date is required.'); return; }
-      if (!form.department_id)      { setError('Department ID is required.'); return; }
     }
 
     await handleSendOtp();
@@ -384,111 +363,17 @@ const SignUp = ({ onSignUp, onGoToLogin }) => {
                     <Field label="Middle Name"><Input placeholder="Santos" value={form.middle_name} onChange={e => set('middle_name', e.target.value)} /></Field>
                     <Field label="Last Name *"><Input placeholder="dela Cruz" value={form.last_name} onChange={e => set('last_name', e.target.value)} required /></Field>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <Field label="Suffix">
-                      <Select value={form.suffix} onChange={e => set('suffix', e.target.value)}>
-                        <option value="">None</option><option>Jr.</option><option>Sr.</option><option>II</option><option>III</option>
-                      </Select>
-                    </Field>
-                    <Field label="Gender *">
-                      <Select value={form.gender} onChange={e => set('gender', e.target.value)} required>
-                        <option value="">Select</option><option>Male</option><option>Female</option>
-                      </Select>
-                    </Field>
-                    <Field label="Civil Status *">
-                      <Select value={form.civil_status} onChange={e => set('civil_status', e.target.value)} required>
-                        <option value="">Select</option><option>Single</option><option>Married</option><option>Widowed</option><option>Separated</option>
-                      </Select>
-                    </Field>
-                    <Field label="Nationality *">
-                      <Input placeholder="Filipino" value={form.nationality} onChange={e => set('nationality', e.target.value)} required />
-                    </Field>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <Field label="Date of Birth *">
-                      <Input type="date" value={form.birth_date}
-                        max={new Date(new Date().setFullYear(new Date().getFullYear() - 5)).toISOString().split('T')[0]}
-                        onChange={e => set('birth_date', e.target.value)} required />
-                    </Field>
-                    <Field label="Place of Birth"><Input placeholder="City, Province" value={form.place_of_birth} onChange={e => set('place_of_birth', e.target.value)} /></Field>
-                    <Field label="Religion"><Input placeholder="e.g. Catholic" value={form.religion} onChange={e => set('religion', e.target.value)} /></Field>
-                  </div>
-
-                  <Section icon="📞" title="Contact & Address" />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Field label="Mobile Number *">
-                      <Input type="tel" placeholder="09XXXXXXXXX"
-                        value={form.contact_number}
-                        onChange={e => set('contact_number', e.target.value.replace(/\D/g, '').slice(0, 11))}
-                        maxLength={11} required />
-                    </Field>
-                    <Field label="City *"><Input placeholder="City" value={form.city} onChange={e => set('city', e.target.value)} required /></Field>
-                    <Field label="Street"><Input placeholder="Street" value={form.street} onChange={e => set('street', e.target.value)} /></Field>
-                    <Field label="Barangay"><Input placeholder="Barangay" value={form.barangay} onChange={e => set('barangay', e.target.value)} /></Field>
-                    <Field label="Province"><Input placeholder="Province" value={form.province} onChange={e => set('province', e.target.value)} /></Field>
-                    <Field label="Zip Code">
-                      <Input placeholder="0000"
-                        value={form.zip_code}
-                        onChange={e => set('zip_code', e.target.value.replace(/\D/g, '').slice(0, 4))}
-                        maxLength={4} inputMode="numeric" />
-                    </Field>
-                  </div>
-
-                  <Section icon="🎓" title="Enrollment Details" />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Field label="Program *">
-                      <Select value={form.program} onChange={e => set('program', e.target.value)} required>
-                        <option>Information Technology</option><option>Computer Science</option>
-                      </Select>
-                    </Field>
-                    <Field label="Year Level *">
-                      <Select value={form.year_level} onChange={e => set('year_level', e.target.value)} required>
-                        <option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option>
-                      </Select>
-                    </Field>
-                    <Field label="Course *">
-                      <Select value={form.course_id} onChange={e => set('course_id', e.target.value)} required>
-                        <option value="">-- Select Course --</option>
-                        {courses.map(c => (
-                          <option key={c.id} value={c.id}>{c.course_code} — {c.course_name}</option>
-                        ))}
-                      </Select>
-                      {courses.length === 0 && (
-                        <p className="text-xs text-amber-400 mt-1.5">No courses available yet. Contact admin.</p>
-                      )}
-                    </Field>
-                    <Field label="Student Type *">
-                      <Select value={form.student_type} onChange={e => set('student_type', e.target.value)} required>
-                        <option>Regular</option><option>Irregular</option><option>Returnee</option><option>Shiftee</option><option>Transferee</option>
-                      </Select>
-                    </Field>
-                    <Field label="Date Enrolled *">
-                      <Input type="date" value={form.date_enrolled}
-                        max={new Date().toISOString().split('T')[0]}
-                        onChange={e => set('date_enrolled', e.target.value)} required />
-                    </Field>
-                  </div>
-
-                  <Section icon="🏫" title="Educational Background" />
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <Field label="Last School Attended"><Input placeholder="School Name" value={form.last_school_attended} onChange={e => set('last_school_attended', e.target.value)} /></Field>
-                    <Field label="Last Year Attended"><Input placeholder="e.g. 2024" value={form.last_year_attended} onChange={e => set('last_year_attended', e.target.value.replace(/\D/g, '').slice(0, 4))} inputMode="numeric" maxLength={4} /></Field>
-                    <Field label="LRN"><Input placeholder="12-digit LRN" value={form.lrn} onChange={e => set('lrn', e.target.value.replace(/\D/g, '').slice(0, 12))} inputMode="numeric" maxLength={12} /></Field>
-                  </div>
-
-                  <Section icon="👨‍👩‍👦" title="Family Background" />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Field label="Father's Name"><Input placeholder="Full Name" value={form.father_name} onChange={e => set('father_name', e.target.value)} /></Field>
-                    <Field label="Father's Occupation"><Input placeholder="Occupation" value={form.father_occupation} onChange={e => set('father_occupation', e.target.value)} /></Field>
-                    <Field label="Mother's Name"><Input placeholder="Full Name" value={form.mother_name} onChange={e => set('mother_name', e.target.value)} /></Field>
-                    <Field label="Mother's Occupation"><Input placeholder="Occupation" value={form.mother_occupation} onChange={e => set('mother_occupation', e.target.value)} /></Field>
-                    <Field label="Guardian Contact No.">
-                      <Input type="tel" placeholder="09XXXXXXXXX"
-                        value={form.guardian_contact}
-                        onChange={e => set('guardian_contact', e.target.value.replace(/\D/g, '').slice(0, 11))}
-                        maxLength={11} inputMode="numeric" />
-                    </Field>
-                  </div>
+                  <Field label="Gender *">
+                    <Select value={form.gender} onChange={e => set('gender', e.target.value)} required>
+                      <option value="">Select gender</option><option>Male</option><option>Female</option>
+                    </Select>
+                  </Field>
+                  <Field label="Mobile Number *">
+                    <Input type="tel" placeholder="09XXXXXXXXX"
+                      value={form.contact_number}
+                      onChange={e => set('contact_number', e.target.value.replace(/\D/g, '').slice(0, 11))}
+                      inputMode="numeric" maxLength={11} required />
+                  </Field>
                 </>
               )}
 
@@ -500,23 +385,6 @@ const SignUp = ({ onSignUp, onGoToLogin }) => {
                     <Field label="First Name *"><Input placeholder="Juan" value={form.first_name} onChange={e => set('first_name', e.target.value)} required /></Field>
                     <Field label="Middle Name"><Input placeholder="Santos" value={form.middle_name} onChange={e => set('middle_name', e.target.value)} /></Field>
                     <Field label="Last Name *"><Input placeholder="dela Cruz" value={form.last_name} onChange={e => set('last_name', e.target.value)} required /></Field>
-                  </div>
-
-                  <Section icon="🏢" title="Faculty Details" />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Field label="Position *"><Input placeholder="e.g. Instructor I" value={form.position} onChange={e => set('position', e.target.value)} required /></Field>
-                    <Field label="Employment Status *">
-                      <Select value={form.employment_status} onChange={e => set('employment_status', e.target.value)} required>
-                        <option>Regular</option><option>Part-time</option><option>Contractual</option>
-                      </Select>
-                    </Field>
-                    <Field label="Hire Date *"><Input type="date" value={form.hire_date} onChange={e => set('hire_date', e.target.value)} required /></Field>
-                    <Field label="Department ID *">
-                      <Input placeholder="Department ID (number)" type="number" min="1"
-                        value={form.department_id} onChange={e => set('department_id', e.target.value)} required />
-                    </Field>
-                    <Field label="Contact Number"><Input type="tel" placeholder="09XXXXXXXXX" value={form.contact_number_faculty} onChange={e => set('contact_number_faculty', e.target.value.replace(/\D/g, '').slice(0, 11))} inputMode="numeric" maxLength={11} /></Field>
-                    <Field label="Office Location"><Input placeholder="e.g. Faculty Room 2" value={form.office_location} onChange={e => set('office_location', e.target.value)} /></Field>
                   </div>
                 </>
               )}
