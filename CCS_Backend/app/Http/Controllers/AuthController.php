@@ -208,12 +208,13 @@ class AuthController extends Controller
         ]);
 
         // Store guardian/family data if provided
-        foreach ([
+        $guardians = [
             ['full_name' => $validated['father_name'] ?? null, 'relationship' => 'Father', 'occupation' => $validated['father_occupation'] ?? null, 'contact_number' => null],
             ['full_name' => $validated['mother_name'] ?? null, 'relationship' => 'Mother', 'occupation' => $validated['mother_occupation'] ?? null, 'contact_number' => $validated['guardian_contact'] ?? null],
-        ] as $g) {
+        ];
+        foreach ($guardians as $g) {
             if ($g['full_name']) {
-                $student->guardians()->create($g);
+                $student->guardians()->create(array_filter($g, fn($v) => $v !== null));
             }
         }
 
