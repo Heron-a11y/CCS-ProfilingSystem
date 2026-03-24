@@ -405,6 +405,24 @@ const AcademicModal = ({ studentId, record, onClose, onSaved }) => {
 ════════════════════════════════════════════════ */
 const emptyAff = () => ({ organization_name: '', position: '', date_joined: '', date_ended: '', status: 'Active', adviser_name: '' });
 
+/* affiliation duration helper */
+const affDuration = (joined, ended) => {
+  if (!joined) return null;
+  const start = new Date(joined);
+  const end   = ended ? new Date(ended) : new Date();
+  const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  if (months < 1) return '< 1 month';
+  if (months < 12) return `${months} mo${months > 1 ? 's' : ''}`;
+  const yrs = Math.floor(months / 12); const rem = months % 12;
+  return rem > 0 ? `${yrs} yr${yrs > 1 ? 's' : ''} ${rem} mo${rem > 1 ? 's' : ''}` : `${yrs} yr${yrs > 1 ? 's' : ''}`;
+};
+
+const AFF_STATUS = {
+  Active:   { bg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', dot: 'bg-emerald-400' },
+  Inactive: { bg: 'bg-slate-600/40 text-slate-400 border-slate-600/40',       dot: 'bg-slate-500'   },
+  Alumni:   { bg: 'bg-purple-500/20 text-purple-300 border-purple-500/30',    dot: 'bg-purple-400'  },
+};
+
 const AffiliationModal = ({ studentId, record, onClose, onSaved }) => {
   const dark = useTheme(); const i = mkInp(dark); const s = mkSel(dark);
   const [form, setForm] = useState(record ? {
@@ -428,20 +446,43 @@ const AffiliationModal = ({ studentId, record, onClose, onSaved }) => {
   };
 
   return (
-    <Modal title={record ? 'Edit Affiliation' : 'Add Affiliation'} onClose={onClose}
+    <Modal title={record ? 'Edit Affiliation' : 'Add Affiliation'}
+      subtitle={record ? record.organization_name : 'Fill in your organization details'}
+      onClose={onClose}
       footer={<div className="flex justify-end gap-3"><BtnGhost onClick={onClose}>Cancel</BtnGhost><BtnPrimary loading={saving} onClick={save}>{record ? 'Save Changes' : 'Add Affiliation'}</BtnPrimary></div>}>
       <ErrBox msg={err} />
-      <form onSubmit={save} className="grid grid-cols-2 gap-4">
-        <div className="col-span-2"><Field label="Organization Name" required><input name="organization_name" value={form.organization_name} onChange={ch} className={i} required /></Field></div>
-        <Field label="Position / Role" required><input name="position" value={form.position} onChange={ch} className={i} required /></Field>
-        <Field label="Status" required>
-          <Sel name="status" value={form.status} onChange={ch} className={s}>
-            <option>Active</option><option>Inactive</option><option>Alumni</option>
-          </Sel>
+      <form onSubmit={save} className="space-y-4">
+        <Field label="Organization Name" required icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}>
+          <input name="organization_name" value={form.organization_name} onChange={ch} className={i} placeholder="e.g. Junior Philippine Computer Society" required />
         </Field>
-        <Field label="Date Joined" required><input type="date" name="date_joined" value={form.date_joined} onChange={ch} className={i} required /></Field>
-        <Field label="Date Ended"><input type="date" name="date_ended" value={form.date_ended} onChange={ch} className={i} /></Field>
-        <div className="col-span-2"><Field label="Adviser Name"><input name="adviser_name" value={form.adviser_name} onChange={ch} className={i} placeholder="Optional" /></Field></div>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Position / Role" required icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>}>
+            <input name="position" value={form.position} onChange={ch} className={i} placeholder="e.g. President" required />
+          </Field>
+          <Field label="Status" required>
+            <Sel name="status" value={form.status} onChange={ch} className={s}>
+              <option>Active</option><option>Inactive</option><option>Alumni</option>
+            </Sel>
+          </Field>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Date Joined" required icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}>
+            <input type="date" name="date_joined" value={form.date_joined} onChange={ch} className={i} required />
+          </Field>
+          <Field label="Date Ended" icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}>
+            <input type="date" name="date_ended" value={form.date_ended} onChange={ch} className={i} />
+          </Field>
+        </div>
+        <Field label="Adviser / Moderator" icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}>
+          <input name="adviser_name" value={form.adviser_name} onChange={ch} className={i} placeholder="Optional — faculty adviser or moderator" />
+        </Field>
+        {form.date_joined && (
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs ${dark ? 'bg-slate-800/60 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
+            <svg className="w-3.5 h-3.5 text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            Duration: <span className="font-semibold text-brand-400">{affDuration(form.date_joined, form.date_ended || null)}</span>
+            {!form.date_ended && <span className="text-emerald-400 font-medium">(ongoing)</span>}
+          </div>
+        )}
       </form>
     </Modal>
   );
@@ -1441,8 +1482,10 @@ const StudentDashboard = ({ user, onLogout }) => {
      PANEL: AFFILIATIONS
   ════════════════════════════════ */
   const AffiliationsPanel = () => {
-    const [modal, setModal] = useState(null);
+    const [modal, setModal]     = useState(null);
     const [deleting, setDeleting] = useState(null);
+    const [search, setSearch]   = useState('');
+    const [filterStatus, setFilterStatus] = useState('All');
     const s = student;
 
     const del = async (id) => {
@@ -1455,44 +1498,156 @@ const StudentDashboard = ({ user, onLogout }) => {
 
     if (loadingProfile) return <Spinner />;
 
+    const affs = s?.affiliations ?? [];
+    const activeCount   = affs.filter(a => a.status === 'Active').length;
+    const inactiveCount = affs.filter(a => a.status === 'Inactive').length;
+    const alumniCount   = affs.filter(a => a.status === 'Alumni').length;
+
+    const filtered = affs.filter(a => {
+      const matchSearch = !search || a.organization_name.toLowerCase().includes(search.toLowerCase()) || a.position.toLowerCase().includes(search.toLowerCase());
+      const matchStatus = filterStatus === 'All' || a.status === filterStatus;
+      return matchSearch && matchStatus;
+    });
+
     return (
       <div className="space-y-5">
         {modal && <AffiliationModal studentId={s?.id} record={modal === 'add' ? null : modal} onClose={() => setModal(null)} onSaved={() => { setModal(null); loadStudent(); }} />}
 
-        <SectionCard title="Affiliations & Organizations" icon="🏛️" action={s && <AddBtn onClick={() => setModal('add')} label="Add Affiliation" />}>
-          {!s ? <EmptyState icon="🏛️" title="No profile linked." /> :
-           s.affiliations?.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {s.affiliations.map(aff => (
-                <div key={aff.id} className="border border-slate-700 p-4 rounded-xl">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-brand-900/40 text-brand-400 flex items-center justify-center shrink-0 mt-0.5">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-slate-100">{aff.organization_name}</h4>
-                        <p className="text-xs text-slate-400">{aff.position}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <BtnEdit onClick={() => setModal(aff)} />
-                      <BtnDanger onClick={() => del(aff.id)} disabled={deleting === aff.id}>
-                        {deleting === aff.id ? <div className="w-3 h-3 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" /> : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
-                      </BtnDanger>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap mt-2">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${aff.status === 'Active' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-slate-700 text-slate-400 border-slate-600'}`}>{aff.status}</span>
-                    <span className="text-xs text-slate-500">Joined: {fmt(aff.date_joined)}</span>
-                    {aff.date_ended && <span className="text-xs text-slate-500">Ended: {fmt(aff.date_ended)}</span>}
-                  </div>
-                  {aff.adviser_name && <p className="text-xs text-slate-500 mt-1.5">Adviser: {aff.adviser_name}</p>}
+        {/* Header banner */}
+        <div className={`relative overflow-hidden rounded-2xl border p-5 ${dark ? 'bg-gradient-to-br from-purple-600/15 via-brand-600/10 to-slate-900/0 border-purple-500/20' : 'bg-gradient-to-br from-purple-50 via-brand-50 to-white border-purple-100'}`}>
+          <div className="absolute right-0 top-0 w-48 h-48 bg-purple-500/10 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
+          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg ${dark ? 'bg-purple-500/20' : 'bg-purple-100'}`}>🏛️</div>
+              <div>
+                <h2 className={`text-lg font-black ${dark ? 'text-white' : 'text-slate-800'}`}>My Affiliations</h2>
+                <p className={`text-xs mt-0.5 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>Organizations, clubs & extracurricular memberships</p>
+              </div>
+            </div>
+            {s && <AddBtn onClick={() => setModal('add')} label="Add Affiliation" />}
+          </div>
+
+          {/* Stats row */}
+          {affs.length > 0 && (
+            <div className="relative grid grid-cols-3 gap-3 mt-4">
+              {[
+                { label: 'Total',    val: affs.length,    color: dark ? 'text-slate-200' : 'text-slate-700' },
+                { label: 'Active',   val: activeCount,    color: 'text-emerald-400' },
+                { label: 'Alumni',   val: alumniCount,    color: 'text-purple-400' },
+              ].map(st => (
+                <div key={st.label} className={`rounded-xl p-3 text-center border ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white/70 border-slate-200'}`}>
+                  <p className={`text-xl font-black ${st.color}`}>{st.val}</p>
+                  <p className={`text-[10px] font-semibold uppercase tracking-wide mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{st.label}</p>
                 </div>
               ))}
             </div>
-          ) : <EmptyState icon="🏛️" title="No affiliations recorded." sub="Click 'Add Affiliation' to add your organizations." />}
-        </SectionCard>
+          )}
+        </div>
+
+        {!s ? <EmptyState icon="🏛️" title="No profile linked." /> : (
+          <>
+            {/* Search + filter */}
+            {affs.length > 0 && (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search organization or role…"
+                    className={`w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm ${dark ? 'bg-slate-800/60 border-slate-700 text-slate-200 placeholder-slate-500 focus:border-brand-500' : 'bg-white border-slate-200 text-slate-700 placeholder-slate-400 focus:border-brand-400'} outline-none transition-colors`} />
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {['All', 'Active', 'Inactive', 'Alumni'].map(st => (
+                    <button key={st} onClick={() => setFilterStatus(st)}
+                      className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${filterStatus === st
+                        ? 'bg-brand-500 text-white border-brand-500 shadow-md'
+                        : dark ? 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>
+                      {st}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Cards grid */}
+            {filtered.length === 0 && affs.length > 0 ? (
+              <EmptyState icon="🔍" title="No results found." sub="Try adjusting your search or filter." />
+            ) : filtered.length === 0 ? (
+              <div className={`rounded-2xl border-2 border-dashed p-12 text-center ${dark ? 'border-slate-700' : 'border-slate-200'}`}>
+                <div className="text-5xl mb-3">🏛️</div>
+                <h3 className={`text-base font-bold mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>No affiliations yet</h3>
+                <p className={`text-sm mb-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Add your organizations, clubs, and extracurricular memberships.</p>
+                {s && <AddBtn onClick={() => setModal('add')} label="Add Your First Affiliation" />}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filtered.map(aff => {
+                  const st = AFF_STATUS[aff.status] ?? AFF_STATUS.Inactive;
+                  const dur = affDuration(aff.date_joined, aff.date_ended);
+                  return (
+                    <div key={aff.id} className={`group relative rounded-2xl border p-5 transition-all hover:shadow-lg ${dark ? 'bg-slate-800/40 border-slate-700/60 hover:border-slate-600' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'}`}>
+                      {/* Top row */}
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${dark ? 'bg-purple-500/15 text-purple-400' : 'bg-purple-50 text-purple-600'}`}>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className={`font-bold text-sm leading-tight truncate ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{aff.organization_name}</h4>
+                            <p className={`text-xs mt-0.5 font-medium ${dark ? 'text-brand-400' : 'text-brand-600'}`}>{aff.position}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <BtnEdit onClick={() => setModal(aff)} />
+                          <BtnDanger onClick={() => del(aff.id)} disabled={deleting === aff.id}>
+                            {deleting === aff.id
+                              ? <div className="w-3 h-3 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                              : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
+                          </BtnDanger>
+                        </div>
+                      </div>
+
+                      {/* Divider */}
+                      <div className={`h-px mb-3 ${dark ? 'bg-slate-700/60' : 'bg-slate-100'}`} />
+
+                      {/* Meta row */}
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        {/* Status badge */}
+                        <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border font-semibold text-[10px] ${st.bg}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                          {aff.status}
+                        </span>
+                        {/* Duration */}
+                        {dur && (
+                          <span className={`flex items-center gap-1 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            {dur}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Date range */}
+                      <div className={`flex items-center gap-3 mt-2.5 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <span className="flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          {fmt(aff.date_joined)}
+                        </span>
+                        <span>→</span>
+                        <span>{aff.date_ended ? fmt(aff.date_ended) : <span className="text-emerald-400 font-medium">Present</span>}</span>
+                      </div>
+
+                      {/* Adviser */}
+                      {aff.adviser_name && (
+                        <div className={`flex items-center gap-1.5 mt-2.5 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+                          <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                          Adviser: <span className={`font-medium ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{aff.adviser_name}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
       </div>
     );
   };
