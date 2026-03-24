@@ -621,8 +621,61 @@ const StudentDashboard = ({ user, onLogout }) => {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [profileErr, setProfileErr]   = useState(null);
   const [dark, setDark]               = useState(() => localStorage.getItem('sd_theme') !== 'light');
+  const [notifOpen, setNotifOpen]       = useState(false);
+  const [readIds, setReadIds]           = useState(() => { try { return JSON.parse(localStorage.getItem('sd_notif_read') || '[]'); } catch { return []; } });
 
   const toggleTheme = () => setDark(d => { const next = !d; localStorage.setItem('sd_theme', next ? 'dark' : 'light'); return next; });
+
+  /* ── notifications derived from student data ── */
+  const buildNotifications = (s, taskList) => {
+    const items = [];
+    if (!s) return items;
+    // Violations
+    (s.violations ?? []).forEach(v => items.push({
+      id: `viol-${v.id}`,
+      type: 'violation',
+      icon: '⚠️',
+      title: 'Violation Recorded',
+      body: `${v.violation_type} — ${v.severity_level} severity`,
+      date: v.date_reported,
+      nav: 'violations',
+    }));
+    // Academic history updates
+    (s.academic_histories ?? []).forEach(ah => items.push({
+      id: `ah-${ah.id}`,
+      type: 'academic',
+      icon: '📋',
+      title: 'Academic Record Updated',
+      body: `${ah.school_year} ${ah.semester} — GPA: ${ah.gpa ?? '—'}`,
+      date: ah.updated_at ?? ah.created_at,
+      nav: 'academic',
+    }));
+    // Pending tasks
+    taskList.filter(t => !t.done).forEach(t => items.push({
+      id: `task-${t.id}`,
+      type: 'task',
+      icon: '📌',
+      title: 'Pending Task',
+      body: `${t.title} — Due ${t.due}`,
+      date: null,
+      nav: 'tasks',
+    }));
+    return items;
+  };
+
+  const notifications = buildNotifications(student, tasks);
+  const unreadCount   = notifications.filter(n => !readIds.includes(n.id)).length;
+
+  const openNotif = () => {
+    setNotifOpen(o => {
+      if (!o) {
+        const allIds = notifications.map(n => n.id);
+        setReadIds(allIds);
+        localStorage.setItem('sd_notif_read', JSON.stringify(allIds));
+      }
+      return !o;
+    });
+  };
 
   const initials   = student
     ? `${student.first_name?.[0] ?? ''}${student.last_name?.[0] ?? ''}`.toUpperCase() || 'ST'
@@ -654,6 +707,14 @@ const StudentDashboard = ({ user, onLogout }) => {
   }, [user?.student_id]);
 
   useEffect(() => { loadStudent(); }, [loadStudent]);
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    if (!notifOpen) return;
+    const handler = (e) => { if (!e.target.closest('[data-notif]')) setNotifOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [notifOpen]);
 
   const sidebarExpanded = sidebarPinned || sidebarHovered;
 
@@ -1682,6 +1743,48 @@ const StudentDashboard = ({ user, onLogout }) => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Notification bell */}
+            <div className="relative" data-notif>
+              <button onClick={openNotif} title="Notifications"
+                className={`relative p-2 rounded-xl border transition-all ${dark ? 'bg-slate-800/60 border-slate-700/50 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown */}
+              {notifOpen && (
+                <div className={`absolute right-0 top-full mt-2 w-80 rounded-2xl border shadow-2xl z-50 overflow-hidden ${dark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+                  <div className={`flex items-center justify-between px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
+                    <h3 className={`text-sm font-bold ${dark ? 'text-slate-100' : 'text-slate-800'}`}>Notifications</h3>
+                    <button onClick={() => setNotifOpen(false)} className={`text-xs ${dark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`}>✕</button>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="py-10 text-center">
+                        <div className="text-3xl mb-2">🔔</div>
+                        <p className={`text-sm ${dark ? 'text-slate-500' : 'text-slate-400'}`}>No notifications yet</p>
+                      </div>
+                    ) : notifications.map(n => (
+                      <button key={n.id} onClick={() => { setActive(n.nav); setNotifOpen(false); }}
+                        className={`w-full text-left flex items-start gap-3 px-4 py-3 border-b transition-colors ${dark ? 'border-slate-800 hover:bg-slate-800/60' : 'border-slate-50 hover:bg-slate-50'}`}>
+                        <span className="text-lg shrink-0 mt-0.5">{n.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-xs font-semibold ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{n.title}</p>
+                          <p className={`text-xs mt-0.5 truncate ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{n.body}</p>
+                          {n.date && <p className={`text-[10px] mt-0.5 ${dark ? 'text-slate-600' : 'text-slate-400'}`}>{fmt(n.date)}</p>}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             {/* Theme toggle */}
             <button onClick={toggleTheme} title={dark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               className={`p-2 rounded-xl border transition-all ${dark ? 'bg-slate-800/60 border-slate-700/50 text-amber-400 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}>
