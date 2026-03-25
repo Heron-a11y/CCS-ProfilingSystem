@@ -1424,7 +1424,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                   {/* Semester cards */}
                   <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {records.map(ah => (
-                      <div key={ah.id} className={`rounded-xl border p-4 ${dark ? 'bg-slate-900/40 border-slate-700/40' : 'bg-slate-50 border-slate-200'}`}>
+                      <div key={ah.id} className={`rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${dark ? 'bg-slate-900/40 border-slate-700/40 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-slate-50 border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10'}`}>
                         {/* Semester label */}
                         <div className="flex items-center justify-between mb-3">
                           <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${dark ? 'bg-brand-500/20 text-brand-300 border-brand-500/30' : 'bg-brand-100 text-brand-700 border-brand-200'}`}>
@@ -1702,7 +1702,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                   const st = AFF_STATUS[aff.status] ?? AFF_STATUS.Inactive;
                   const dur = affDuration(aff.date_joined, aff.date_ended);
                   return (
-                    <div key={aff.id} className={`group relative rounded-2xl border p-5 transition-all hover:shadow-lg ${dark ? 'bg-slate-800/40 border-slate-700/60 hover:border-slate-600' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'}`}>
+                    <div key={aff.id} className={`group relative rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${dark ? 'bg-slate-800/40 border-slate-700/60 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-white border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10 shadow-sm'}`}>
                       {/* Top row */}
                       <div className="flex items-start justify-between gap-2 mb-3">
                         <div className="flex items-start gap-3 min-w-0">
@@ -1889,7 +1889,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                     {filtered.map((v, idx) => {
                       const ss = sevStyle(v.severity_level) ?? sevStyle('Low');
                       return (
-                        <div key={v.id} className={`rounded-2xl border overflow-hidden transition-all hover:shadow-md ${ss.card} ${dark ? 'hover:shadow-slate-900/40' : 'hover:shadow-slate-200/80'}`}>
+                        <div key={v.id} className={`rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${ss.card} ${dark ? 'hover:border-brand-500/40 hover:shadow-brand-500/10' : 'hover:border-brand-400/50 hover:shadow-brand-500/10'}`}>
                           {/* Card header */}
                           <div className={`flex items-start justify-between gap-3 px-5 py-4 border-b ${dark ? 'border-white/5' : 'border-black/5'}`}>
                             <div className="flex items-start gap-3 min-w-0">
@@ -2248,14 +2248,14 @@ const StudentDashboard = ({ user, onLogout }) => {
               const isDone = t.done;
               const pStyle = priorityStyle(t.priority, dark);
               return (
-                <div key={t.id} className={`group flex items-start gap-4 p-4 rounded-2xl border transition-all ${
+                <div key={t.id} className={`group flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
                   isDone
                     ? dark ? 'bg-slate-800/20 border-slate-700/20 opacity-55' : 'bg-slate-50 border-slate-100 opacity-60'
                     : t.priority === 'High'
-                      ? dark ? 'bg-red-900/10 border-red-500/20 hover:border-red-500/40' : 'bg-red-50/60 border-red-200 hover:border-red-300'
+                      ? dark ? 'bg-red-900/10 border-red-500/20 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-red-50/60 border-red-200 hover:border-brand-400/50 hover:shadow-brand-500/10'
                       : t.priority === 'Medium'
-                        ? dark ? 'bg-amber-900/10 border-amber-500/20 hover:border-amber-500/40' : 'bg-amber-50/60 border-amber-200 hover:border-amber-300'
-                        : dark ? 'bg-slate-800/40 border-slate-700/40 hover:border-slate-600' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
+                        ? dark ? 'bg-amber-900/10 border-amber-500/20 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-amber-50/60 border-amber-200 hover:border-brand-400/50 hover:shadow-brand-500/10'
+                        : dark ? 'bg-slate-800/40 border-slate-700/40 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-white border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10 shadow-sm'
                 }`}>
                   {/* Checkbox */}
                   <button onClick={() => toggleTask(t.id)}
