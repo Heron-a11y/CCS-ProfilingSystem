@@ -79,7 +79,7 @@ const EmptyState = ({ icon, title, sub }) => {
 const SectionCard = ({ title, icon, action, children }) => {
   const dark = useTheme();
   return (
-    <div className={`rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
+    <div className={`rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:border-brand-400/60 hover:shadow-brand-500/20 ${dark ? 'bg-slate-900 border-slate-700/60 hover:bg-slate-800' : 'bg-white border-slate-200 shadow-sm hover:bg-brand-50/40'}`}>
       <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark ? 'border-slate-700/60 bg-slate-900' : 'border-slate-100 bg-slate-50'}`}>
         <div className="flex items-center gap-2.5">
           <span className="text-base">{icon}</span>
@@ -847,7 +847,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             { label: 'Pending Tasks', val: pendingTasks.length, icon: '✅', dc: 'from-red-500/20 to-pink-500/10 border-red-500/20', lc: 'bg-red-50 border-red-100' },
             { label: 'GPA (Prelim)', val: '1.40', icon: '🎓', dc: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/20', lc: 'bg-emerald-50 border-emerald-100' },
           ].map(st => (
-            <div key={st.label} className={`rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? `bg-gradient-to-br ${st.dc}` : st.lc}`}>
+            <div key={st.label} className={`rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:border-brand-400/60 hover:shadow-brand-500/20 ${dark ? `bg-gradient-to-br ${st.dc}` : st.lc}`}>
               <div className="text-2xl mb-2">{st.icon}</div>
               <div className={`text-2xl font-black ${dark ? 'text-white' : 'text-slate-800'}`}>{st.val}</div>
               <div className={`text-xs mt-0.5 font-medium ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{st.label}</div>
@@ -926,12 +926,12 @@ const StudentDashboard = ({ user, onLogout }) => {
                       const isHigh = v.severity_level === 'High';
                       const isMed  = v.severity_level === 'Medium';
                       return (
-                        <div key={v.id} className={`flex items-start gap-3 p-4 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-brand-400/50 hover:shadow-brand-500/10 ${
+                        <div key={v.id} className={`flex items-start gap-3 p-4 rounded-xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-brand-400/60 hover:shadow-brand-500/20 ${
                           isHigh
-                            ? dark ? 'bg-red-900/20 border-red-500/30' : 'bg-red-100/60 border-red-300'
+                            ? dark ? 'bg-red-900/20 border-red-500/30 hover:bg-red-900/30' : 'bg-red-100/60 border-red-300 hover:bg-red-100'
                             : isMed
-                              ? dark ? 'bg-amber-900/20 border-amber-500/30' : 'bg-amber-100/60 border-amber-300'
-                              : dark ? 'bg-slate-800 border-slate-600/40' : 'bg-white border-slate-200'
+                              ? dark ? 'bg-amber-900/20 border-amber-500/30 hover:bg-amber-900/30' : 'bg-amber-100/60 border-amber-300 hover:bg-amber-100'
+                              : dark ? 'bg-slate-800 border-slate-600/40 hover:bg-slate-700' : 'bg-white border-slate-200 hover:bg-brand-50/40'
                         }`}>
                           {/* Severity icon */}
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
@@ -998,7 +998,7 @@ const StudentDashboard = ({ user, onLogout }) => {
               {/* Pending list */}
               <div className="space-y-2">
                 {pendingTasks.slice(0, 4).map(t => (
-                  <div key={t.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-slate-50 border-slate-200'}`}>
+                  <div key={t.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-brand-400/60 hover:shadow-brand-500/20 ${dark ? 'bg-slate-900 border-slate-700/60 hover:bg-slate-800' : 'bg-slate-50 border-slate-200 hover:bg-brand-50/40'}`}>
                     <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${t.priority === 'High' ? 'bg-red-400' : t.priority === 'Medium' ? 'bg-amber-400' : 'bg-slate-400'}`} />
                     <div className="flex-1 min-w-0">
                       <p className={`text-xs font-semibold truncate ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{t.title}</p>
@@ -1023,7 +1023,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {quickLinks.map(ql => (
                 <button key={ql.id} onClick={() => setActive(ql.id)}
-                  className={`text-left p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? `bg-gradient-to-br ${ql.color}` : `${ql.color} shadow-sm`}`}>
+                  className={`text-left p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:border-brand-400/60 hover:shadow-brand-500/20 ${dark ? `bg-gradient-to-br ${ql.color}` : `${ql.color} shadow-sm`}`}>
                   <span className="text-2xl block mb-2">{ql.icon}</span>
                   <p className={`text-xs font-bold leading-tight ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{ql.label}</p>
                   <p className={`text-[10px] mt-0.5 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{ql.desc}</p>
@@ -1071,7 +1071,7 @@ const StudentDashboard = ({ user, onLogout }) => {
           <h3 className={`text-xs font-bold uppercase tracking-wider mb-4 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>📢 Announcements</h3>
           <div className="space-y-3">
             {ANNOUNCEMENTS.map(a => (
-              <div key={a.id} className={`flex gap-4 p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
+              <div key={a.id} className={`flex gap-4 p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:border-brand-400/60 hover:shadow-brand-500/20 ${dark ? 'bg-slate-900 border-slate-700/60 hover:bg-slate-800' : 'bg-white border-slate-200 shadow-sm hover:bg-brand-50/40'}`}>
                 <div className={`w-2 h-2 rounded-full mt-2 shrink-0 bg-gradient-to-b ${a.color}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
@@ -1244,7 +1244,7 @@ const StudentDashboard = ({ user, onLogout }) => {
               {s.guardians?.length > 0 ? (
                 <div className="space-y-3">
                   {s.guardians.map(g => (
-                    <div key={g.id} className="flex items-start justify-between gap-2 p-3 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand-500/10"
+                    <div key={g.id} className="flex items-start justify-between gap-2 p-3 rounded-xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-500/20"
                       style={dark ? {
                         background: 'rgba(249,115,22,0.06)',
                         borderColor: 'rgba(249,115,22,0.25)',
@@ -1500,7 +1500,7 @@ const StudentDashboard = ({ user, onLogout }) => {
     const SkillCard = ({ skill }) => {
       const meta = LEVEL_META[skill.pivot?.skill_level];
       return (
-        <div className={`group relative rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${dark ? 'bg-slate-900 border-slate-700/60 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-white border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10'}`}>
+        <div className={`group relative rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${dark ? 'bg-slate-900 border-slate-700/60 hover:bg-slate-800 hover:border-brand-500/60 hover:shadow-brand-500/25' : 'bg-white border-slate-200 hover:bg-brand-50/40 hover:border-brand-400/60 hover:shadow-brand-500/20'}`}>
           <div className={`h-1 w-full ${skill.skill_category === 'Academic' ? 'bg-gradient-to-r from-brand-500 to-amber-400' : 'bg-gradient-to-r from-purple-500 to-pink-400'}`} />
           <div className="p-4">
             <div className="flex items-start justify-between gap-2 mb-2">
@@ -1702,7 +1702,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                   const st = AFF_STATUS[aff.status] ?? AFF_STATUS.Inactive;
                   const dur = affDuration(aff.date_joined, aff.date_ended);
                   return (
-                    <div key={aff.id} className={`group relative rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${dark ? 'bg-slate-900 border-slate-700/60 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-white border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10 shadow-sm'}`}>
+                    <div key={aff.id} className={`group relative rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${dark ? 'bg-slate-900 border-slate-700/60 hover:bg-slate-800 hover:border-brand-500/60 hover:shadow-brand-500/25' : 'bg-white border-slate-200 hover:bg-brand-50/40 hover:border-brand-400/60 hover:shadow-brand-500/20 shadow-sm'}`}>
                       {/* Top row */}
                       <div className="flex items-start justify-between gap-2 mb-3">
                         <div className="flex items-start gap-3 min-w-0">
@@ -1889,7 +1889,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                     {filtered.map((v, idx) => {
                       const ss = sevStyle(v.severity_level) ?? sevStyle('Low');
                       return (
-                        <div key={v.id} className={`rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${ss.card} ${dark ? 'hover:border-brand-500/40 hover:shadow-brand-500/10' : 'hover:border-brand-400/50 hover:shadow-brand-500/10'}`}>
+                        <div key={v.id} className={`rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${ss.card} ${dark ? 'hover:bg-slate-800 hover:border-brand-500/60 hover:shadow-brand-500/25' : 'hover:brightness-95 hover:border-brand-400/60 hover:shadow-brand-500/20'}`}>
                           {/* Card header */}
                           <div className={`flex items-start justify-between gap-3 px-5 py-4 border-b ${dark ? 'border-white/5' : 'border-black/5'}`}>
                             <div className="flex items-start gap-3 min-w-0">
@@ -2248,14 +2248,14 @@ const StudentDashboard = ({ user, onLogout }) => {
               const isDone = t.done;
               const pStyle = priorityStyle(t.priority, dark);
               return (
-                <div key={t.id} className={`group flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
+                <div key={t.id} className={`group flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${
                   isDone
                     ? dark ? 'bg-slate-800/30 border-slate-700/20 opacity-55' : 'bg-slate-50 border-slate-100 opacity-60'
                     : t.priority === 'High'
-                      ? dark ? 'bg-red-900/10 border-red-500/20 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-red-50/60 border-red-200 hover:border-brand-400/50 hover:shadow-brand-500/10'
+                      ? dark ? 'bg-red-900/10 border-red-500/20 hover:bg-red-900/25 hover:border-brand-500/60 hover:shadow-brand-500/20' : 'bg-red-50/60 border-red-200 hover:bg-red-100/80 hover:border-brand-400/60 hover:shadow-brand-500/20'
                       : t.priority === 'Medium'
-                        ? dark ? 'bg-amber-900/10 border-amber-500/20 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-amber-50/60 border-amber-200 hover:border-brand-400/50 hover:shadow-brand-500/10'
-                        : dark ? 'bg-slate-900 border-slate-700/60 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-white border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10 shadow-sm'
+                        ? dark ? 'bg-amber-900/10 border-amber-500/20 hover:bg-amber-900/25 hover:border-brand-500/60 hover:shadow-brand-500/20' : 'bg-amber-50/60 border-amber-200 hover:bg-amber-100/80 hover:border-brand-400/60 hover:shadow-brand-500/20'
+                        : dark ? 'bg-slate-900 border-slate-700/60 hover:bg-slate-800 hover:border-brand-500/60 hover:shadow-brand-500/20' : 'bg-white border-slate-200 hover:bg-brand-50/40 hover:border-brand-400/60 hover:shadow-brand-500/20 shadow-sm'
                 }`}>
                   {/* Checkbox */}
                   <button onClick={() => toggleTask(t.id)}
