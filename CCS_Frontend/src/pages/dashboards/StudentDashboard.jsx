@@ -847,7 +847,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             { label: 'Pending Tasks', val: pendingTasks.length, icon: '✅', dc: 'from-red-500/20 to-pink-500/10 border-red-500/20', lc: 'bg-red-50 border-red-100' },
             { label: 'GPA (Prelim)', val: '1.40', icon: '🎓', dc: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/20', lc: 'bg-emerald-50 border-emerald-100' },
           ].map(st => (
-            <div key={st.label} className={`rounded-2xl border p-4 ${dark ? `bg-gradient-to-br ${st.dc}` : st.lc}`}>
+            <div key={st.label} className={`rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? `bg-gradient-to-br ${st.dc}` : st.lc}`}>
               <div className="text-2xl mb-2">{st.icon}</div>
               <div className={`text-2xl font-black ${dark ? 'text-white' : 'text-slate-800'}`}>{st.val}</div>
               <div className={`text-xs mt-0.5 font-medium ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{st.label}</div>
@@ -926,7 +926,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                       const isHigh = v.severity_level === 'High';
                       const isMed  = v.severity_level === 'Medium';
                       return (
-                        <div key={v.id} className={`flex items-start gap-3 p-4 rounded-xl border ${
+                        <div key={v.id} className={`flex items-start gap-3 p-4 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-brand-400/50 hover:shadow-brand-500/10 ${
                           isHigh
                             ? dark ? 'bg-red-900/20 border-red-500/30' : 'bg-red-100/60 border-red-300'
                             : isMed
@@ -998,7 +998,7 @@ const StudentDashboard = ({ user, onLogout }) => {
               {/* Pending list */}
               <div className="space-y-2">
                 {pendingTasks.slice(0, 4).map(t => (
-                  <div key={t.id} className={`flex items-start gap-3 p-3 rounded-xl border ${dark ? 'bg-slate-900/40 border-slate-700/40' : 'bg-slate-50 border-slate-200'}`}>
+                  <div key={t.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-900/40 border-slate-700/40' : 'bg-slate-50 border-slate-200'}`}>
                     <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${t.priority === 'High' ? 'bg-red-400' : t.priority === 'Medium' ? 'bg-amber-400' : 'bg-slate-400'}`} />
                     <div className="flex-1 min-w-0">
                       <p className={`text-xs font-semibold truncate ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{t.title}</p>
@@ -1023,7 +1023,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {quickLinks.map(ql => (
                 <button key={ql.id} onClick={() => setActive(ql.id)}
-                  className={`text-left p-4 rounded-2xl border transition-all hover:-translate-y-0.5 hover:shadow-lg ${dark ? `bg-gradient-to-br ${ql.color} hover:shadow-slate-900/40` : `${ql.color} hover:shadow-slate-200/80 shadow-sm`}`}>
+                  className={`text-left p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? `bg-gradient-to-br ${ql.color}` : `${ql.color} shadow-sm`}`}>
                   <span className="text-2xl block mb-2">{ql.icon}</span>
                   <p className={`text-xs font-bold leading-tight ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{ql.label}</p>
                   <p className={`text-[10px] mt-0.5 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{ql.desc}</p>
@@ -1071,7 +1071,7 @@ const StudentDashboard = ({ user, onLogout }) => {
           <h3 className={`text-xs font-bold uppercase tracking-wider mb-4 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>📢 Announcements</h3>
           <div className="space-y-3">
             {ANNOUNCEMENTS.map(a => (
-              <div key={a.id} className={`flex gap-4 p-4 rounded-2xl border transition-all ${dark ? 'bg-slate-800/50 border-slate-700/40 hover:border-slate-600' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'}`}>
+              <div key={a.id} className={`flex gap-4 p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
                 <div className={`w-2 h-2 rounded-full mt-2 shrink-0 bg-gradient-to-b ${a.color}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
