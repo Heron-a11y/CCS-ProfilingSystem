@@ -79,7 +79,7 @@ const EmptyState = ({ icon, title, sub }) => {
 const SectionCard = ({ title, icon, action, children }) => {
   const dark = useTheme();
   return (
-    <div className={`rounded-2xl border overflow-hidden ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
+    <div className={`rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
       <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark ? 'border-slate-700/40 bg-slate-900/50' : 'border-slate-100 bg-slate-50'}`}>
         <div className="flex items-center gap-2.5">
           <span className="text-base">{icon}</span>
@@ -1244,7 +1244,7 @@ const StudentDashboard = ({ user, onLogout }) => {
               {s.guardians?.length > 0 ? (
                 <div className="space-y-3">
                   {s.guardians.map(g => (
-                    <div key={g.id} className="flex items-start justify-between gap-2 p-3 rounded-xl border"
+                    <div key={g.id} className="flex items-start justify-between gap-2 p-3 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand-500/10"
                       style={dark ? {
                         background: 'rgba(249,115,22,0.06)',
                         borderColor: 'rgba(249,115,22,0.25)',
