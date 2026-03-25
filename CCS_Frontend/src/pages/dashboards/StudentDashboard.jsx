@@ -1,5 +1,14 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { api } from '../../utils/api';
+import {
+  HomeIcon, UserIcon, ClipboardDocumentListIcon, LightBulbIcon,
+  BuildingLibraryIcon, ExclamationTriangleIcon, BookOpenIcon,
+  ClipboardDocumentCheckIcon, SunIcon, MoonIcon, BellIcon,
+  MagnifyingGlassIcon, ArrowRightOnRectangleIcon, PlusIcon,
+  PencilSquareIcon, TrashIcon, CheckIcon, XMarkIcon,
+  ChevronUpIcon, InformationCircleIcon, CalendarDaysIcon,
+  UserCircleIcon, AcademicCapIcon,
+} from '@heroicons/react/24/outline';
 
 /* ─── theme context ──────────────────────────── */
 const ThemeCtx = createContext(true); // true = dark
@@ -7,14 +16,14 @@ const useTheme = () => useContext(ThemeCtx);
 
 /* ─── nav ────────────────────────────────────── */
 const NAV = [
-  { id: 'dashboard',    label: 'Dashboard',       icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-  { id: 'profile',      label: 'My Profile',       icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-  { id: 'academic',     label: 'My Academic History',  icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
-  { id: 'skills',       label: 'My Skills',            icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-  { id: 'affiliations', label: 'My Affiliations',      icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
-  { id: 'violations',   label: 'My Violations',        icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' },
-  { id: 'grades',       label: 'My Grades',            icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-  { id: 'tasks',        label: 'My Pending Tasks',     icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
+  { id: 'dashboard',    label: 'Dashboard',            Icon: HomeIcon },
+  { id: 'profile',      label: 'My Profile',           Icon: UserIcon },
+  { id: 'academic',     label: 'My Academic History',  Icon: ClipboardDocumentListIcon },
+  { id: 'skills',       label: 'My Skills',            Icon: LightBulbIcon },
+  { id: 'affiliations', label: 'My Affiliations',      Icon: BuildingLibraryIcon },
+  { id: 'violations',   label: 'My Violations',        Icon: ExclamationTriangleIcon },
+  { id: 'grades',       label: 'My Grades',            Icon: BookOpenIcon },
+  { id: 'tasks',        label: 'My Pending Tasks',     Icon: ClipboardDocumentCheckIcon },
 ];
 
 /* ─── static demo data ───────────────────────── */
@@ -762,6 +771,7 @@ const StudentDashboard = ({ user, onLogout }) => {
   /* ── sidebar nav link ── */
   const NavLink = ({ item }) => {
     const isActive = active === item.id;
+    const IconComp = item.Icon;
     return (
       <button onClick={() => setActive(item.id)}
         title={!sidebarExpanded ? item.label : ''}
@@ -771,9 +781,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         {isActive && (
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-brand-500 rounded-r-full shadow-[0_0_10px_rgba(242,101,34,0.6)]" />
         )}
-        <svg className={`w-5 h-5 shrink-0 transition-all duration-300 ${sidebarExpanded ? 'mr-3' : 'mr-0'} ${isActive ? 'text-brand-400' : dark ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-400 group-hover:text-slate-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d={item.icon} />
-        </svg>
+        <IconComp className={`w-5 h-5 shrink-0 transition-all duration-300 ${sidebarExpanded ? 'mr-3' : 'mr-0'} ${isActive ? 'text-brand-400' : dark ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-400 group-hover:text-slate-700'}`} />
         <span className={`font-medium tracking-wide whitespace-nowrap transition-all duration-300 text-sm ${sidebarExpanded ? 'opacity-100 w-auto inline-block' : 'opacity-0 w-0 hidden'}`}>
           {item.label}
         </span>
@@ -2351,9 +2359,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         <div className={`p-3 border-t ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
           <button onClick={onLogout} title="Log Out"
             className={`w-full flex items-center rounded-xl transition-all duration-300 group text-slate-400 hover:bg-red-500/10 hover:text-red-400 border border-transparent hover:border-red-500/20 ${sidebarExpanded ? 'px-4 py-3' : 'px-0 py-3 justify-center'}`}>
-            <svg className={`w-5 h-5 shrink-0 transition-all duration-300 group-hover:text-red-400 ${sidebarExpanded ? 'mr-3' : 'mr-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+            <ArrowRightOnRectangleIcon className={`w-5 h-5 shrink-0 transition-all duration-300 group-hover:text-red-400 ${sidebarExpanded ? 'mr-3' : 'mr-0'}`} />
             <span className={`font-medium tracking-wide whitespace-nowrap transition-all duration-300 text-sm ${sidebarExpanded ? 'opacity-100 w-auto inline-block' : 'opacity-0 w-0 hidden'}`}>Log Out</span>
           </button>
         </div>
@@ -2377,18 +2383,13 @@ const StudentDashboard = ({ user, onLogout }) => {
             {/* Theme toggle */}
             <button onClick={toggleTheme} title={dark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               className={`p-2 rounded-xl border transition-all ${dark ? 'bg-slate-900 border-slate-700/60 text-amber-400 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}>
-              {dark
-                ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-              }
+              {dark ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
             </button>
             {/* Notification bell */}
             <div className="relative" data-notif>
               <button onClick={openNotif} title="Notifications"
                 className={`relative p-2 rounded-xl border transition-all ${dark ? 'bg-slate-900 border-slate-700/60 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
+                <BellIcon className="w-4 h-4" />
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow">
                     {unreadCount > 9 ? '9+' : unreadCount}
@@ -2429,9 +2430,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         {/* Main content */}
         <main className={`flex-1 overflow-x-hidden overflow-y-auto transition-colors duration-300 ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
           <div className={`sticky top-0 z-10 px-6 py-4 border-b flex items-center gap-3 ${dark ? 'bg-slate-900 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-200 shadow-sm'}`}>
-            <svg className="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={activeNav?.icon} />
-            </svg>
+            {activeNav?.Icon && <activeNav.Icon className="w-5 h-5 text-brand-500" />}
             <h2 className={`text-base font-bold ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{activeNav?.label}</h2>
           </div>
           <div className="p-6">{panels[active]}</div>
