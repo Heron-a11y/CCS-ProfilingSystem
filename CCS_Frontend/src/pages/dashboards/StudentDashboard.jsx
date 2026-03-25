@@ -7,8 +7,13 @@ import {
   MagnifyingGlassIcon, ArrowRightOnRectangleIcon, PlusIcon,
   PencilSquareIcon, TrashIcon, CheckIcon, XMarkIcon,
   ChevronUpIcon, InformationCircleIcon, CalendarDaysIcon,
-  UserCircleIcon, AcademicCapIcon,
+  UserCircleIcon, AcademicCapIcon, ChevronDownIcon,
+  CheckCircleIcon, ExclamationCircleIcon, ClockIcon,
+  CameraIcon, BuildingOfficeIcon, UserGroupIcon,
+  ShieldExclamationIcon, DocumentTextIcon, CalendarIcon,
+  ArrowRightIcon, FunnelIcon,
 } from '@heroicons/react/24/outline';
+import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
 /* ─── theme context ──────────────────────────── */
 const ThemeCtx = createContext(true); // true = dark
@@ -149,9 +154,7 @@ const Sel = ({ dark: darkProp, className, children, ...props }) => {
         {children}
       </select>
       <div className={`pointer-events-none absolute inset-y-0 right-3 flex items-center ${dark ? 'text-orange-400/70' : 'text-orange-400'}`}>
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-        </svg>
+        <ChevronDownIcon className="w-4 h-4" />
       </div>
     </div>
   );
@@ -170,7 +173,7 @@ const Modal = ({ title, subtitle, onClose, children, footer }) => {
             {subtitle && <p className={`text-xs mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{subtitle}</p>}
           </div>
           <button onClick={onClose} className={`transition-colors ml-4 mt-0.5 ${dark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
         <div className="overflow-y-auto flex-1 px-6 py-5">{children}</div>
@@ -206,7 +209,7 @@ const BtnEdit = ({ onClick }) => {
   const dark = useTheme();
   return (
     <button onClick={onClick} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${dark ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
-      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+      <PencilSquareIcon className="w-3.5 h-3.5" />
       Edit
     </button>
   );
@@ -214,7 +217,7 @@ const BtnEdit = ({ onClick }) => {
 
 const AddBtn = ({ onClick, label }) => (
   <button onClick={onClick} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-brand-500 text-xs font-semibold transition-all">
-    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+    <PlusIcon className="w-3.5 h-3.5" />
     {label}
   </button>
 );
@@ -461,11 +464,11 @@ const AffiliationModal = ({ studentId, record, onClose, onSaved }) => {
       footer={<div className="flex justify-end gap-3"><BtnGhost onClick={onClose}>Cancel</BtnGhost><BtnPrimary loading={saving} onClick={save}>{record ? 'Save Changes' : 'Add Affiliation'}</BtnPrimary></div>}>
       <ErrBox msg={err} />
       <form onSubmit={save} className="space-y-4">
-        <Field label="Organization Name" required icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}>
+        <Field label="Organization Name" required icon={<BuildingOfficeIcon className="w-3.5 h-3.5" />}>
           <input name="organization_name" value={form.organization_name} onChange={ch} className={i} placeholder="e.g. Junior Philippine Computer Society" required />
         </Field>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Position / Role" required icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>}>
+          <Field label="Position / Role" required icon={<UserIcon className="w-3.5 h-3.5" />}>
             <input name="position" value={form.position} onChange={ch} className={i} placeholder="e.g. President" required />
           </Field>
           <Field label="Status" required>
@@ -475,19 +478,19 @@ const AffiliationModal = ({ studentId, record, onClose, onSaved }) => {
           </Field>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Date Joined" required icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}>
+          <Field label="Date Joined" required icon={<CalendarDaysIcon className="w-3.5 h-3.5" />}>
             <input type="date" name="date_joined" value={form.date_joined} onChange={ch} className={i} required />
           </Field>
-          <Field label="Date Ended" icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}>
+          <Field label="Date Ended" icon={<CalendarDaysIcon className="w-3.5 h-3.5" />}>
             <input type="date" name="date_ended" value={form.date_ended} onChange={ch} className={i} />
           </Field>
         </div>
-        <Field label="Adviser / Moderator" icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}>
+        <Field label="Adviser / Moderator" icon={<UserCircleIcon className="w-3.5 h-3.5" />}>
           <input name="adviser_name" value={form.adviser_name} onChange={ch} className={i} placeholder="Optional — faculty adviser or moderator" />
         </Field>
         {form.date_joined && (
           <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
-            <svg className="w-3.5 h-3.5 text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <ClockIcon className="w-3.5 h-3.5 text-brand-400 shrink-0" />
             Duration: <span className="font-semibold text-brand-400">{affDuration(form.date_joined, form.date_ended || null)}</span>
             {!form.date_ended && <span className="text-emerald-400 font-medium">(ongoing)</span>}
           </div>
@@ -562,7 +565,7 @@ const SkillsModal = ({ studentId, currentSkills, onClose, onSaved }) => {
 
       {/* Search */}
       <div className="relative mb-4">
-        <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        <MagnifyingGlassIcon className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`} />
         <input value={search} onChange={e => setSearch(e.target.value)} className={`${i} pl-9`} placeholder="Search skills…" />
       </div>
 
@@ -592,7 +595,7 @@ const SkillsModal = ({ studentId, currentSkills, onClose, onSaved }) => {
                         ? 'bg-brand-500 text-white border-brand-600 shadow-md shadow-brand-500/20 scale-105'
                         : dark ? 'bg-slate-800 text-slate-400 border-slate-700 hover:border-brand-500/50 hover:text-slate-200' : 'bg-white text-slate-600 border-slate-300 hover:border-brand-400 hover:text-slate-800'
                     }`}>
-                    {isOn && <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                    {isOn && <CheckCircleSolid className="w-3 h-3" />}
                     {skill.skill_name}
                     {meta && <span className={`text-[9px] px-1.5 py-0.5 rounded-full border font-bold ${meta.color}`}>{lvl}</span>}
                   </button>
@@ -621,7 +624,7 @@ const SkillsModal = ({ studentId, currentSkills, onClose, onSaved }) => {
                       <span className={`text-sm font-semibold ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{s.skill_name}</span>
                     </div>
                     <button onClick={() => toggle({ id: s.skill_id })} className={`transition-colors ${dark ? 'text-slate-600 hover:text-red-400' : 'text-slate-300 hover:text-red-500'}`}>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                      <XMarkIcon className="w-4 h-4" />
                     </button>
                   </div>
                   {/* Level bar */}
@@ -920,7 +923,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                   /* Clean record */
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${dark ? 'bg-emerald-500/20' : 'bg-emerald-100'}`}>
-                      <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <CheckCircleIcon className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div>
                       <p className={`text-sm font-bold ${dark ? 'text-emerald-300' : 'text-emerald-700'}`}>You have a clean disciplinary record.</p>
@@ -945,7 +948,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                             isHigh ? 'bg-red-500/20 text-red-400' : isMed ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-slate-400'
                           }`}>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                            <ExclamationTriangleIcon className="w-4 h-4" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap mb-0.5">
@@ -1194,7 +1197,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             {s && !photoUploading && (
               <>
                 <label htmlFor="photo-upload" className="absolute inset-0 rounded-2xl bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer gap-1">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  <CameraIcon className="w-6 h-6 text-white" />
                   <span className="text-white text-[10px] font-semibold">Change</span>
                 </label>
                 <input id="photo-upload" type="file" accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,image/heic,image/heif" className="hidden" onChange={handlePhotoChange} />
@@ -1204,7 +1207,7 @@ const StudentDashboard = ({ user, onLogout }) => {
           <div className="flex-1 text-center sm:text-left">
             {photoErr && (
               <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-red-900/30 border border-red-700/40 text-red-400 text-xs">
-                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <ExclamationCircleIcon className="w-3.5 h-3.5 shrink-0" />
                 {photoErr}
                 <button onClick={() => setPhotoErr(null)} className="ml-auto text-red-400 hover:text-red-300">✕</button>
               </div>
@@ -1271,7 +1274,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                         <BtnDanger onClick={() => delGuardian(g.id)} disabled={deletingGuardian === g.id}>
                           {deletingGuardian === g.id
                             ? <div className="w-3 h-3 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
-                            : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
+                            : <TrashIcon className="w-3.5 h-3.5" />}
                         </BtnDanger>
                       </div>
                     </div>
@@ -1369,7 +1372,7 @@ const StudentDashboard = ({ user, onLogout }) => {
 
         {/* Notice banner — read-only */}
         <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-xs ${dark ? 'bg-blue-500/10 border-blue-500/20 text-blue-300' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
-          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <InformationCircleIcon className="w-4 h-4 shrink-0" />
           Academic records are managed by the administration. Contact your registrar for any corrections.
         </div>
 
@@ -1515,7 +1518,7 @@ const StudentDashboard = ({ user, onLogout }) => {
               <h4 className={`font-bold text-sm leading-tight ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{skill.skill_name}</h4>
               {skill.pivot?.certification && (
                 <span className="shrink-0 flex items-center gap-1 text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full">
-                  <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <CheckCircleIcon className="w-2.5 h-2.5" />
                   Certified
                 </span>
               )}
@@ -1575,7 +1578,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             <button onClick={() => setModal(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all duration-200 hover:scale-105 active:scale-95"
               style={{ background: 'linear-gradient(135deg, #f26522, #e04f0f)', boxShadow: '0 4px 14px rgba(242,101,34,0.35)' }}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+              <PlusIcon className="w-3.5 h-3.5" />
               Manage Skills
             </button>
           )}
@@ -1589,7 +1592,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             <button onClick={() => setModal(true)}
               className="mt-2 flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105"
               style={{ background: 'linear-gradient(135deg, #f26522, #e04f0f)', boxShadow: '0 4px 14px rgba(242,101,34,0.3)' }}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+              <PlusIcon className="w-3.5 h-3.5" />
               Add Skills
             </button>
           </div>
@@ -1677,7 +1680,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             {affs.length > 0 && (
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
-                  <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  <MagnifyingGlassIcon className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`} />
                   <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search organization or role…"
                     className={`w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm ${dark ? 'bg-slate-800 border-slate-700 text-slate-200 placeholder-slate-500 focus:border-brand-500' : 'bg-white border-slate-200 text-slate-700 placeholder-slate-400 focus:border-brand-400'} outline-none transition-colors`} />
                 </div>
@@ -1715,7 +1718,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                       <div className="flex items-start justify-between gap-2 mb-3">
                         <div className="flex items-start gap-3 min-w-0">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${dark ? 'bg-purple-500/15 text-purple-400' : 'bg-purple-50 text-purple-600'}`}>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                            <BuildingOfficeIcon className="w-5 h-5" />
                           </div>
                           <div className="min-w-0">
                             <h4 className={`font-bold text-sm leading-tight truncate ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{aff.organization_name}</h4>
@@ -1727,7 +1730,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                           <BtnDanger onClick={() => del(aff.id)} disabled={deleting === aff.id}>
                             {deleting === aff.id
                               ? <div className="w-3 h-3 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
-                              : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
+                              : <TrashIcon className="w-3.5 h-3.5" />}
                           </BtnDanger>
                         </div>
                       </div>
@@ -1745,7 +1748,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                         {/* Duration */}
                         {dur && (
                           <span className={`flex items-center gap-1 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <ClockIcon className="w-3 h-3" />
                             {dur}
                           </span>
                         )}
@@ -1754,7 +1757,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                       {/* Date range */}
                       <div className={`flex items-center gap-3 mt-2.5 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
                         <span className="flex items-center gap-1">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          <CalendarIcon className="w-3 h-3" />
                           {fmt(aff.date_joined)}
                         </span>
                         <span>→</span>
@@ -1764,7 +1767,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                       {/* Adviser */}
                       {aff.adviser_name && (
                         <div className={`flex items-center gap-1.5 mt-2.5 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-                          <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                          <UserCircleIcon className="w-3 h-3 shrink-0" />
                           Adviser: <span className={`font-medium ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{aff.adviser_name}</span>
                         </div>
                       )}
@@ -1867,7 +1870,7 @@ const StudentDashboard = ({ user, onLogout }) => {
               /* ── Clean record ── */
               <div className={`rounded-2xl border-2 border-dashed p-12 text-center ${dark ? 'border-emerald-700/40' : 'border-emerald-200'}`}>
                 <div className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center mb-4 ${dark ? 'bg-emerald-500/15' : 'bg-emerald-100'}`}>
-                  <svg className="w-10 h-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <CheckCircleIcon className="w-10 h-10 text-emerald-400" />
                 </div>
                 <h3 className={`text-lg font-black mb-1 ${dark ? 'text-emerald-300' : 'text-emerald-700'}`}>Clean Record</h3>
                 <p className={`text-sm ${dark ? 'text-emerald-500/70' : 'text-emerald-600/70'}`}>You have no recorded violations. Keep up the good conduct!</p>
@@ -1902,7 +1905,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                           <div className={`flex items-start justify-between gap-3 px-5 py-4 border-b ${dark ? 'border-white/5' : 'border-black/5'}`}>
                             <div className="flex items-start gap-3 min-w-0">
                               <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${ss.icon}`}>
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                                <ExclamationTriangleIcon className="w-4 h-4" />
                               </div>
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -1936,11 +1939,11 @@ const StudentDashboard = ({ user, onLogout }) => {
                             {/* Footer meta */}
                             <div className={`flex flex-wrap items-center justify-between gap-3 pt-1 text-xs border-t ${dark ? 'border-slate-700/60 text-slate-500' : 'border-slate-200 text-slate-400'}`}>
                               <div className="flex items-center gap-1.5">
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <CheckCircleIcon className="w-3.5 h-3.5" />
                                 Status: <span className={`font-bold ${v.status === 'Resolved' ? 'text-emerald-400' : v.status === 'Under Review' ? 'text-blue-400' : 'text-orange-400'}`}>{v.status}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                <CalendarDaysIcon className="w-3.5 h-3.5" />
                                 Resolution: <span className={`font-semibold ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{v.resolution_date ? fmt(v.resolution_date) : 'Pending'}</span>
                               </div>
                             </div>
@@ -1957,7 +1960,7 @@ const StudentDashboard = ({ user, onLogout }) => {
 
         {/* ── Admin notice ── */}
         <div className={`flex items-start gap-3 p-4 rounded-xl border text-xs ${dark ? 'bg-amber-900/20 border-amber-500/30 text-amber-300' : 'bg-amber-50 border-amber-300 text-amber-700'}`}>
-          <svg className={`w-4 h-4 shrink-0 mt-0.5 ${dark ? 'text-amber-400' : 'text-amber-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <InformationCircleIcon className={`w-4 h-4 shrink-0 mt-0.5 ${dark ? 'text-amber-400' : 'text-amber-500'}`} />
           <span>Violation records are managed by the administration. Contact your department or guidance office for any concerns or disputes.</span>
         </div>
       </div>
@@ -2139,7 +2142,7 @@ const StudentDashboard = ({ user, onLogout }) => {
 
         {/* ── Notice ── */}
         <div className={`flex items-start gap-3 p-4 rounded-xl border text-xs ${dark ? 'bg-amber-900/20 border-amber-500/30 text-amber-300' : 'bg-amber-50 border-amber-300 text-amber-700'}`}>
-          <svg className={`w-4 h-4 shrink-0 mt-0.5 ${dark ? 'text-amber-400' : 'text-amber-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <InformationCircleIcon className={`w-4 h-4 shrink-0 mt-0.5 ${dark ? 'text-amber-400' : 'text-amber-500'}`} />
           <span>Grades shown are for reference only. Official grades are released by the Registrar's Office. Contact your instructor for any grade concerns.</span>
         </div>
       </div>
@@ -2272,7 +2275,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                         ? 'bg-emerald-500 border-emerald-500'
                         : dark ? 'border-slate-600 hover:border-brand-500 hover:bg-brand-500/10' : 'border-slate-300 hover:border-brand-500 hover:bg-brand-50'
                     }`}>
-                    {isDone && <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+                    {isDone && <CheckIcon className="w-3.5 h-3.5 text-white" />}
                   </button>
 
                   <div className="flex-1 min-w-0">
@@ -2282,7 +2285,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                     </div>
                     <p className={`text-sm font-semibold ${isDone ? 'line-through' : ''} ${dark ? isDone ? 'text-slate-500' : 'text-slate-100' : isDone ? 'text-slate-400' : 'text-slate-700'}`}>{t.title}</p>
                     <div className={`flex items-center gap-1 mt-1 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-                      <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      <CalendarIcon className="w-3 h-3 shrink-0" />
                       Due: {t.due}
                     </div>
                   </div>
@@ -2301,7 +2304,7 @@ const StudentDashboard = ({ user, onLogout }) => {
 
         {/* ── Notice ── */}
         <div className={`flex items-start gap-3 p-4 rounded-xl border text-xs ${dark ? 'bg-amber-900/20 border-amber-500/30 text-amber-300' : 'bg-amber-50 border-amber-300 text-amber-700'}`}>
-          <svg className={`w-4 h-4 shrink-0 mt-0.5 ${dark ? 'text-amber-400' : 'text-amber-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <InformationCircleIcon className={`w-4 h-4 shrink-0 mt-0.5 ${dark ? 'text-amber-400' : 'text-amber-500'}`} />
           <span>Tasks shown here are personal reminders. Click the circle to mark a task as done.</span>
         </div>
       </div>
