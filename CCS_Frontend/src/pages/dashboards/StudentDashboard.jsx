@@ -205,7 +205,7 @@ const BtnGhost = ({ children, ...props }) => {
 };
 
 const BtnDanger = ({ children, ...props }) => (
-  <button {...props} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
+  <button {...props} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 border border-red-200 hover:border-red-400 transition-all duration-200 dark:text-red-400 dark:bg-red-500/10 dark:border-red-500/30 dark:hover:bg-red-500/20 dark:hover:border-red-500/50">
     {children}
   </button>
 );
@@ -213,7 +213,7 @@ const BtnDanger = ({ children, ...props }) => (
 const BtnEdit = ({ onClick }) => {
   const dark = useTheme();
   return (
-    <button onClick={onClick} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${dark ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}>
+    <button onClick={onClick} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-200 ${dark ? 'text-brand-400 bg-brand-500/10 border-brand-500/30 hover:bg-brand-500/20 hover:border-brand-500/50' : 'text-brand-600 bg-brand-50 border-brand-200 hover:bg-brand-100 hover:border-brand-400'}`}>
       <PencilSquareIcon className="w-3.5 h-3.5" />
       Edit
     </button>
