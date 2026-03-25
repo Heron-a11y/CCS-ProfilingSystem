@@ -1776,48 +1776,181 @@ const StudentDashboard = ({ user, onLogout }) => {
   ════════════════════════════════ */
   const ViolationsPanel = () => {
     const s = student;
+    const [filter, setFilter] = useState('All');
     if (loadingProfile) return <Spinner />;
+
+    const viols = s?.violations ?? [];
+    const resolved  = viols.filter(v => v.status === 'Resolved');
+    const unresolved = viols.filter(v => v.status !== 'Resolved');
+    const highCount  = unresolved.filter(v => v.severity_level === 'High').length;
+
+    const filtered = filter === 'All' ? viols
+      : filter === 'Unresolved' ? unresolved
+      : viols.filter(v => v.status === filter);
+
+    const sevStyle = (sev) => ({
+      High:   { card: dark ? 'border-red-500/40 bg-red-900/10' : 'border-red-200 bg-red-50',
+                badge: dark ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-red-100 text-red-600 border-red-200',
+                icon: dark ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-500' },
+      Medium: { card: dark ? 'border-amber-500/40 bg-amber-900/10' : 'border-amber-200 bg-amber-50',
+                badge: dark ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-amber-100 text-amber-600 border-amber-200',
+                icon: dark ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-500' },
+      Low:    { card: dark ? 'border-slate-600/40 bg-slate-800/30' : 'border-slate-200 bg-slate-50',
+                badge: dark ? 'bg-slate-600/40 text-slate-400 border-slate-600/30' : 'bg-slate-100 text-slate-500 border-slate-200',
+                icon: dark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500' },
+    });
+
+    const statusStyle = (st) => st === 'Resolved'
+      ? dark ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-emerald-100 text-emerald-600 border-emerald-200'
+      : st === 'Under Review'
+        ? dark ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-blue-100 text-blue-600 border-blue-200'
+        : dark ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' : 'bg-orange-100 text-orange-600 border-orange-200';
 
     return (
       <div className="space-y-5">
-        <SectionCard title="Violations / Disciplinary Records" icon="⚠️">
-          {!s ? <EmptyState icon="⚠️" title="No profile linked." /> :
-           s.violations?.length > 0 ? (
-            <div className="space-y-4">
-              {s.violations.map(v => (
-                <div key={v.id} className={`border p-4 rounded-xl ${v.severity_level === 'High' ? 'border-red-800/50 bg-red-900/20' : v.severity_level === 'Medium' ? 'border-yellow-800/50 bg-yellow-900/20' : 'border-slate-700 bg-slate-800/30'}`}>
-                  <div className="flex justify-between items-start mb-2 gap-2">
-                    <div>
-                      <h4 className="font-bold text-sm text-slate-100">{v.violation_type}</h4>
-                      <p className="text-xs text-slate-400 mt-0.5">Reported: {fmt(v.date_reported)} by {v.reported_by || '—'}</p>
-                    </div>
-                    <span className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider shrink-0 ${v.severity_level === 'High' ? 'bg-red-900/60 text-red-300' : v.severity_level === 'Medium' ? 'bg-yellow-900/60 text-yellow-300' : 'bg-slate-700 text-slate-300'}`}>{v.severity_level}</span>
-                  </div>
-                  <p className="text-sm text-slate-300 mb-3">{v.description}</p>
-                  <div className="p-3 rounded-lg border border-slate-700 bg-slate-900/50 text-sm">
-                    <p className="font-semibold text-xs uppercase text-slate-400 mb-1">Action Taken</p>
-                    <p className="text-slate-400 mb-2">{v.action_taken || 'Pending'}</p>
-                    <div className="flex justify-between items-center text-xs border-t border-slate-700 pt-2 text-slate-500">
-                      <span>Status: <strong className={v.status === 'Resolved' ? 'text-green-400' : 'text-yellow-400'}>{v.status}</strong></span>
-                      <span>Resolution: {v.resolution_date ? fmt(v.resolution_date) : 'N/A'}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <div className="w-16 h-16 rounded-full bg-green-900/30 flex items-center justify-center mb-3">
-                <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+
+        {/* ── Header banner ── */}
+        <div className={`relative overflow-hidden rounded-2xl border p-5 ${
+          !s || viols.length === 0
+            ? dark ? 'bg-gradient-to-br from-emerald-600/15 to-slate-900/0 border-emerald-500/20' : 'bg-gradient-to-br from-emerald-50 to-white border-emerald-100'
+            : highCount > 0
+              ? dark ? 'bg-gradient-to-br from-red-600/15 to-slate-900/0 border-red-500/20' : 'bg-gradient-to-br from-red-50 to-white border-red-100'
+              : dark ? 'bg-gradient-to-br from-amber-600/15 to-slate-900/0 border-amber-500/20' : 'bg-gradient-to-br from-amber-50 to-white border-amber-100'
+        }`}>
+          <div className="absolute right-0 top-0 w-48 h-48 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none opacity-30"
+            style={{ background: viols.length === 0 ? '#10b981' : highCount > 0 ? '#ef4444' : '#f59e0b' }} />
+          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg ${
+                viols.length === 0 ? dark ? 'bg-emerald-500/20' : 'bg-emerald-100'
+                : highCount > 0 ? dark ? 'bg-red-500/20' : 'bg-red-100'
+                : dark ? 'bg-amber-500/20' : 'bg-amber-100'
+              }`}>
+                {viols.length === 0 ? '✅' : highCount > 0 ? '🚨' : '⚠️'}
               </div>
-              <h4 className="text-base font-bold text-green-300 mb-1">Clean Record</h4>
-              <p className="text-sm text-green-500">You have no recorded violations.</p>
+              <div>
+                <h2 className={`text-lg font-black ${dark ? 'text-white' : 'text-slate-800'}`}>Disciplinary Records</h2>
+                <p className={`text-xs mt-0.5 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {viols.length === 0 ? 'No violations on record' : `${viols.length} total · ${unresolved.length} unresolved`}
+                </p>
+              </div>
             </div>
-          )}
-        </SectionCard>
-        <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700/40 text-xs text-slate-500 flex items-start gap-2">
-          <svg className="w-4 h-4 text-slate-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          Violation records are managed by the administration. Contact your department for any concerns.
+            {/* Summary pills */}
+            {viols.length > 0 && (
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { label: 'Total',      val: viols.length,      c: dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600' },
+                  { label: 'Unresolved', val: unresolved.length, c: unresolved.length > 0 ? dark ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-red-100 text-red-600' : dark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500' },
+                  { label: 'Resolved',   val: resolved.length,   c: dark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-600' },
+                ].map(p => (
+                  <div key={p.label} className={`px-3 py-1.5 rounded-xl text-center ${p.c}`}>
+                    <p className="text-base font-black leading-none">{p.val}</p>
+                    <p className="text-[9px] font-semibold uppercase tracking-wide mt-0.5">{p.label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {!s ? <EmptyState icon="⚠️" title="No profile linked." /> : (
+          <>
+            {viols.length === 0 ? (
+              /* ── Clean record ── */
+              <div className={`rounded-2xl border-2 border-dashed p-12 text-center ${dark ? 'border-emerald-700/40' : 'border-emerald-200'}`}>
+                <div className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center mb-4 ${dark ? 'bg-emerald-500/15' : 'bg-emerald-100'}`}>
+                  <svg className="w-10 h-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <h3 className={`text-lg font-black mb-1 ${dark ? 'text-emerald-300' : 'text-emerald-700'}`}>Clean Record</h3>
+                <p className={`text-sm ${dark ? 'text-emerald-500/70' : 'text-emerald-600/70'}`}>You have no recorded violations. Keep up the good conduct!</p>
+              </div>
+            ) : (
+              <>
+                {/* ── Filter tabs ── */}
+                <div className="flex gap-2 flex-wrap">
+                  {['All', 'Unresolved', 'Pending', 'Under Review', 'Resolved'].map(f => (
+                    <button key={f} onClick={() => setFilter(f)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${filter === f
+                        ? 'bg-brand-500 text-white border-brand-500 shadow-md'
+                        : dark ? 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>
+                      {f}
+                      {f === 'Unresolved' && unresolved.length > 0 && (
+                        <span className="ml-1.5 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">{unresolved.length}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* ── Violation cards ── */}
+                {filtered.length === 0 ? (
+                  <EmptyState icon="🔍" title="No records match this filter." sub="Try a different filter above." />
+                ) : (
+                  <div className="space-y-4">
+                    {filtered.map((v, idx) => {
+                      const ss = sevStyle(v.severity_level) ?? sevStyle('Low');
+                      return (
+                        <div key={v.id} className={`rounded-2xl border overflow-hidden transition-all hover:shadow-md ${ss.card} ${dark ? 'hover:shadow-slate-900/40' : 'hover:shadow-slate-200/80'}`}>
+                          {/* Card header */}
+                          <div className={`flex items-start justify-between gap-3 px-5 py-4 border-b ${dark ? 'border-white/5' : 'border-black/5'}`}>
+                            <div className="flex items-start gap-3 min-w-0">
+                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${ss.icon}`}>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h4 className={`font-bold text-sm ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{v.violation_type}</h4>
+                                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${ss.badge}`}>{v.severity_level}</span>
+                                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${statusStyle(v.status)}`}>{v.status}</span>
+                                </div>
+                                <p className={`text-xs mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+                                  Reported {fmt(v.date_reported)}{v.reported_by ? ` · by ${v.reported_by}` : ''}
+                                </p>
+                              </div>
+                            </div>
+                            <span className={`text-[10px] font-bold shrink-0 ${dark ? 'text-slate-600' : 'text-slate-300'}`}>#{String(idx + 1).padStart(2, '0')}</span>
+                          </div>
+
+                          {/* Card body */}
+                          <div className="px-5 py-4 space-y-3">
+                            {v.description && (
+                              <div>
+                                <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Description</p>
+                                <p className={`text-sm leading-relaxed ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{v.description}</p>
+                              </div>
+                            )}
+
+                            {/* Action taken box */}
+                            <div className={`rounded-xl p-3.5 border ${dark ? 'bg-slate-900/50 border-slate-700/50' : 'bg-white/70 border-slate-200'}`}>
+                              <p className={`text-[10px] font-bold uppercase tracking-wider mb-1.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Action Taken</p>
+                              <p className={`text-sm ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{v.action_taken || 'No action recorded yet.'}</p>
+                            </div>
+
+                            {/* Footer meta */}
+                            <div className={`flex flex-wrap items-center justify-between gap-3 pt-1 text-xs border-t ${dark ? 'border-slate-700/40 text-slate-500' : 'border-slate-200 text-slate-400'}`}>
+                              <div className="flex items-center gap-1.5">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Status: <span className={`font-bold ${v.status === 'Resolved' ? 'text-emerald-400' : v.status === 'Under Review' ? 'text-blue-400' : 'text-orange-400'}`}>{v.status}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                Resolution: <span className={`font-semibold ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{v.resolution_date ? fmt(v.resolution_date) : 'Pending'}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+
+        {/* ── Admin notice ── */}
+        <div className={`flex items-start gap-3 p-4 rounded-xl border text-xs ${dark ? 'bg-slate-800/40 border-slate-700/40 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+          <svg className={`w-4 h-4 shrink-0 mt-0.5 ${dark ? 'text-slate-600' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span>Violation records are managed by the administration. Contact your department or guidance office for any concerns or disputes.</span>
         </div>
       </div>
     );
