@@ -25,9 +25,8 @@ const Sidebar = ({ currentModule, setCurrentModule, user, onLogout }) => {
     : 'AD';
 
   return (
-    /* Fixed sidebar — doesn't affect layout flow, no reflow glitch */
     <aside
-      className={`fixed inset-y-0 left-0 z-50 flex flex-col h-full border-r transition-all duration-300 ease-in-out ${
+      className={`relative z-50 flex flex-col h-full border-r transition-all duration-300 ease-in-out shrink-0 ${
         expanded ? 'w-64 shadow-2xl shadow-slate-900/50' : 'w-16'
       } ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}
       onMouseEnter={() => setHovered(true)}
