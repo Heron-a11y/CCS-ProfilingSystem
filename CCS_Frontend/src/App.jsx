@@ -27,7 +27,6 @@ const getStoredUser = () => {
 /* ── Admin layout — keeps all existing sidebar/topnav design ── */
 function AdminLayout({ user, onLogout }) {
   const [currentModule, setCurrentModule] = useState('student');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem('adminDarkMode') === 'true'
   );
@@ -46,12 +45,10 @@ function AdminLayout({ user, onLogout }) {
         <Sidebar
           currentModule={currentModule}
           setCurrentModule={setCurrentModule}
-          isOpen={isSidebarOpen}
-          setIsOpen={setIsSidebarOpen}
           user={user}
           onLogout={onLogout}
         />
-        <div className={`flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-16'}`}>
+        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
           <Topnav currentModule={currentModule} darkMode={darkMode} onToggleDark={handleToggleDark} />
           <main className={`flex-1 overflow-x-hidden overflow-y-auto p-8 transition-colors duration-300 ${darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className="max-w-7xl mx-auto space-y-6 h-full">
