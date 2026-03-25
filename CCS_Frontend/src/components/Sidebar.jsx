@@ -26,7 +26,7 @@ const Sidebar = ({ currentModule, setCurrentModule, user, onLogout }) => {
 
   return (
     <aside
-      className={`relative z-50 flex flex-col h-full border-r transition-all duration-300 ease-in-out shrink-0 ${
+      className={`fixed inset-y-0 left-0 z-50 flex flex-col h-full border-r transition-all duration-300 ease-in-out ${
         expanded ? 'w-64 shadow-2xl shadow-slate-900/50' : 'w-16'
       } ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}
       onMouseEnter={() => setHovered(true)}
