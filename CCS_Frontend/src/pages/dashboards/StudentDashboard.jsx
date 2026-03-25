@@ -2221,12 +2221,12 @@ const StudentDashboard = ({ user, onLogout }) => {
         {pending.length > 0 && (
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'High Priority',   val: highCount,                                    c: dark ? 'border-red-500/30 bg-red-900/10' : 'border-red-200 bg-red-50',     tc: 'text-red-400',    icon: '🔴' },
-              { label: 'Medium Priority', val: mediumCount,                                  c: dark ? 'border-amber-500/30 bg-amber-900/10' : 'border-amber-200 bg-amber-50', tc: 'text-amber-400',  icon: '🟡' },
-              { label: 'Low Priority',    val: pending.filter(t => t.priority === 'Low').length, c: dark ? 'border-slate-600/40 bg-slate-800' : 'border-slate-200 bg-slate-50', tc: dark ? 'text-slate-400' : 'text-slate-500', icon: '🟢' },
+              { label: 'High Priority',   val: highCount,                                        c: dark ? 'border-red-500/30 bg-red-900/10' : 'border-red-200 bg-red-50',         tc: 'text-red-400',    Icon: ExclamationCircleIcon },
+              { label: 'Medium Priority', val: mediumCount,                                      c: dark ? 'border-amber-500/30 bg-amber-900/10' : 'border-amber-200 bg-amber-50', tc: 'text-amber-400',  Icon: ExclamationCircleIcon },
+              { label: 'Low Priority',    val: pending.filter(t => t.priority === 'Low').length, c: dark ? 'border-slate-600/40 bg-slate-800' : 'border-slate-200 bg-slate-50',   tc: dark ? 'text-slate-400' : 'text-slate-500', Icon: CheckCircleIcon },
             ].map(p => (
               <div key={p.label} className={`rounded-xl border p-3 text-center ${p.c}`}>
-                <p className="text-lg mb-1">{p.icon}</p>
+                <p.Icon className={`w-6 h-6 mx-auto mb-1 ${p.tc}`} />
                 <p className={`text-2xl font-black ${p.tc}`}>{p.val}</p>
                 <p className={`text-[10px] font-semibold uppercase tracking-wide mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{p.label}</p>
               </div>
