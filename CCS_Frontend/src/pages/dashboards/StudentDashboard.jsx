@@ -1015,7 +1015,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                 ))}
                 {pendingTasks.length === 0 && (
                   <div className="text-center py-4">
-                    <span className="text-3xl">🎉</span>
+                    <CheckCircleIcon className="w-8 h-8 text-emerald-400" />
                     <p className={`text-xs mt-1 font-semibold ${dark ? 'text-emerald-400' : 'text-emerald-600'}`}>All tasks done!</p>
                   </div>
                 )}
@@ -1394,7 +1394,7 @@ const StudentDashboard = ({ user, onLogout }) => {
           <EmptyState icon="📚" title="No profile linked." />
         ) : sortedYears.length === 0 ? (
           <div className={`rounded-2xl border p-12 flex flex-col items-center justify-center text-center ${dark ? 'bg-slate-900/60 border-slate-700/50' : 'bg-white border-slate-200'}`}>
-            <span className="text-5xl mb-3">📋</span>
+            <ClipboardDocumentListIcon className="w-16 h-16 mb-3 text-slate-300" />
             <p className={`text-sm font-semibold ${dark ? 'text-slate-300' : 'text-slate-600'}`}>No academic records yet.</p>
             <p className={`text-xs mt-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Your records will appear here once added by the administration.</p>
           </div>
@@ -1561,7 +1561,9 @@ const StudentDashboard = ({ user, onLogout }) => {
 
         <div className={`rounded-2xl border p-5 flex items-center justify-between gap-4 ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${dark ? 'bg-brand-500/15' : 'bg-brand-50'}`}>💡</div>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${dark ? 'bg-brand-500/15' : 'bg-brand-50'}`}>
+              <LightBulbIcon className="w-5 h-5 text-brand-500" />
+            </div>
             <div>
               <h2 className={`font-black text-base ${dark ? 'text-slate-100' : 'text-slate-800'}`}>Skills & Certifications</h2>
               <p className={`text-xs mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -1581,7 +1583,7 @@ const StudentDashboard = ({ user, onLogout }) => {
 
         {!s ? <EmptyState icon="🛠️" title="No profile linked." /> : s.skills?.length === 0 ? (
           <div className={`rounded-2xl border-2 border-dashed flex flex-col items-center justify-center py-16 gap-3 ${dark ? 'border-slate-700 bg-slate-800/30' : 'border-slate-200 bg-slate-50'}`}>
-            <div className="text-5xl">🛠️</div>
+            <WrenchScrewdriverIcon className="w-14 h-14 text-slate-300" />
             <p className={`font-bold text-sm ${dark ? 'text-slate-400' : 'text-slate-600'}`}>No skills recorded yet</p>
             <p className={`text-xs ${dark ? 'text-slate-600' : 'text-slate-400'}`}>Click "Manage Skills" to add your academic and non-academic skills.</p>
             <button onClick={() => setModal(true)}
@@ -1643,7 +1645,9 @@ const StudentDashboard = ({ user, onLogout }) => {
           <div className="absolute right-0 top-0 w-48 h-48 bg-purple-500/10 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
           <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg ${dark ? 'bg-purple-500/20' : 'bg-purple-100'}`}>🏛️</div>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${dark ? 'bg-purple-500/20' : 'bg-purple-100'}`}>
+                <BuildingLibraryIcon className="w-6 h-6 text-purple-500" />
+              </div>
               <div>
                 <h2 className={`text-lg font-black ${dark ? 'text-white' : 'text-slate-800'}`}>My Affiliations</h2>
                 <p className={`text-xs mt-0.5 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>Organizations, clubs & extracurricular memberships</p>
@@ -1697,7 +1701,7 @@ const StudentDashboard = ({ user, onLogout }) => {
               <EmptyState icon="🔍" title="No results found." sub="Try adjusting your search or filter." />
             ) : filtered.length === 0 ? (
               <div className={`rounded-2xl border-2 border-dashed p-12 text-center ${dark ? 'border-slate-700' : 'border-slate-200'}`}>
-                <div className="text-5xl mb-3">🏛️</div>
+                <BuildingLibraryIcon className="w-14 h-14 mb-3 text-slate-300" />
                 <h3 className={`text-base font-bold mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>No affiliations yet</h3>
                 <p className={`text-sm mb-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Add your organizations, clubs, and extracurricular memberships.</p>
                 {s && <AddBtn onClick={() => setModal('add')} label="Add Your First Affiliation" />}
@@ -2004,7 +2008,9 @@ const StudentDashboard = ({ user, onLogout }) => {
           <div className="absolute left-1/3 bottom-0 w-40 h-40 bg-purple-500/10 rounded-full translate-y-1/2 blur-2xl pointer-events-none" />
           <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
             <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold shadow-xl shrink-0">🎓</div>
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center shadow-xl shrink-0">
+                <AcademicCapIcon className="w-8 h-8 text-white" />
+              </div>
               <div>
                 <p className={`text-xs font-semibold uppercase tracking-widest mb-0.5 ${dark ? 'text-blue-400' : 'text-blue-600'}`}>AY 2025–2026 · 1st Semester</p>
                 <div className="flex items-end gap-3">
@@ -2169,7 +2175,9 @@ const StudentDashboard = ({ user, onLogout }) => {
           <div className="absolute right-0 top-0 w-48 h-48 bg-brand-500/10 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
           <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg ${dark ? 'bg-brand-500/20' : 'bg-orange-100'}`}>📋</div>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${dark ? 'bg-brand-500/20' : 'bg-orange-100'}`}>
+                <ClipboardDocumentCheckIcon className="w-6 h-6 text-brand-500" />
+              </div>
               <div>
                 <h2 className={`text-lg font-black ${dark ? 'text-white' : 'text-slate-800'}`}>My Pending Tasks</h2>
                 <p className={`text-xs mt-0.5 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -2243,7 +2251,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         {/* ── Task list ── */}
         {filtered.length === 0 ? (
           <div className={`rounded-2xl border-2 border-dashed p-10 text-center ${dark ? 'border-slate-700' : 'border-slate-200'}`}>
-            <div className="text-4xl mb-2">🎉</div>
+            <CheckCircleIcon className="w-10 h-10 mb-2 text-emerald-400" />
             <p className={`text-sm font-bold ${dark ? 'text-emerald-300' : 'text-emerald-600'}`}>
               {filter === 'Completed' ? 'No completed tasks yet.' : 'All tasks done!'}
             </p>
@@ -2404,7 +2412,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                   <div className="max-h-80 overflow-y-auto">
                     {notifications.length === 0 ? (
                       <div className="py-10 text-center">
-                        <div className="text-3xl mb-2">🔔</div>
+                        <BellIcon className="w-8 h-8 mb-2 text-slate-400" />
                         <p className={`text-sm ${dark ? 'text-slate-500' : 'text-slate-400'}`}>No notifications yet</p>
                       </div>
                     ) : notifications.map(n => (
