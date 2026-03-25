@@ -11,9 +11,9 @@ import {
   CheckCircleIcon, ExclamationCircleIcon, ClockIcon,
   CameraIcon, BuildingOfficeIcon, UserGroupIcon,
   ShieldExclamationIcon, DocumentTextIcon, CalendarIcon,
-  ArrowRightIcon, FunnelIcon,
-  PhoneIcon, HeartIcon, IdentificationIcon, AcademicCapIcon as GraduationIcon,
-  BookmarkIcon, WrenchScrewdriverIcon, TrophyIcon,
+  ArrowRightIcon, FunnelIcon, PhoneIcon, HeartIcon,
+  IdentificationIcon, BookmarkIcon, WrenchScrewdriverIcon,
+  TrophyIcon, MegaphoneIcon, LinkIcon, ChartBarIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
@@ -81,11 +81,13 @@ const Spinner = () => {
   );
 };
 
-const EmptyState = ({ icon, title, sub }) => {
+const EmptyState = ({ Icon: EmptyIcon, icon, title, sub }) => {
   const dark = useTheme();
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <span className="text-5xl mb-3">{icon}</span>
+      {EmptyIcon
+        ? <EmptyIcon className={`w-14 h-14 mb-3 ${dark ? 'text-slate-600' : 'text-slate-300'}`} />
+        : <span className="text-5xl mb-3">{icon}</span>}
       <p className={`text-sm font-semibold ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{title}</p>
       {sub && <p className={`text-xs mt-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{sub}</p>}
     </div>
@@ -2026,12 +2028,12 @@ const StudentDashboard = ({ user, onLogout }) => {
             {/* Stats pills */}
             <div className="flex gap-3 flex-wrap">
               {[
-                { label: 'Total Units', val: totalUnits, icon: '📚' },
-                { label: 'Subjects',    val: GRADES.length, icon: '📖' },
-                { label: 'Passed',      val: numericGrades.filter(n => n <= 3.0).length, icon: '✅' },
+                { label: 'Total Units', val: totalUnits,                                    Icon: BookOpenIcon,              iconCls: 'text-brand-500' },
+                { label: 'Subjects',    val: GRADES.length,                                 Icon: BookmarkIcon,              iconCls: 'text-blue-500'  },
+                { label: 'Passed',      val: numericGrades.filter(n => n <= 3.0).length,    Icon: CheckCircleIcon,           iconCls: 'text-emerald-500' },
               ].map(p => (
                 <div key={p.label} className={`px-4 py-3 rounded-xl border text-center min-w-[72px] ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white/80 border-slate-200 shadow-sm'}`}>
-                  <p className="text-lg mb-0.5">{p.icon}</p>
+                  <p.Icon className={`w-5 h-5 mx-auto mb-0.5 ${p.iconCls}`} />
                   <p className={`text-xl font-black leading-none ${dark ? 'text-white' : 'text-slate-800'}`}>{p.val}</p>
                   <p className={`text-[10px] font-semibold uppercase tracking-wide mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{p.label}</p>
                 </div>
@@ -2417,7 +2419,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                     ) : notifications.map(n => (
                       <button key={n.id} onClick={() => { setActive(n.nav); setNotifOpen(false); }}
                         className={`w-full text-left flex items-start gap-3 px-4 py-3 border-b transition-colors ${dark ? 'border-slate-800 hover:bg-slate-800' : 'border-slate-50 hover:bg-slate-50'}`}>
-                        <span className="text-lg shrink-0 mt-0.5">{n.icon}</span>
+                        <n.Icon className={`w-5 h-5 shrink-0 mt-0.5 ${n.iconCls}`} />
                         <div className="flex-1 min-w-0">
                           <p className={`text-xs font-semibold ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{n.title}</p>
                           <p className={`text-xs mt-0.5 truncate ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{n.body}</p>
