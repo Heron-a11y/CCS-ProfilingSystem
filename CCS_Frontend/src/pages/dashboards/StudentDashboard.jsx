@@ -1960,54 +1960,179 @@ const StudentDashboard = ({ user, onLogout }) => {
      PANEL: GRADES
   ════════════════════════════════ */
   const GradesPanel = () => {
-    const avg = (GRADES.map(g => parseFloat(g.midterm)).reduce((a, b) => a + b, 0) / GRADES.length).toFixed(2);
+    const [activeTerm, setActiveTerm] = useState('Midterm');
+    const terms = ['Prelim', 'Midterm', 'Final'];
+
+    // GPA helpers — lower is better (Philippine grading)
+    const numericGrades = GRADES.map(g => parseFloat(g[activeTerm.toLowerCase()])).filter(n => !isNaN(n));
+    const avg = numericGrades.length ? (numericGrades.reduce((a, b) => a + b, 0) / numericGrades.length).toFixed(2) : '—';
+    const totalUnits = GRADES.reduce((a, g) => a + g.units, 0);
+
+    const standing = (gpa) => {
+      const n = parseFloat(gpa);
+      if (isNaN(n)) return { label: 'N/A', color: dark ? 'text-slate-400' : 'text-slate-500' };
+      if (n <= 1.25) return { label: "Dean's List", color: 'text-amber-400' };
+      if (n <= 1.75) return { label: 'Good Standing', color: 'text-emerald-400' };
+      if (n <= 2.50) return { label: 'Satisfactory', color: 'text-blue-400' };
+      return { label: 'Needs Improvement', color: 'text-red-400' };
+    };
+
+    const gradeColor = (val) => {
+      const n = parseFloat(val);
+      if (isNaN(n) || val === '—') return dark ? 'text-slate-500' : 'text-slate-400';
+      if (n <= 1.25) return 'text-amber-400';
+      if (n <= 1.75) return 'text-emerald-400';
+      if (n <= 2.50) return dark ? 'text-blue-300' : 'text-blue-600';
+      if (n <= 3.00) return dark ? 'text-orange-300' : 'text-orange-500';
+      return 'text-red-400';
+    };
+
+    const st = standing(avg);
+
     return (
-      <div className="space-y-6">
-        <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/10 border border-blue-500/20 p-5 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-xl font-bold shadow-lg">🎓</div>
-          <div>
-            <p className="text-slate-400 text-xs">Current Semester GPA (Midterm avg.)</p>
-            <h2 className="text-3xl font-bold text-white">{avg}</h2>
-            <p className="text-emerald-400 text-xs mt-0.5">Good Standing</p>
+      <div className="space-y-5">
+
+        {/* ── Hero GPA banner ── */}
+        <div className={`relative overflow-hidden rounded-2xl border p-6 ${dark ? 'bg-gradient-to-br from-blue-600/20 via-purple-600/10 to-slate-900/0 border-blue-500/20' : 'bg-gradient-to-br from-blue-50 via-purple-50 to-white border-blue-100'}`}>
+          <div className="absolute right-0 top-0 w-56 h-56 bg-blue-500/10 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
+          <div className="absolute left-1/3 bottom-0 w-40 h-40 bg-purple-500/10 rounded-full translate-y-1/2 blur-2xl pointer-events-none" />
+          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold shadow-xl shrink-0">🎓</div>
+              <div>
+                <p className={`text-xs font-semibold uppercase tracking-widest mb-0.5 ${dark ? 'text-blue-400' : 'text-blue-600'}`}>AY 2025–2026 · 1st Semester</p>
+                <div className="flex items-end gap-3">
+                  <h2 className={`text-5xl font-black leading-none ${dark ? 'text-white' : 'text-slate-800'}`}>{avg}</h2>
+                  <div className="pb-1">
+                    <p className={`text-xs font-semibold ${dark ? 'text-slate-400' : 'text-slate-500'}`}>GPA ({activeTerm})</p>
+                    <p className={`text-sm font-bold ${st.color}`}>{st.label}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Stats pills */}
+            <div className="flex gap-3 flex-wrap">
+              {[
+                { label: 'Total Units', val: totalUnits, icon: '📚' },
+                { label: 'Subjects',    val: GRADES.length, icon: '📖' },
+                { label: 'Passed',      val: numericGrades.filter(n => n <= 3.0).length, icon: '✅' },
+              ].map(p => (
+                <div key={p.label} className={`px-4 py-3 rounded-xl border text-center min-w-[72px] ${dark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white/80 border-slate-200 shadow-sm'}`}>
+                  <p className="text-lg mb-0.5">{p.icon}</p>
+                  <p className={`text-xl font-black leading-none ${dark ? 'text-white' : 'text-slate-800'}`}>{p.val}</p>
+                  <p className={`text-[10px] font-semibold uppercase tracking-wide mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{p.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="rounded-2xl bg-slate-800/50 border border-slate-700/40 overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-700/60">
-            <h3 className="font-bold text-slate-200">Grade Report — AY 2025–2026, 1st Semester</h3>
+
+        {/* ── Grade legend ── */}
+        <div className={`flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border text-xs ${dark ? 'bg-slate-800/40 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
+          <span className={`font-bold uppercase tracking-wider ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Grade Scale:</span>
+          {[
+            { range: '1.00–1.25', label: "Dean's List", c: 'text-amber-400' },
+            { range: '1.50–1.75', label: 'Good Standing', c: 'text-emerald-400' },
+            { range: '2.00–2.50', label: 'Satisfactory', c: dark ? 'text-blue-300' : 'text-blue-600' },
+            { range: '2.75–3.00', label: 'Passing', c: dark ? 'text-orange-300' : 'text-orange-500' },
+            { range: '5.00', label: 'Failed', c: 'text-red-400' },
+          ].map(l => (
+            <span key={l.range} className={`flex items-center gap-1 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <span className={`font-bold ${l.c}`}>{l.range}</span> — {l.label}
+            </span>
+          ))}
+        </div>
+
+        {/* ── Grade table ── */}
+        <div className={`rounded-2xl border overflow-hidden ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
+          {/* Table header */}
+          <div className={`flex items-center justify-between px-5 py-4 border-b ${dark ? 'border-slate-700/60 bg-slate-900/50' : 'border-slate-100 bg-slate-50'}`}>
+            <div>
+              <h3 className={`font-bold text-sm ${dark ? 'text-slate-200' : 'text-slate-700'}`}>Grade Report — AY 2025–2026, 1st Semester</h3>
+              <p className={`text-xs mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Bachelor of Science in Information Technology</p>
+            </div>
+            {/* Term switcher */}
+            <div className={`flex rounded-xl overflow-hidden border ${dark ? 'border-slate-700' : 'border-slate-200'}`}>
+              {terms.map(t => (
+                <button key={t} onClick={() => setActiveTerm(t)}
+                  className={`px-3 py-1.5 text-xs font-semibold transition-all ${activeTerm === t
+                    ? 'bg-brand-500 text-white'
+                    : dark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-900/60 text-slate-500 text-xs uppercase tracking-wider">
-                  <th className="px-5 py-3 text-left font-semibold">Subject</th>
-                  <th className="px-5 py-3 text-left font-semibold hidden md:table-cell">Title</th>
-                  <th className="px-5 py-3 text-center font-semibold">Units</th>
-                  <th className="px-5 py-3 text-center font-semibold">Prelim</th>
-                  <th className="px-5 py-3 text-center font-semibold">Midterm</th>
-                  <th className="px-5 py-3 text-center font-semibold">Final</th>
+                <tr className={`text-xs uppercase tracking-wider border-b ${dark ? 'bg-slate-900/40 border-slate-700/40 text-slate-500' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
+                  <th className="px-5 py-3 text-left font-bold">Subject</th>
+                  <th className="px-5 py-3 text-left font-bold hidden md:table-cell">Title</th>
+                  <th className="px-5 py-3 text-center font-bold">Units</th>
+                  <th className="px-5 py-3 text-center font-bold">Prelim</th>
+                  <th className="px-5 py-3 text-center font-bold">Midterm</th>
+                  <th className="px-5 py-3 text-center font-bold">Final</th>
+                  <th className="px-5 py-3 text-center font-bold">Remarks</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/40">
-                {GRADES.map(g => (
-                  <tr key={g.subject} className="hover:bg-slate-700/20 transition-colors">
-                    <td className="px-5 py-3.5 font-bold text-brand-400">{g.subject}</td>
-                    <td className="px-5 py-3.5 text-slate-300 hidden md:table-cell text-xs">{g.title}</td>
-                    <td className="px-5 py-3.5 text-center text-slate-400">{g.units}</td>
-                    <td className="px-5 py-3.5 text-center font-semibold text-slate-200">{g.prelim}</td>
-                    <td className="px-5 py-3.5 text-center font-semibold text-slate-200">{g.midterm}</td>
-                    <td className="px-5 py-3.5 text-center text-slate-500 italic">{g.final}</td>
-                  </tr>
-                ))}
+              <tbody className={`divide-y ${dark ? 'divide-slate-700/30' : 'divide-slate-100'}`}>
+                {GRADES.map(g => {
+                  const activeVal = g[activeTerm.toLowerCase()];
+                  const isPassed = parseFloat(activeVal) <= 3.0;
+                  const isFailed = parseFloat(activeVal) > 3.0;
+                  const isPending = activeVal === '—';
+                  return (
+                    <tr key={g.subject} className={`transition-colors group ${dark ? 'hover:bg-slate-700/20' : 'hover:bg-blue-50/50'}`}>
+                      <td className="px-5 py-4">
+                        <span className={`font-black text-sm ${dark ? 'text-brand-400' : 'text-brand-600'}`}>{g.subject}</span>
+                      </td>
+                      <td className={`px-5 py-4 hidden md:table-cell text-xs ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{g.title}</td>
+                      <td className="px-5 py-4 text-center">
+                        <span className={`font-bold text-xs px-2 py-0.5 rounded-full ${dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{g.units}</span>
+                      </td>
+                      {['prelim', 'midterm', 'final'].map(term => (
+                        <td key={term} className="px-5 py-4 text-center">
+                          <span className={`font-bold text-sm ${gradeColor(g[term])}`}>
+                            {g[term] === '—' ? <span className={`text-xs italic ${dark ? 'text-slate-600' : 'text-slate-300'}`}>—</span> : g[term]}
+                          </span>
+                        </td>
+                      ))}
+                      <td className="px-5 py-4 text-center">
+                        {isPending
+                          ? <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${dark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400'}`}>Pending</span>
+                          : isPassed
+                            ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Passed</span>
+                            : <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">Failed</span>}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
               <tfoot>
-                <tr className="bg-slate-900/40 border-t border-slate-700/60">
-                  <td colSpan={2} className="px-5 py-3 font-bold text-slate-300 text-xs uppercase">Total Units</td>
-                  <td className="px-5 py-3 text-center font-bold text-brand-400">{GRADES.reduce((a, g) => a + g.units, 0)}</td>
-                  <td colSpan={3} />
+                <tr className={`border-t ${dark ? 'bg-slate-900/40 border-slate-700/60' : 'bg-slate-50 border-slate-200'}`}>
+                  <td className={`px-5 py-3.5 font-black text-xs uppercase tracking-wider ${dark ? 'text-slate-300' : 'text-slate-600'}`}>Total</td>
+                  <td className="hidden md:table-cell" />
+                  <td className="px-5 py-3.5 text-center">
+                    <span className={`font-black text-sm ${dark ? 'text-brand-400' : 'text-brand-600'}`}>{totalUnits} units</span>
+                  </td>
+                  <td colSpan={3} className={`px-5 py-3.5 text-center text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+                    {activeTerm} GPA: <span className={`font-black text-base ml-1 ${gradeColor(avg)}`}>{avg}</span>
+                  </td>
+                  <td className="px-5 py-3.5 text-center">
+                    <span className={`text-xs font-bold ${st.color}`}>{st.label}</span>
+                  </td>
                 </tr>
               </tfoot>
             </table>
           </div>
+        </div>
+
+        {/* ── Notice ── */}
+        <div className={`flex items-start gap-3 p-4 rounded-xl border text-xs ${dark ? 'bg-amber-900/20 border-amber-500/30 text-amber-300' : 'bg-amber-50 border-amber-300 text-amber-700'}`}>
+          <svg className={`w-4 h-4 shrink-0 mt-0.5 ${dark ? 'text-amber-400' : 'text-amber-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span>Grades shown are for reference only. Official grades are released by the Registrar's Office. Contact your instructor for any grade concerns.</span>
         </div>
       </div>
     );
