@@ -35,8 +35,8 @@ const ErrMsg = ({msg}) => msg ? <div className="mb-4 p-3 rounded-xl bg-red-900/3
 const SectionCard = ({title,icon,action,children}) => {
   const dark=useTheme();
   return (
-    <div className={`rounded-2xl border overflow-hidden ${dark?'bg-slate-800/50 border-slate-700/40':'bg-white border-slate-200 shadow-sm'}`}>
-      <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark?'border-slate-700/40 bg-slate-900/50':'border-slate-100 bg-slate-50'}`}>
+    <div className={`rounded-2xl border overflow-hidden ${dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-200 shadow-sm'}`}>
+      <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark?'border-slate-700/60 bg-slate-900':'border-slate-100 bg-slate-50'}`}>
         <div className="flex items-center gap-2.5"><span className="text-base">{icon}</span><h4 className="text-xs font-bold uppercase tracking-widest text-brand-500">{title}</h4></div>
         {action}
       </div>
@@ -87,14 +87,14 @@ const FModal = ({title,onClose,children,footer,wide}) => {
   const dark=useTheme();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className={`absolute inset-0 backdrop-blur-sm ${dark?'bg-slate-950/80':'bg-slate-900/40'}`} onClick={onClose}/>
+      <div className={`absolute inset-0 backdrop-blur-sm ${dark?'bg-slate-950':'bg-slate-900'}`} onClick={onClose}/>
       <div className={`relative w-full border rounded-2xl shadow-2xl flex flex-col max-h-[90vh] ${wide?'max-w-3xl':'max-w-2xl'} ${dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-200'}`}>
         <div className={`flex items-center justify-between px-6 py-5 border-b ${dark?'border-slate-700/60':'border-slate-100'}`}>
           <h3 className={`text-base font-bold ${dark?'text-slate-100':'text-slate-800'}`}>{title}</h3>
           <button onClick={onClose} className={`transition-colors ${dark?'text-slate-500 hover:text-slate-300':'text-slate-400 hover:text-slate-600'}`}><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
         </div>
         <div className="overflow-y-auto flex-1 px-6 py-5">{children}</div>
-        {footer&&<div className={`px-6 py-4 border-t flex justify-end gap-3 ${dark?'border-slate-700/60 bg-slate-900/80':'border-slate-100 bg-slate-50'}`}>{footer}</div>}
+        {footer&&<div className={`px-6 py-4 border-t flex justify-end gap-3 ${dark?'border-slate-700/60 bg-slate-900':'border-slate-100 bg-slate-50'}`}>{footer}</div>}
       </div>
     </div>
   );
@@ -149,7 +149,7 @@ const DashboardPanel = ({user,initials,subjectsCount,studentsCount,schedulesCoun
         <h3 className={`text-xs font-bold uppercase tracking-wider mb-4 ${dark?'text-slate-400':'text-slate-500'}`}>📢 Announcements</h3>
         <div className="space-y-3">
           {ANNOUNCEMENTS.map(a=>(
-            <div key={a.id} className={`flex gap-4 p-4 rounded-2xl border transition-all ${dark?'bg-slate-800/50 border-slate-700/40 hover:border-slate-600':'bg-white border-slate-200 hover:border-slate-300 shadow-sm'}`}>
+            <div key={a.id} className={`flex gap-4 p-4 rounded-2xl border transition-all ${dark?'bg-slate-900 border-slate-700/60 hover:border-slate-600':'bg-white border-slate-200 hover:border-slate-300 shadow-sm'}`}>
               <div className={`w-2 h-2 rounded-full mt-2 shrink-0 bg-gradient-to-b ${a.color}`}/>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
@@ -258,7 +258,7 @@ const ListEditorModal = ({title,items,fields,onClose,onSave}) => {
       <ErrMsg msg={err}/>
       <div className="space-y-4">
         {list.map((row,i)=>(
-          <div key={i} className={`p-4 rounded-xl border relative ${dark?'bg-slate-800/50 border-slate-700/40':'bg-slate-50 border-slate-200'}`}>
+          <div key={i} className={`p-4 rounded-xl border relative ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}>
             <button onClick={()=>removeRow(i)} className="absolute top-3 right-3 text-red-400 hover:text-red-300 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pr-6">
               {fields.map(f=>(
@@ -361,13 +361,13 @@ const ProfilePanel = ({faculty,loading,err,onReload}) => {
           <Row label="Employee / Faculty ID" value={val(f.id)}/><Row label="Position / Title" value={val(f.position)}/><Row label="Employment Status" value={val(f.employment_status)}/><Row label="Date Hired" value={fmt(f.hire_date)}/><Row label="Department" value={val(f.department?.department_name)}/>
         </SectionCard>
         <SectionCard title="Educational Attainment" icon="🎓" action={<BtnEdit onClick={()=>setModal('education')}/>}>
-          {f.educational_attainment?.length>0?(<div className="space-y-3">{f.educational_attainment.map((e,i)=>(<div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900/50 border-slate-700/40':'bg-slate-50 border-slate-200'}`}><p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{e.degree}</p><p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{e.institution}{e.year?` · ${e.year}`:''}</p>{e.field&&<p className={`text-xs mt-0.5 ${dark?'text-slate-500':'text-slate-400'}`}>{e.field}</p>}</div>))}</div>):<Empty text="No entries yet. Click Edit to add."/>}
+          {f.educational_attainment?.length>0?(<div className="space-y-3">{f.educational_attainment.map((e,i)=>(<div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}><p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{e.degree}</p><p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{e.institution}{e.year?` · ${e.year}`:''}</p>{e.field&&<p className={`text-xs mt-0.5 ${dark?'text-slate-500':'text-slate-400'}`}>{e.field}</p>}</div>))}</div>):<Empty text="No entries yet. Click Edit to add."/>}
         </SectionCard>
         <SectionCard title="Areas of Expertise" icon="🧠" action={<BtnEdit onClick={()=>setModal('expertise')}/>}>
           {f.expertise_areas?.length>0?(<div className="flex flex-wrap gap-2">{f.expertise_areas.map((e,i)=>(<span key={i} className={`text-xs px-3 py-1 rounded-full font-medium ${dark?'bg-purple-900/40 text-purple-300 border border-purple-700/30':'bg-purple-100 text-purple-700'}`}>{typeof e==='string'?e:e.area}</span>))}</div>):<Empty text="No expertise areas listed yet."/>}
         </SectionCard>
         <SectionCard title="Work Experience" icon="💼" action={<BtnEdit onClick={()=>setModal('experience')}/>}>
-          {f.work_experience?.length>0?(<div className="space-y-3">{f.work_experience.map((e,i)=>(<div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900/50 border-slate-700/40':'bg-slate-50 border-slate-200'}`}><div className="flex items-start justify-between gap-2"><div><p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{e.title}</p><p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{e.company}{e.period?` · ${e.period}`:''}</p></div>{e.type&&<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${dark?'bg-slate-700 text-slate-300':'bg-slate-100 text-slate-600'}`}>{e.type}</span>}</div>{e.description&&<p className={`text-xs mt-1.5 leading-relaxed ${dark?'text-slate-500':'text-slate-400'}`}>{e.description}</p>}</div>))}</div>):<Empty text="No work experience listed yet."/>}
+          {f.work_experience?.length>0?(<div className="space-y-3">{f.work_experience.map((e,i)=>(<div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}><div className="flex items-start justify-between gap-2"><div><p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{e.title}</p><p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{e.company}{e.period?` · ${e.period}`:''}</p></div>{e.type&&<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${dark?'bg-slate-700 text-slate-300':'bg-slate-100 text-slate-600'}`}>{e.type}</span>}</div>{e.description&&<p className={`text-xs mt-1.5 leading-relaxed ${dark?'text-slate-500':'text-slate-400'}`}>{e.description}</p>}</div>))}</div>):<Empty text="No work experience listed yet."/>}
         </SectionCard>
         <SectionCard title="Research Interests" icon="🔬" action={<BtnEdit onClick={()=>setModal('research')}/>}>
           {f.research_interests?<p className={`text-sm leading-relaxed ${dark?'text-slate-300':'text-slate-600'}`}>{f.research_interests}</p>:<Empty text="No research interests listed yet."/>}
@@ -379,7 +379,7 @@ const ProfilePanel = ({faculty,loading,err,onReload}) => {
           {f.achievements?.length>0?(<div className="space-y-2">{f.achievements.map((a,i)=>(<div key={i} className="flex items-start gap-3"><span className="text-amber-400 mt-0.5 shrink-0">🥇</span><div><p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{a.title}</p><p className={`text-xs ${dark?'text-slate-400':'text-slate-500'}`}>{a.organization}{a.year?` · ${a.year}`:''}</p></div></div>))}</div>):<Empty text="No achievements listed yet."/>}
         </SectionCard>
         <SectionCard title="Publications & Research Papers" icon="📄" action={<BtnEdit onClick={()=>setModal('publications')}/>}>
-          {f.publications?.length>0?(<div className="space-y-3">{f.publications.map((p,i)=>(<div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900/50 border-slate-700/40':'bg-slate-50 border-slate-200'}`}><p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{p.title}</p><p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{p.journal}{p.year?` · ${p.year}`:''}</p>{p.url&&<a href={p.url} target="_blank" rel="noreferrer" className="text-xs text-brand-400 hover:underline mt-0.5 block truncate">{p.url}</a>}</div>))}</div>):<Empty text="No publications listed yet."/>}
+          {f.publications?.length>0?(<div className="space-y-3">{f.publications.map((p,i)=>(<div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}><p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{p.title}</p><p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{p.journal}{p.year?` · ${p.year}`:''}</p>{p.url&&<a href={p.url} target="_blank" rel="noreferrer" className="text-xs text-brand-400 hover:underline mt-0.5 block truncate">{p.url}</a>}</div>))}</div>):<Empty text="No publications listed yet."/>}
         </SectionCard>
         <SectionCard title="Social & Professional Links" icon="🔗" action={<BtnEdit onClick={()=>setModal('social')}/>}>
           {f.social_links&&Object.values(f.social_links).some(v=>v)?(<div className="space-y-2">{Object.entries(f.social_links).filter(([,v])=>v).map(([k,v])=>(<div key={k} className="flex items-center gap-2"><span className={`text-xs w-28 shrink-0 capitalize ${dark?'text-slate-500':'text-slate-400'}`}>{k}</span><a href={v} target="_blank" rel="noreferrer" className="text-xs text-brand-400 hover:underline truncate">{v}</a></div>))}</div>):<Empty text="No links added yet."/>}
@@ -401,7 +401,7 @@ const SubjectDetailModal = ({subject,students,schedules,onClose}) => {
         {/* Subject Info */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[['Total Units',subject.total_units],['Lec Units',subject.lec_units],['Lab Units',subject.lab_units],['Pre-requisite',subject.pre_requisites||'None']].map(([l,v])=>(
-            <div key={l} className={`rounded-xl border p-3 text-center ${dark?'bg-slate-800/50 border-slate-700/40':'bg-slate-50 border-slate-200'}`}>
+            <div key={l} className={`rounded-xl border p-3 text-center ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}>
               <p className={`text-lg font-bold ${dark?'text-white':'text-slate-800'}`}>{v}</p>
               <p className={`text-[10px] mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{l}</p>
             </div>
@@ -412,7 +412,7 @@ const SubjectDetailModal = ({subject,students,schedules,onClose}) => {
           {subjectSchedules.length===0?<p className={`text-xs text-center py-3 ${dark?'text-slate-500':'text-slate-400'}`}>No schedules found.</p>:(
             <div className="space-y-2">
               {subjectSchedules.map(s=>(
-                <div key={s.id} className={`flex items-center gap-3 p-3 rounded-xl border ${dark?'bg-slate-900/50 border-slate-700/40':'bg-slate-50 border-slate-200'}`}>
+                <div key={s.id} className={`flex items-center gap-3 p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}>
                   <span className={`text-xs font-bold w-24 shrink-0 ${dark?'text-brand-400':'text-brand-600'}`}>{s.day_of_week}</span>
                   <span className={`text-xs ${dark?'text-slate-300':'text-slate-700'}`}>{fmtTime(s.start_time)} – {fmtTime(s.end_time)}</span>
                   <span className={`text-xs ${dark?'text-slate-400':'text-slate-500'}`}>{s.section?.section_name} · {s.room}</span>
@@ -428,7 +428,7 @@ const SubjectDetailModal = ({subject,students,schedules,onClose}) => {
               {enrolledStudents.map(s=>{
                 const initials=`${s.first_name?.[0]??''}${s.last_name?.[0]??''}`.toUpperCase();
                 return (
-                  <div key={s.id} className={`flex items-center gap-3 p-3 rounded-xl border ${dark?'bg-slate-900/50 border-slate-700/40':'bg-slate-50 border-slate-200'}`}>
+                  <div key={s.id} className={`flex items-center gap-3 p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}>
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${dark?'bg-brand-900/50 text-brand-300':'bg-brand-100 text-brand-600'}`}>{initials}</div>
                     <div className="min-w-0">
                       <p className={`text-xs font-semibold truncate ${dark?'text-slate-100':'text-slate-800'}`}>{s.first_name} {s.last_name}</p>
@@ -498,7 +498,7 @@ const SubjectsPanel = ({facultyId}) => {
             const sections=[...new Set(subjectSchedules.map(s=>s.section?.section_name).filter(Boolean))];
             const studentCount=students.filter(s=>s.section&&sections.includes(s.section)).length;
             return (
-              <button key={subj.id} onClick={()=>setSelected(subj)} className={`text-left rounded-2xl border p-5 transition-all ${dark?'bg-slate-800/50 border-slate-700/40 hover:border-brand-500/50':'bg-white border-slate-200 hover:border-brand-300 hover:shadow-md shadow-sm'}`}>
+              <button key={subj.id} onClick={()=>setSelected(subj)} className={`text-left rounded-2xl border p-5 transition-all ${dark?'bg-slate-900 border-slate-700/60 hover:border-brand-500/50':'bg-white border-slate-200 hover:border-brand-300 hover:shadow-md shadow-sm'}`}>
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
                     <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${dark?'bg-blue-900/40 text-blue-300':'bg-blue-100 text-blue-700'}`}>{subj.subject_code}</span>
@@ -602,7 +602,7 @@ const SchedulePanel = ({facultyId}) => {
       {/* Confirm delete dialog */}
       {confirmDel&&(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className={`absolute inset-0 backdrop-blur-sm ${dark?'bg-slate-950/80':'bg-slate-900/40'}`} onClick={()=>setConfirmDel(null)}/>
+          <div className={`absolute inset-0 backdrop-blur-sm ${dark?'bg-slate-950':'bg-slate-900'}`} onClick={()=>setConfirmDel(null)}/>
           <div className={`relative w-full max-w-sm border rounded-2xl shadow-2xl p-6 ${dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-200'}`}>
             <p className={`text-sm font-semibold mb-1 ${dark?'text-slate-100':'text-slate-800'}`}>Delete Schedule?</p>
             <p className={`text-xs mb-5 ${dark?'text-slate-400':'text-slate-500'}`}>This will remove the schedule entry for <span className="font-semibold">{confirmDel.subject?.descriptive_title}</span> on {confirmDel.day_of_week}.</p>
@@ -626,7 +626,7 @@ const SchedulePanel = ({facultyId}) => {
                   const secName=s.section?.section_name;
                   const studentCount=secName?students.filter(st=>st.section===secName).length:0;
                   return (
-                    <div key={s.id} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${dark?'bg-slate-800/50 border-slate-700/40 hover:border-slate-600':'bg-white border-slate-200 hover:border-slate-300 shadow-sm'}`}>
+                    <div key={s.id} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${dark?'bg-slate-900 border-slate-700/60 hover:border-slate-600':'bg-white border-slate-200 hover:border-slate-300 shadow-sm'}`}>
                       <div className={`text-center shrink-0 w-20 px-2 py-1.5 rounded-xl ${dark?'bg-slate-700/50':'bg-slate-100'}`}>
                         <p className={`text-xs font-bold ${dark?'text-slate-200':'text-slate-700'}`}>{fmtTime(s.start_time)}</p>
                         <p className={`text-[10px] ${dark?'text-slate-500':'text-slate-400'}`}>{fmtTime(s.end_time)}</p>
@@ -784,7 +784,7 @@ const StudentDetailModal = ({student:initialStudent,facultyName,onClose}) => {
             ):(
               <div className="space-y-3">
                 {s.violations.map(v=>(
-                  <div key={v.id} className={`p-4 rounded-2xl border ${dark?'bg-slate-800/50 border-slate-700/40':'bg-white border-slate-200 shadow-sm'}`}>
+                  <div key={v.id} className={`p-4 rounded-2xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-200 shadow-sm'}`}>
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div>
                         <p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{v.violation_type}</p>
@@ -820,7 +820,7 @@ const StudentDetailModal = ({student:initialStudent,facultyName,onClose}) => {
               <SectionCard title="Academic History" icon="📋">
                 <div className="space-y-2">
                   {s.academicHistories.map((h,i)=>(
-                    <div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900/50 border-slate-700/40':'bg-slate-50 border-slate-200'}`}>
+                    <div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}>
                       <Row label="School Year" value={val(h.school_year)}/><Row label="Year Level" value={val(h.year_level)}/><Row label="GWA" value={val(h.gwa)}/><Row label="Status" value={val(h.status)}/>
                     </div>
                   ))}
@@ -917,7 +917,7 @@ const StudentsPanel = ({facultyId,facultyName}) => {
             const initials=`${s.first_name?.[0]??''}${s.last_name?.[0]??''}`.toUpperCase();
             const violCount=s.violations?.length??0;
             return (
-              <button key={s.id} onClick={()=>setSelected(s)} className={`text-left p-4 rounded-2xl border transition-all ${dark?'bg-slate-800/50 border-slate-700/40 hover:border-brand-500/50 hover:bg-slate-800':'bg-white border-slate-200 hover:border-brand-300 hover:shadow-md shadow-sm'}`}>
+              <button key={s.id} onClick={()=>setSelected(s)} className={`text-left p-4 rounded-2xl border transition-all ${dark?'bg-slate-900 border-slate-700/60 hover:border-brand-500/50 hover:bg-slate-800':'bg-white border-slate-200 hover:border-brand-300 hover:shadow-md shadow-sm'}`}>
                 <div className="flex items-center gap-3 mb-3">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${dark?'bg-brand-900/50 text-brand-300':'bg-brand-100 text-brand-600'}`}>{initials}</div>
                   <div className="min-w-0">
@@ -1029,7 +1029,7 @@ const FacultyDashboard = ({user,onLogout}) => {
         {/* Main */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Topbar */}
-          <header className={`flex items-center justify-between px-6 h-20 border-b shrink-0 ${dark?'bg-slate-900/80 border-slate-800 backdrop-blur-xl':'bg-white border-slate-200 shadow-sm'}`}>
+          <header className={`flex items-center justify-between px-6 h-20 border-b shrink-0 ${dark?'bg-slate-900 border-slate-800 backdrop-blur-xl':'bg-white border-slate-200 shadow-sm'}`}>
             <div>
               <h1 className={`text-lg font-bold ${dark?'text-slate-100':'text-slate-800'}`}>{activeNav?.label??'Dashboard'}</h1>
               <p className={`text-xs ${dark?'text-slate-500':'text-slate-400'}`}>{user?.name} · CCS Faculty</p>

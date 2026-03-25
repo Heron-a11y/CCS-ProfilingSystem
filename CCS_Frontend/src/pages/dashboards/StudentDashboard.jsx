@@ -79,8 +79,8 @@ const EmptyState = ({ icon, title, sub }) => {
 const SectionCard = ({ title, icon, action, children }) => {
   const dark = useTheme();
   return (
-    <div className={`rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
-      <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark ? 'border-slate-700/40 bg-slate-900/50' : 'border-slate-100 bg-slate-50'}`}>
+    <div className={`rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
+      <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark ? 'border-slate-700/60 bg-slate-900' : 'border-slate-100 bg-slate-50'}`}>
         <div className="flex items-center gap-2.5">
           <span className="text-base">{icon}</span>
           <h4 className="text-xs font-bold uppercase tracking-widest text-brand-500">{title}</h4>
@@ -153,7 +153,7 @@ const Modal = ({ title, subtitle, onClose, children, footer }) => {
   const dark = useTheme();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className={`absolute inset-0 backdrop-blur-sm ${dark ? 'bg-slate-950/80' : 'bg-slate-900/40'}`} onClick={onClose} />
+      <div className={`absolute inset-0 backdrop-blur-sm ${dark ? 'bg-slate-950' : 'bg-slate-900'}`} onClick={onClose} />
       <div className={`relative w-full max-w-2xl border rounded-2xl shadow-2xl flex flex-col max-h-[90vh] ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200'}`}>
         <div className={`flex items-start justify-between px-6 py-5 border-b ${dark ? 'border-slate-700/60' : 'border-slate-100'}`}>
           <div>
@@ -165,7 +165,7 @@ const Modal = ({ title, subtitle, onClose, children, footer }) => {
           </button>
         </div>
         <div className="overflow-y-auto flex-1 px-6 py-5">{children}</div>
-        {footer && <div className={`px-6 py-4 border-t ${dark ? 'border-slate-700/60 bg-slate-900/80' : 'border-slate-100 bg-slate-50'}`}>{footer}</div>}
+        {footer && <div className={`px-6 py-4 border-t ${dark ? 'border-slate-700/60 bg-slate-900' : 'border-slate-100 bg-slate-50'}`}>{footer}</div>}
       </div>
     </div>
   );
@@ -477,7 +477,7 @@ const AffiliationModal = ({ studentId, record, onClose, onSaved }) => {
           <input name="adviser_name" value={form.adviser_name} onChange={ch} className={i} placeholder="Optional — faculty adviser or moderator" />
         </Field>
         {form.date_joined && (
-          <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs ${dark ? 'bg-slate-800/60 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
             <svg className="w-3.5 h-3.5 text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             Duration: <span className="font-semibold text-brand-400">{affDuration(form.date_joined, form.date_ended || null)}</span>
             {!form.date_ended && <span className="text-emerald-400 font-medium">(ongoing)</span>}
@@ -568,7 +568,7 @@ const SkillsModal = ({ studentId, currentSkills, onClose, onSaved }) => {
       </div>
 
       {/* Skill chips */}
-      <div className={`rounded-xl p-3 mb-5 min-h-[120px] max-h-52 overflow-y-auto ${dark ? 'bg-slate-900/40 border border-slate-700/40' : 'bg-slate-50 border border-slate-200'}`}>
+      <div className={`rounded-xl p-3 mb-5 min-h-[120px] max-h-52 overflow-y-auto ${dark ? 'bg-slate-900 border border-slate-700/60' : 'bg-slate-50 border border-slate-200'}`}>
         {filtered.length === 0
           ? <p className={`text-xs text-center py-8 ${dark ? 'text-slate-600' : 'text-slate-400'}`}>No skills found.</p>
           : <div className="flex flex-wrap gap-2">
@@ -603,8 +603,8 @@ const SkillsModal = ({ studentId, currentSkills, onClose, onSaved }) => {
             {selected.map(s => {
               const meta = LEVEL_META[s.skill_level];
               return (
-                <div key={s.skill_id} className={`rounded-xl border overflow-hidden ${dark ? 'bg-slate-800/60 border-slate-700/60' : 'bg-white border-slate-200'}`}>
-                  <div className={`flex items-center justify-between px-4 py-2.5 ${dark ? 'bg-slate-900/40' : 'bg-slate-50'}`}>
+                <div key={s.skill_id} className={`rounded-xl border overflow-hidden ${dark ? 'bg-slate-800 border-slate-700/60' : 'bg-white border-slate-200'}`}>
+                  <div className={`flex items-center justify-between px-4 py-2.5 ${dark ? 'bg-slate-900' : 'bg-slate-50'}`}>
                     <div className="flex items-center gap-2">
                       <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${s.skill_category === 'Academic' ? 'bg-brand-500/20 text-brand-300 border-brand-500/30' : 'bg-purple-500/20 text-purple-300 border-purple-500/30'}`}>
                         {s.skill_category === 'Academic' ? '💻' : '🏅'} {s.skill_category}
@@ -931,7 +931,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                             ? dark ? 'bg-red-900/20 border-red-500/30' : 'bg-red-100/60 border-red-300'
                             : isMed
                               ? dark ? 'bg-amber-900/20 border-amber-500/30' : 'bg-amber-100/60 border-amber-300'
-                              : dark ? 'bg-slate-800/60 border-slate-600/40' : 'bg-white border-slate-200'
+                              : dark ? 'bg-slate-800 border-slate-600/40' : 'bg-white border-slate-200'
                         }`}>
                           {/* Severity icon */}
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
@@ -978,8 +978,8 @@ const StudentDashboard = ({ user, onLogout }) => {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
 
           {/* Task Progress */}
-          <div className={`lg:col-span-2 rounded-2xl border overflow-hidden ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
-            <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark ? 'border-slate-700/40 bg-slate-900/50' : 'border-slate-100 bg-slate-50'}`}>
+          <div className={`lg:col-span-2 rounded-2xl border overflow-hidden ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
+            <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark ? 'border-slate-700/60 bg-slate-900' : 'border-slate-100 bg-slate-50'}`}>
               <div className="flex items-center gap-2"><span>✅</span><h4 className="text-xs font-bold uppercase tracking-widest text-brand-500">My Pending Tasks</h4></div>
               <button onClick={() => setActive('tasks')} className={`text-[10px] font-semibold px-2 py-1 rounded-lg transition-all ${dark ? 'text-brand-400 hover:bg-brand-500/10' : 'text-brand-600 hover:bg-brand-50'}`}>View all →</button>
             </div>
@@ -998,7 +998,7 @@ const StudentDashboard = ({ user, onLogout }) => {
               {/* Pending list */}
               <div className="space-y-2">
                 {pendingTasks.slice(0, 4).map(t => (
-                  <div key={t.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-900/40 border-slate-700/40' : 'bg-slate-50 border-slate-200'}`}>
+                  <div key={t.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-slate-50 border-slate-200'}`}>
                     <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${t.priority === 'High' ? 'bg-red-400' : t.priority === 'Medium' ? 'bg-amber-400' : 'bg-slate-400'}`} />
                     <div className="flex-1 min-w-0">
                       <p className={`text-xs font-semibold truncate ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{t.title}</p>
@@ -1034,15 +1034,15 @@ const StudentDashboard = ({ user, onLogout }) => {
         </div>
 
         {/* ── Current Subjects ── */}
-        <div className={`rounded-2xl border overflow-hidden ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
-          <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark ? 'border-slate-700/40 bg-slate-900/50' : 'border-slate-100 bg-slate-50'}`}>
+        <div className={`rounded-2xl border overflow-hidden ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
+          <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark ? 'border-slate-700/60 bg-slate-900' : 'border-slate-100 bg-slate-50'}`}>
             <div className="flex items-center gap-2"><span>📖</span><h4 className="text-xs font-bold uppercase tracking-widest text-brand-500">Current Subjects</h4></div>
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-500'}`}>{COURSES_DEMO.length} subjects</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className={`border-b ${dark ? 'border-slate-700/40 bg-slate-900/30' : 'border-slate-100 bg-slate-50'}`}>
+                <tr className={`border-b ${dark ? 'border-slate-700/60 bg-slate-900' : 'border-slate-100 bg-slate-50'}`}>
                   {['Code', 'Subject', 'Instructor', 'Schedule', 'Room', 'Units'].map(h => (
                     <th key={h} className={`px-4 py-3 text-left font-bold uppercase tracking-wider text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{h}</th>
                   ))}
@@ -1071,7 +1071,7 @@ const StudentDashboard = ({ user, onLogout }) => {
           <h3 className={`text-xs font-bold uppercase tracking-wider mb-4 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>📢 Announcements</h3>
           <div className="space-y-3">
             {ANNOUNCEMENTS.map(a => (
-              <div key={a.id} className={`flex gap-4 p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
+              <div key={a.id} className={`flex gap-4 p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-brand-400/50 hover:shadow-brand-500/10 ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
                 <div className={`w-2 h-2 rounded-full mt-2 shrink-0 bg-gradient-to-b ${a.color}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
@@ -1405,9 +1405,9 @@ const StudentDashboard = ({ user, onLogout }) => {
                 : null;
 
               return (
-                <div key={year} className={`rounded-2xl border overflow-hidden ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
+                <div key={year} className={`rounded-2xl border overflow-hidden ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
                   {/* Year header */}
-                  <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark ? 'border-slate-700/40 bg-slate-900/50' : 'border-slate-100 bg-slate-50'}`}>
+                  <div className={`flex items-center justify-between px-5 py-3.5 border-b ${dark ? 'border-slate-700/60 bg-slate-900' : 'border-slate-100 bg-slate-50'}`}>
                     <div className="flex items-center gap-2.5">
                       <span className="text-base">🎓</span>
                       <h4 className={`text-sm font-black ${dark ? 'text-slate-100' : 'text-slate-800'}`}>S.Y. {year}</h4>
@@ -1424,7 +1424,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                   {/* Semester cards */}
                   <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {records.map(ah => (
-                      <div key={ah.id} className={`rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${dark ? 'bg-slate-900/40 border-slate-700/40 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-slate-50 border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10'}`}>
+                      <div key={ah.id} className={`rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${dark ? 'bg-slate-900 border-slate-700/60 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-slate-50 border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10'}`}>
                         {/* Semester label */}
                         <div className="flex items-center justify-between mb-3">
                           <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${dark ? 'bg-brand-500/20 text-brand-300 border-brand-500/30' : 'bg-brand-100 text-brand-700 border-brand-200'}`}>
@@ -1500,7 +1500,7 @@ const StudentDashboard = ({ user, onLogout }) => {
     const SkillCard = ({ skill }) => {
       const meta = LEVEL_META[skill.pivot?.skill_level];
       return (
-        <div className={`group relative rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${dark ? 'bg-slate-800/60 border-slate-700/50 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-white border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10'}`}>
+        <div className={`group relative rounded-2xl border overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${dark ? 'bg-slate-900 border-slate-700/60 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-white border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10'}`}>
           <div className={`h-1 w-full ${skill.skill_category === 'Academic' ? 'bg-gradient-to-r from-brand-500 to-amber-400' : 'bg-gradient-to-r from-purple-500 to-pink-400'}`} />
           <div className="p-4">
             <div className="flex items-start justify-between gap-2 mb-2">
@@ -1553,7 +1553,7 @@ const StudentDashboard = ({ user, onLogout }) => {
       <div className="space-y-5">
         {modal && <SkillsModal studentId={s?.id} currentSkills={s?.skills ?? []} onClose={() => setModal(false)} onSaved={() => { setModal(false); loadStudent(); }} />}
 
-        <div className={`rounded-2xl border p-5 flex items-center justify-between gap-4 ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
+        <div className={`rounded-2xl border p-5 flex items-center justify-between gap-4 ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${dark ? 'bg-brand-500/15' : 'bg-brand-50'}`}>💡</div>
             <div>
@@ -1574,7 +1574,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         </div>
 
         {!s ? <EmptyState icon="🛠️" title="No profile linked." /> : s.skills?.length === 0 ? (
-          <div className={`rounded-2xl border-2 border-dashed flex flex-col items-center justify-center py-16 gap-3 ${dark ? 'border-slate-700 bg-slate-800/20' : 'border-slate-200 bg-slate-50'}`}>
+          <div className={`rounded-2xl border-2 border-dashed flex flex-col items-center justify-center py-16 gap-3 ${dark ? 'border-slate-700 bg-slate-800/30' : 'border-slate-200 bg-slate-50'}`}>
             <div className="text-5xl">🛠️</div>
             <p className={`font-bold text-sm ${dark ? 'text-slate-400' : 'text-slate-600'}`}>No skills recorded yet</p>
             <p className={`text-xs ${dark ? 'text-slate-600' : 'text-slate-400'}`}>Click "Manage Skills" to add your academic and non-academic skills.</p>
@@ -1586,7 +1586,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             </button>
           </div>
         ) : (
-          <div className={`rounded-2xl border overflow-hidden ${dark ? 'bg-slate-800/30 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
+          <div className={`rounded-2xl border overflow-hidden ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
             <div className="p-5 space-y-7">
               <CategorySection title="Academic Skills" emoji="💻" skills={academic} emptyMsg="No academic skills added." />
               <CategorySection title="Non-Academic Skills" emoji="🏅" skills={nonAcademic} emptyMsg="No non-academic skills added." />
@@ -1654,7 +1654,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                 { label: 'Active',   val: activeCount,    color: 'text-emerald-400' },
                 { label: 'Alumni',   val: alumniCount,    color: 'text-purple-400' },
               ].map(st => (
-                <div key={st.label} className={`rounded-xl p-3 text-center border ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white/70 border-slate-200'}`}>
+                <div key={st.label} className={`rounded-xl p-3 text-center border ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white/70 border-slate-200'}`}>
                   <p className={`text-xl font-black ${st.color}`}>{st.val}</p>
                   <p className={`text-[10px] font-semibold uppercase tracking-wide mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{st.label}</p>
                 </div>
@@ -1671,14 +1671,14 @@ const StudentDashboard = ({ user, onLogout }) => {
                 <div className="relative flex-1">
                   <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                   <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search organization or role…"
-                    className={`w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm ${dark ? 'bg-slate-800/60 border-slate-700 text-slate-200 placeholder-slate-500 focus:border-brand-500' : 'bg-white border-slate-200 text-slate-700 placeholder-slate-400 focus:border-brand-400'} outline-none transition-colors`} />
+                    className={`w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm ${dark ? 'bg-slate-800 border-slate-700 text-slate-200 placeholder-slate-500 focus:border-brand-500' : 'bg-white border-slate-200 text-slate-700 placeholder-slate-400 focus:border-brand-400'} outline-none transition-colors`} />
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   {['All', 'Active', 'Inactive', 'Alumni'].map(st => (
                     <button key={st} onClick={() => setFilterStatus(st)}
                       className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${filterStatus === st
                         ? 'bg-brand-500 text-white border-brand-500 shadow-md'
-                        : dark ? 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>
+                        : dark ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>
                       {st}
                     </button>
                   ))}
@@ -1702,7 +1702,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                   const st = AFF_STATUS[aff.status] ?? AFF_STATUS.Inactive;
                   const dur = affDuration(aff.date_joined, aff.date_ended);
                   return (
-                    <div key={aff.id} className={`group relative rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${dark ? 'bg-slate-800/40 border-slate-700/60 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-white border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10 shadow-sm'}`}>
+                    <div key={aff.id} className={`group relative rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${dark ? 'bg-slate-900 border-slate-700/60 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-white border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10 shadow-sm'}`}>
                       {/* Top row */}
                       <div className="flex items-start justify-between gap-2 mb-3">
                         <div className="flex items-start gap-3 min-w-0">
@@ -1795,7 +1795,7 @@ const StudentDashboard = ({ user, onLogout }) => {
       Medium: { card: dark ? 'border-amber-500/40 bg-amber-900/10' : 'border-amber-200 bg-amber-50',
                 badge: dark ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-amber-100 text-amber-600 border-amber-200',
                 icon: dark ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-500' },
-      Low:    { card: dark ? 'border-slate-600/40 bg-slate-800/30' : 'border-slate-200 bg-slate-50',
+      Low:    { card: dark ? 'border-slate-600/40 bg-slate-800' : 'border-slate-200 bg-slate-50',
                 badge: dark ? 'bg-slate-600/40 text-slate-400 border-slate-600/30' : 'bg-slate-100 text-slate-500 border-slate-200',
                 icon: dark ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500' },
     });
@@ -1872,7 +1872,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                     <button key={f} onClick={() => setFilter(f)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${filter === f
                         ? 'bg-brand-500 text-white border-brand-500 shadow-md'
-                        : dark ? 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>
+                        : dark ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>
                       {f}
                       {f === 'Unresolved' && unresolved.length > 0 && (
                         <span className="ml-1.5 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">{unresolved.length}</span>
@@ -1920,13 +1920,13 @@ const StudentDashboard = ({ user, onLogout }) => {
                             )}
 
                             {/* Action taken box */}
-                            <div className={`rounded-xl p-3.5 border ${dark ? 'bg-slate-900/50 border-slate-700/50' : 'bg-white/70 border-slate-200'}`}>
+                            <div className={`rounded-xl p-3.5 border ${dark ? 'bg-slate-900 border-slate-700/50' : 'bg-white/70 border-slate-200'}`}>
                               <p className={`text-[10px] font-bold uppercase tracking-wider mb-1.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Action Taken</p>
                               <p className={`text-sm ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{v.action_taken || 'No action recorded yet.'}</p>
                             </div>
 
                             {/* Footer meta */}
-                            <div className={`flex flex-wrap items-center justify-between gap-3 pt-1 text-xs border-t ${dark ? 'border-slate-700/40 text-slate-500' : 'border-slate-200 text-slate-400'}`}>
+                            <div className={`flex flex-wrap items-center justify-between gap-3 pt-1 text-xs border-t ${dark ? 'border-slate-700/60 text-slate-500' : 'border-slate-200 text-slate-400'}`}>
                               <div className="flex items-center gap-1.5">
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 Status: <span className={`font-bold ${v.status === 'Resolved' ? 'text-emerald-400' : v.status === 'Under Review' ? 'text-blue-400' : 'text-orange-400'}`}>{v.status}</span>
@@ -2017,7 +2017,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                 { label: 'Subjects',    val: GRADES.length, icon: '📖' },
                 { label: 'Passed',      val: numericGrades.filter(n => n <= 3.0).length, icon: '✅' },
               ].map(p => (
-                <div key={p.label} className={`px-4 py-3 rounded-xl border text-center min-w-[72px] ${dark ? 'bg-slate-800/60 border-slate-700/50' : 'bg-white/80 border-slate-200 shadow-sm'}`}>
+                <div key={p.label} className={`px-4 py-3 rounded-xl border text-center min-w-[72px] ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white/80 border-slate-200 shadow-sm'}`}>
                   <p className="text-lg mb-0.5">{p.icon}</p>
                   <p className={`text-xl font-black leading-none ${dark ? 'text-white' : 'text-slate-800'}`}>{p.val}</p>
                   <p className={`text-[10px] font-semibold uppercase tracking-wide mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{p.label}</p>
@@ -2028,7 +2028,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         </div>
 
         {/* ── Grade legend ── */}
-        <div className={`flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border text-xs ${dark ? 'bg-slate-800/40 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
+        <div className={`flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border text-xs ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
           <span className={`font-bold uppercase tracking-wider ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Grade Scale:</span>
           {[
             { range: '1.00–1.25', label: "Dean's List", c: 'text-amber-400' },
@@ -2044,9 +2044,9 @@ const StudentDashboard = ({ user, onLogout }) => {
         </div>
 
         {/* ── Grade table ── */}
-        <div className={`rounded-2xl border overflow-hidden ${dark ? 'bg-slate-800/50 border-slate-700/40' : 'bg-white border-slate-200 shadow-sm'}`}>
+        <div className={`rounded-2xl border overflow-hidden ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-200 shadow-sm'}`}>
           {/* Table header */}
-          <div className={`flex items-center justify-between px-5 py-4 border-b ${dark ? 'border-slate-700/60 bg-slate-900/50' : 'border-slate-100 bg-slate-50'}`}>
+          <div className={`flex items-center justify-between px-5 py-4 border-b ${dark ? 'border-slate-700/60 bg-slate-900' : 'border-slate-100 bg-slate-50'}`}>
             <div>
               <h3 className={`font-bold text-sm ${dark ? 'text-slate-200' : 'text-slate-700'}`}>Grade Report — AY 2025–2026, 1st Semester</h3>
               <p className={`text-xs mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Bachelor of Science in Information Technology</p>
@@ -2067,7 +2067,7 @@ const StudentDashboard = ({ user, onLogout }) => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className={`text-xs uppercase tracking-wider border-b ${dark ? 'bg-slate-900/40 border-slate-700/40 text-slate-500' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
+                <tr className={`text-xs uppercase tracking-wider border-b ${dark ? 'bg-slate-900 border-slate-700/60 text-slate-500' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
                   <th className="px-5 py-3 text-left font-bold">Subject</th>
                   <th className="px-5 py-3 text-left font-bold hidden md:table-cell">Title</th>
                   <th className="px-5 py-3 text-center font-bold">Units</th>
@@ -2111,7 +2111,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                 })}
               </tbody>
               <tfoot>
-                <tr className={`border-t ${dark ? 'bg-slate-900/40 border-slate-700/60' : 'bg-slate-50 border-slate-200'}`}>
+                <tr className={`border-t ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-slate-50 border-slate-200'}`}>
                   <td className={`px-5 py-3.5 font-black text-xs uppercase tracking-wider ${dark ? 'text-slate-300' : 'text-slate-600'}`}>Total</td>
                   <td className="hidden md:table-cell" />
                   <td className="px-5 py-3.5 text-center">
@@ -2208,7 +2208,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             {[
               { label: 'High Priority',   val: highCount,                                    c: dark ? 'border-red-500/30 bg-red-900/10' : 'border-red-200 bg-red-50',     tc: 'text-red-400',    icon: '🔴' },
               { label: 'Medium Priority', val: mediumCount,                                  c: dark ? 'border-amber-500/30 bg-amber-900/10' : 'border-amber-200 bg-amber-50', tc: 'text-amber-400',  icon: '🟡' },
-              { label: 'Low Priority',    val: pending.filter(t => t.priority === 'Low').length, c: dark ? 'border-slate-600/40 bg-slate-800/30' : 'border-slate-200 bg-slate-50', tc: dark ? 'text-slate-400' : 'text-slate-500', icon: '🟢' },
+              { label: 'Low Priority',    val: pending.filter(t => t.priority === 'Low').length, c: dark ? 'border-slate-600/40 bg-slate-800' : 'border-slate-200 bg-slate-50', tc: dark ? 'text-slate-400' : 'text-slate-500', icon: '🟢' },
             ].map(p => (
               <div key={p.label} className={`rounded-xl border p-3 text-center ${p.c}`}>
                 <p className="text-lg mb-1">{p.icon}</p>
@@ -2225,7 +2225,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             <button key={f} onClick={() => setFilter(f)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${filter === f
                 ? 'bg-brand-500 text-white border-brand-500 shadow-md'
-                : dark ? 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>
+                : dark ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>
               {f}
               {f === 'Pending' && pending.length > 0 && (
                 <span className="ml-1.5 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">{pending.length}</span>
@@ -2250,12 +2250,12 @@ const StudentDashboard = ({ user, onLogout }) => {
               return (
                 <div key={t.id} className={`group flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
                   isDone
-                    ? dark ? 'bg-slate-800/20 border-slate-700/20 opacity-55' : 'bg-slate-50 border-slate-100 opacity-60'
+                    ? dark ? 'bg-slate-800/30 border-slate-700/20 opacity-55' : 'bg-slate-50 border-slate-100 opacity-60'
                     : t.priority === 'High'
                       ? dark ? 'bg-red-900/10 border-red-500/20 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-red-50/60 border-red-200 hover:border-brand-400/50 hover:shadow-brand-500/10'
                       : t.priority === 'Medium'
                         ? dark ? 'bg-amber-900/10 border-amber-500/20 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-amber-50/60 border-amber-200 hover:border-brand-400/50 hover:shadow-brand-500/10'
-                        : dark ? 'bg-slate-800/40 border-slate-700/40 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-white border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10 shadow-sm'
+                        : dark ? 'bg-slate-900 border-slate-700/60 hover:border-brand-500/40 hover:shadow-brand-500/10' : 'bg-white border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10 shadow-sm'
                 }`}>
                   {/* Checkbox */}
                   <button onClick={() => toggleTask(t.id)}
@@ -2363,7 +2363,7 @@ const StudentDashboard = ({ user, onLogout }) => {
       <div className="flex-1 flex flex-col h-full overflow-hidden">
 
         {/* Top nav */}
-        <header className={`relative z-30 flex items-center justify-between px-5 py-4 border-b shrink-0 ${dark ? 'border-slate-800/60 bg-slate-900/80 backdrop-blur-xl' : 'border-slate-200 bg-white shadow-sm'}`}>
+        <header className={`relative z-30 flex items-center justify-between px-5 py-4 border-b shrink-0 ${dark ? 'border-slate-800/60 bg-slate-900 backdrop-blur-xl' : 'border-slate-200 bg-white shadow-sm'}`}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-500 to-amber-400 flex items-center justify-center shadow-[0_0_15px_rgba(242,101,34,0.4)]">
               <img src="/ccs_logo.jpg" alt="CCS" className="w-6 h-6 object-contain rounded-lg" onError={e => { e.target.style.display = 'none'; }} />
@@ -2376,7 +2376,7 @@ const StudentDashboard = ({ user, onLogout }) => {
           <div className="flex items-center gap-2">
             {/* Theme toggle */}
             <button onClick={toggleTheme} title={dark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className={`p-2 rounded-xl border transition-all ${dark ? 'bg-slate-800/60 border-slate-700/50 text-amber-400 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}>
+              className={`p-2 rounded-xl border transition-all ${dark ? 'bg-slate-900 border-slate-700/60 text-amber-400 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}>
               {dark
                 ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                 : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
@@ -2385,7 +2385,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             {/* Notification bell */}
             <div className="relative" data-notif>
               <button onClick={openNotif} title="Notifications"
-                className={`relative p-2 rounded-xl border transition-all ${dark ? 'bg-slate-800/60 border-slate-700/50 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}>
+                className={`relative p-2 rounded-xl border transition-all ${dark ? 'bg-slate-900 border-slate-700/60 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
@@ -2410,7 +2410,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                       </div>
                     ) : notifications.map(n => (
                       <button key={n.id} onClick={() => { setActive(n.nav); setNotifOpen(false); }}
-                        className={`w-full text-left flex items-start gap-3 px-4 py-3 border-b transition-colors ${dark ? 'border-slate-800 hover:bg-slate-800/60' : 'border-slate-50 hover:bg-slate-50'}`}>
+                        className={`w-full text-left flex items-start gap-3 px-4 py-3 border-b transition-colors ${dark ? 'border-slate-800 hover:bg-slate-800' : 'border-slate-50 hover:bg-slate-50'}`}>
                         <span className="text-lg shrink-0 mt-0.5">{n.icon}</span>
                         <div className="flex-1 min-w-0">
                           <p className={`text-xs font-semibold ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{n.title}</p>
@@ -2428,7 +2428,7 @@ const StudentDashboard = ({ user, onLogout }) => {
 
         {/* Main content */}
         <main className={`flex-1 overflow-x-hidden overflow-y-auto transition-colors duration-300 ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
-          <div className={`sticky top-0 z-10 px-6 py-4 border-b flex items-center gap-3 ${dark ? 'bg-slate-900/80 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-200 shadow-sm'}`}>
+          <div className={`sticky top-0 z-10 px-6 py-4 border-b flex items-center gap-3 ${dark ? 'bg-slate-900 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-200 shadow-sm'}`}>
             <svg className="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={activeNav?.icon} />
             </svg>
