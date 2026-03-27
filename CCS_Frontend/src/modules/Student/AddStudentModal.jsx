@@ -125,6 +125,7 @@ const AddStudentModal = ({ isOpen, onClose, onStudentAdded }) => {
         await api.students.addViolation(sid, {
           violation_type: v.offense, description: v.sanction || '',
           date_reported: v.date || new Date().toISOString().split('T')[0],
+          reported_by: 'Administration',
           severity_level: 'Low', status: 'Pending',
         });
       }
