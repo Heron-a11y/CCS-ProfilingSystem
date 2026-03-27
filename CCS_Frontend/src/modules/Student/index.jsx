@@ -16,6 +16,7 @@ const StudentModule = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [listSearch, setListSearch] = useState('');
   const [listFilter, setListFilter] = useState('All');
+  const [viewMode, setViewMode]     = useState('list'); // 'cards' | 'table' | 'list'
   // Advanced filters
   const [filterSkill, setFilterSkill]         = useState('');
   const [filterCourse, setFilterCourse]       = useState('');
@@ -190,7 +191,24 @@ const StudentModule = () => {
               <div className={`p-6 rounded-xl border shadow-sm col-span-2 transition-colors duration-300 ${card}`}>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className={`text-lg font-bold transition-colors duration-300 ${boldText}`}>Student List</h3>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{students.length} total</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{students.length} total</span>
+                    {/* View toggle */}
+                    <div className={`flex rounded-lg border overflow-hidden ${dark ? 'border-slate-700' : 'border-slate-200'}`}>
+                      {[
+                        { id: 'cards', icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg> },
+                        { id: 'table', icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M3 14h18M10 3v18M3 3h18v18H3z" /></svg> },
+                        { id: 'list',  icon: <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg> },
+                      ].map(v => (
+                        <button key={v.id} onClick={() => setViewMode(v.id)} title={v.id.charAt(0).toUpperCase() + v.id.slice(1)}
+                          className={`px-2.5 py-1.5 transition-colors ${viewMode === v.id
+                            ? 'bg-brand-500 text-white'
+                            : dark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>
+                          {v.icon}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Search + enrollment filter */}
@@ -212,19 +230,16 @@ const StudentModule = () => {
 
                 {/* Advanced filters row */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-                  {/* Skill */}
                   <select value={filterSkill} onChange={e => setFilterSkill(e.target.value)}
                     className={`rounded-lg border text-xs px-2 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
                     <option value="">All Skills</option>
                     {availableSkills.map(s => <option key={s.id} value={s.id}>{s.skill_name}</option>)}
                   </select>
-                  {/* Course */}
                   <select value={filterCourse} onChange={e => setFilterCourse(e.target.value)}
                     className={`rounded-lg border text-xs px-2 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
                     <option value="">All Courses</option>
                     {availableCourses.map(c => <option key={c.id} value={c.id}>{c.course_code}</option>)}
                   </select>
-                  {/* Org / Affiliation */}
                   <select value={filterAffil} onChange={e => setFilterAffil(e.target.value)}
                     className={`rounded-lg border text-xs px-2 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
                     <option value="">All Affiliations</option>
@@ -232,7 +247,6 @@ const StudentModule = () => {
                       <option key={org} value={org}>{org}</option>
                     ))}
                   </select>
-                  {/* Year Level */}
                   <select value={filterYear} onChange={e => setFilterYear(e.target.value)}
                     className={`rounded-lg border text-xs px-2 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
                     <option value="">All Years</option>
@@ -240,44 +254,118 @@ const StudentModule = () => {
                   </select>
                 </div>
 
-                <div className={`divide-y max-h-[400px] overflow-y-auto pr-1 ${divider}`}>
-                  {isLoading ? (
-                    <div className="py-8 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500" /></div>
-                  ) : (() => {
-                    const filtered = students.filter(s => {
-                      const matchSearch = !listSearch || `${s.first_name} ${s.last_name} ${s.student_number || ''}`.toLowerCase().includes(listSearch.toLowerCase());
-                      const matchFilter = listFilter === 'All' || s.enrollment_status === listFilter;
-                      const matchSkill  = !filterSkill || s.skills?.some(sk => String(sk.id) === filterSkill);
-                      const matchCourse = !filterCourse || String(s.course_id) === filterCourse;
-                      const matchAffil  = !filterAffil || s.affiliations?.some(a => a.organization_name === filterAffil);
-                      const matchYear   = !filterYear || s.year_level === filterYear;
-                      return matchSearch && matchFilter && matchSkill && matchCourse && matchAffil && matchYear;
-                    });
-                    if (filtered.length === 0) return <div className={`py-8 text-center text-sm ${labelText}`}>No students match your search.</div>;
-                    return filtered.map(student => (
-                      <div key={student.id} onClick={() => handleStudentClick(student.id)}
-                        className={`py-4 flex items-center justify-between group cursor-pointer -mx-4 px-4 rounded-lg transition-colors ${rowHover}`}>
-                        <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold text-sm shrink-0">
-                            {student.first_name?.[0]}{student.last_name?.[0]}
+                {/* Results */}
+                {isLoading ? (
+                  <div className="py-8 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500" /></div>
+                ) : (() => {
+                  const filtered = students.filter(s => {
+                    const matchSearch = !listSearch || `${s.first_name} ${s.last_name} ${s.student_number || ''}`.toLowerCase().includes(listSearch.toLowerCase());
+                    const matchFilter = listFilter === 'All' || s.enrollment_status === listFilter;
+                    const matchSkill  = !filterSkill || s.skills?.some(sk => String(sk.id) === filterSkill);
+                    const matchCourse = !filterCourse || String(s.course_id) === filterCourse;
+                    const matchAffil  = !filterAffil || s.affiliations?.some(a => a.organization_name === filterAffil);
+                    const matchYear   = !filterYear || s.year_level === filterYear;
+                    return matchSearch && matchFilter && matchSkill && matchCourse && matchAffil && matchYear;
+                  });
+
+                  if (filtered.length === 0) return <div className={`py-8 text-center text-sm ${labelText}`}>No students match your search.</div>;
+
+                  // ── CARDS view ──
+                  if (viewMode === 'cards') return (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
+                      {filtered.map(s => (
+                        <div key={s.id} onClick={() => handleStudentClick(s.id)}
+                          className={`p-4 rounded-xl border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md ${dark ? 'bg-slate-800 border-slate-700 hover:border-brand-500/40' : 'bg-slate-50 border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10'}`}>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold text-sm shrink-0">
+                              {s.first_name?.[0]}{s.last_name?.[0]}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm font-semibold truncate ${boldText}`}>{s.first_name} {s.last_name}</p>
+                              <p className={`text-xs truncate ${labelText}`}>{s.student_number || `ID: ${s.id}`}</p>
+                            </div>
+                            {s.enrollment_status === 'Enrolled'
+                              ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 shrink-0">Enrolled</span>
+                              : <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}>{s.enrollment_status}</span>}
                           </div>
-                          <div>
-                            <p className={`text-sm font-semibold group-hover:text-brand-500 transition-colors ${boldText}`}>
-                              {student.first_name} {student.middle_name ? student.middle_name[0] + '. ' : ''}{student.last_name}
-                            </p>
-                            <p className={`text-xs ${labelText}`}>{student.program || 'N/A'} · {student.year_level || 'N/A'}</p>
-                            <p className={`text-xs ${labelText}`}>{student.student_number ? `No. ${student.student_number}` : `ID: ${student.id}`}</p>
+                          <div className={`mt-2 pt-2 border-t flex gap-3 text-xs ${dark ? 'border-slate-700 text-slate-400' : 'border-slate-200 text-slate-500'}`}>
+                            <span>{s.program || 'No program'}</span>
+                            <span>·</span>
+                            <span>{s.year_level || 'N/A'}</span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          {student.enrollment_status === 'Enrolled'
-                            ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/15 text-green-400">Enrolled</span>
-                            : <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-800'}`}>{student.enrollment_status}</span>}
+                      ))}
+                    </div>
+                  );
+
+                  // ── TABLE view ──
+                  if (viewMode === 'table') return (
+                    <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
+                      <table className="w-full text-sm">
+                        <thead className={`sticky top-0 text-xs uppercase tracking-wider ${dark ? 'bg-slate-900 text-slate-500' : 'bg-slate-50 text-slate-400'}`}>
+                          <tr>
+                            <th className="px-3 py-2.5 text-left font-bold">Student</th>
+                            <th className="px-3 py-2.5 text-left font-bold hidden sm:table-cell">Number</th>
+                            <th className="px-3 py-2.5 text-left font-bold hidden md:table-cell">Program</th>
+                            <th className="px-3 py-2.5 text-left font-bold hidden md:table-cell">Year</th>
+                            <th className="px-3 py-2.5 text-center font-bold">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className={`divide-y ${divider}`}>
+                          {filtered.map(s => (
+                            <tr key={s.id} onClick={() => handleStudentClick(s.id)}
+                              className={`cursor-pointer transition-colors ${rowHover}`}>
+                              <td className="px-3 py-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-7 h-7 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold text-xs shrink-0">
+                                    {s.first_name?.[0]}{s.last_name?.[0]}
+                                  </div>
+                                  <span className={`font-medium ${boldText}`}>{s.first_name} {s.last_name}</span>
+                                </div>
+                              </td>
+                              <td className={`px-3 py-3 hidden sm:table-cell font-mono text-xs ${labelText}`}>{s.student_number || `#${s.id}`}</td>
+                              <td className={`px-3 py-3 hidden md:table-cell text-xs ${labelText}`}>{s.program || '—'}</td>
+                              <td className={`px-3 py-3 hidden md:table-cell text-xs ${labelText}`}>{s.year_level || '—'}</td>
+                              <td className="px-3 py-3 text-center">
+                                {s.enrollment_status === 'Enrolled'
+                                  ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-500/15 text-green-400">Enrolled</span>
+                                  : <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}>{s.enrollment_status}</span>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+
+                  // ── LIST view (default) ──
+                  return (
+                    <div className={`divide-y max-h-[420px] overflow-y-auto pr-1 ${divider}`}>
+                      {filtered.map(s => (
+                        <div key={s.id} onClick={() => handleStudentClick(s.id)}
+                          className={`py-3.5 flex items-center justify-between group cursor-pointer -mx-4 px-4 rounded-lg transition-colors ${rowHover}`}>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-9 h-9 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold text-sm shrink-0">
+                              {s.first_name?.[0]}{s.last_name?.[0]}
+                            </div>
+                            <div>
+                              <p className={`text-sm font-semibold group-hover:text-brand-500 transition-colors ${boldText}`}>
+                                {s.first_name} {s.middle_name ? s.middle_name[0] + '. ' : ''}{s.last_name}
+                              </p>
+                              <p className={`text-xs ${labelText}`}>{s.program || 'N/A'} · {s.year_level || 'N/A'}</p>
+                              <p className={`text-xs ${labelText}`}>{s.student_number ? `No. ${s.student_number}` : `ID: ${s.id}`}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {s.enrollment_status === 'Enrolled'
+                              ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/15 text-green-400">Enrolled</span>
+                              : <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-800'}`}>{s.enrollment_status}</span>}
+                          </div>
                         </div>
-                      </div>
-                    ));
-                  })()}
-                </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Quick Stats */}
