@@ -1,9 +1,11 @@
 const API_BASE_URL = 'http://localhost:8000/api';
 
 export const fetchApi = async (endpoint, options = {}) => {
+  const token = localStorage.getItem('auth_token');
   const defaultHeaders = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
   };
   const config = { ...options, headers: { ...defaultHeaders, ...options.headers } };
   try {
@@ -68,9 +70,10 @@ export const api = {
     uploadPhoto: (studentId, file) => {
       const form = new FormData();
       form.append('photo', file);
+      const token = localStorage.getItem('auth_token');
       return fetch(`${API_BASE_URL}/students/${studentId}/photo`, {
         method: 'POST',
-        headers: { 'Accept': 'application/json' },
+        headers: { 'Accept': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
         body: form,
       }).then(async r => {
         const data = await r.json().catch(() => null);
@@ -94,9 +97,10 @@ export const api = {
     uploadPhoto: (id, file) => {
       const form = new FormData();
       form.append('photo', file);
+      const token = localStorage.getItem('auth_token');
       return fetch(`${API_BASE_URL}/faculties/${id}/photo`, {
         method: 'POST',
-        headers: { 'Accept': 'application/json' },
+        headers: { 'Accept': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
         body: form,
       }).then(async r => {
         const data = await r.json().catch(() => null);
