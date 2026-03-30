@@ -306,7 +306,7 @@ const ProfilePanel = ({faculty,loading,err,onReload}) => {
   const f=faculty;
   const fullName=[f.first_name,f.middle_name?f.middle_name[0]+'.':null,f.last_name,f.suffix].filter(Boolean).join(' ');
   const initials=`${f.first_name?.[0]??''}${f.last_name?.[0]??''}`.toUpperCase();
-  const photoUrl=f.profile_photo?`http://localhost:8000/storage/${f.profile_photo}?v=${f.updated_at??Date.now()}`:null;
+  const photoUrl=f.profile_photo?`${import.meta.env.VITE_STORAGE_URL || "http://localhost:8000/storage"}/${f.profile_photo}?v=${f.updated_at??Date.now()}`:null;
 
   const Tag=({text,color='blue'})=>{
     const colors={blue:dark?'bg-blue-900/40 text-blue-300':'bg-blue-100 text-blue-700',green:dark?'bg-green-900/40 text-green-300':'bg-green-100 text-green-700',amber:dark?'bg-amber-900/40 text-amber-300':'bg-amber-100 text-amber-700',purple:dark?'bg-purple-900/40 text-purple-300':'bg-purple-100 text-purple-700',slate:dark?'bg-slate-700 text-slate-300':'bg-slate-100 text-slate-600'};

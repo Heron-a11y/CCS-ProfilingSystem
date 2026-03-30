@@ -818,7 +818,7 @@ const StudentDashboard = ({ user, onLogout }) => {
     ? `${student.first_name?.[0] ?? ''}${student.last_name?.[0] ?? ''}`.toUpperCase() || 'ST'
     : (user?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? 'ST');
   const photoUrl   = student?.profile_photo
-    ? `http://localhost:8000/storage/${student.profile_photo}?v=${student.updated_at ?? Date.now()}`
+    ? `${import.meta.env.VITE_STORAGE_URL || "http://localhost:8000/storage"}/${student.profile_photo}?v=${student.updated_at ?? Date.now()}`
     : null;
 
   /* shared avatar component — shows photo or initials fallback */

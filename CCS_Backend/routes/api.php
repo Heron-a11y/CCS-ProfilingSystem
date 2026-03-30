@@ -8,6 +8,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OtpController;
 
 // ── Public Auth Routes ─────────────────────────────────────────
+Route::get('/health', fn() => response()->json(['status' => 'ok', 'timestamp' => now()]));
+
 Route::post('/auth/register',   [AuthController::class, 'register']);
 Route::post('/auth/login',      [AuthController::class, 'login']);
 
