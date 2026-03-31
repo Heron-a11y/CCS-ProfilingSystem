@@ -1,2 +1,2 @@
-[deploy]
-preDeployCommand = "php artisan config:clear && php artisan cache:clear && php artisan optimize"
+[build]
+builder = "nixpacks"

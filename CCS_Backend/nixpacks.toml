@@ -12,4 +12,4 @@ cmds = [
 ]
 
 [start]
-cmd = "php artisan migrate --force && php artisan db:seed --class=DatabaseSeeder --force && php artisan storage:link && php -S 0.0.0.0:$PORT -t public"
+cmd = "php artisan config:clear && php artisan cache:clear && php artisan optimize && php artisan migrate --force && php artisan storage:link && php -S 0.0.0.0:$PORT -t public"
