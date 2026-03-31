@@ -78,12 +78,14 @@ class StudentController extends Controller
         // Send welcome email to student's gmail
         try {
             $fullName = trim($validatedData['first_name'] . ' ' . $validatedData['last_name']);
+            \Log::info('Attempting welcome email to: ' . $validatedData['email'] . ' | mailer: ' . config('mail.default') . ' | key set: ' . (config('mail.mailers.brevo.key') ? 'yes' : 'NO'));
             Mail::html($this->buildWelcomeEmail($fullName, $validatedData['student_number']), function ($msg) use ($validatedData, $fullName) {
                 $msg->to($validatedData['email'], $fullName)
                     ->subject('Your CCS Profiling System Account Has Been Created');
             });
+            \Log::info('Welcome email sent to: ' . $validatedData['email']);
         } catch (\Throwable $e) {
-            \Log::error('Welcome email error: ' . $e->getMessage());
+            \Log::error('Welcome email error: ' . $e->getMessage() . ' | ' . $e->getFile() . ':' . $e->getLine());
         }
 
         return response()->json($student, 201);
