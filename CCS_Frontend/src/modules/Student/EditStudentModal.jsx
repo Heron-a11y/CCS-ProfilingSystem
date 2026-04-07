@@ -235,7 +235,7 @@ const EditStudentModal = ({ isOpen, onClose, onStudentUpdated, student }) => {
       for (const orig of origMedical) {
         if (!medicalRecords.find(m => m.id && m.id === orig.id)) await api.students.deleteMedical(student.id, orig.id).catch(() => {});
       }
-      for (const m of medicalRecords) {
+      for (const m of medicalRecords.filter(m => m.bloodtype || m.existing_conditions || m.emergency_contact_name || m.emergency_contact_number)) {
         const mp = { bloodtype: m.bloodtype, existing_conditions: m.existing_conditions, emergency_contact_name: m.emergency_contact_name, emergency_contact_number: m.emergency_contact_number };
         m.id ? await api.students.updateMedical(student.id, m.id, mp) : await api.students.addMedical(student.id, mp);
       }
