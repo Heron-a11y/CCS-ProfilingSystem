@@ -269,7 +269,7 @@ const EditStudentModal = ({ isOpen, onClose, onStudentUpdated, student }) => {
         if (!acadHistories.find(h => h.id && h.id === orig.id)) await api.students.deleteAcademicHistory(student.id, orig.id).catch(() => {});
       }
       for (const h of acadHistories.filter(h => h.school || h.year)) {
-        const hp = { school_year: h.year || '', semester: '1st Semester', gpa: h.gpa || null, academic_standing: 'Good Standing', total_units: 0, completed_units: 0 };
+        const hp = { school_name: h.school || null, school_year: h.year || '', semester: '1st Semester', gpa: h.gpa || null, academic_standing: 'Good Standing', total_units: 0, completed_units: 0 };
         h.id ? await api.students.updateAcademicHistory(student.id, h.id, hp).catch(() => api.students.addAcademicHistory(student.id, hp)) : await api.students.addAcademicHistory(student.id, hp);
       }
 
