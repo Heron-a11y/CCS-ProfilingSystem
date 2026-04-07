@@ -100,8 +100,17 @@ const StudentProfileTabs = ({ activeTab, student, onEditClick, onDeleteClick }) 
 
       {/* Student Header Summary */}
       <div className={`flex items-center space-x-6 mb-8 pb-6 border-b ${divider}`}>
-        <div className={`w-20 h-20 rounded-full flex items-center justify-center font-bold text-2xl shrink-0 ${getYearLevelColor(student.year_level, dark)}`}>
-          {student.first_name[0]}{student.last_name[0]}
+        <div className="w-20 h-20 rounded-full shrink-0 overflow-hidden">
+          {student.profile_photo
+            ? <img
+                src={`${import.meta.env.VITE_STORAGE_URL || 'https://ccs-profilingsystem-production.up.railway.app/storage'}/${student.profile_photo}`}
+                alt={`${student.first_name} ${student.last_name}`}
+                className="w-full h-full object-cover"
+              />
+            : <div className={`w-full h-full flex items-center justify-center font-bold text-2xl ${getYearLevelColor(student.year_level, dark)}`}>
+                {student.first_name[0]}{student.last_name[0]}
+              </div>
+          }
         </div>
         <div className="flex-1">
           <div className="flex justify-between items-start">
@@ -362,25 +371,6 @@ const StudentProfileTabs = ({ activeTab, student, onEditClick, onDeleteClick }) 
       {/* Academic History Tab */}
       {activeTab === 'academic_history' && (
         <div className="space-y-8">
-          {/* Academic Background */}
-          <div>
-            <h3 className={`text-lg font-bold mb-4 border-b pb-2 ${boldText} ${divider}`}>Academic Background</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className={`p-4 rounded-lg space-y-3 ${addrBox}`}>
-                {[['LRN', student.lrn], ['Last School Attended', student.last_school_attended], ['Last Year Attended', student.last_year_attended]].map(([label, val]) => (
-                  <div key={label} className="flex justify-between">
-                    <span className={`text-sm ${labelRow}`}>{label}</span>
-                    <span className={`font-medium text-sm text-right max-w-[60%] ${valueRow}`}>{val || 'N/A'}</span>
-                  </div>
-                ))}
-              </div>
-              <div className={`border p-4 rounded-lg ${honorsBox}`}>
-                <span className={`text-xs font-bold uppercase block mb-2 ${dark ? 'text-amber-400' : 'text-amber-700'}`}>Honors / Awards Received</span>
-                <p className={`text-sm ${valueRow}`}>{student.honors_received || 'None recorded'}</p>
-              </div>
-            </div>
-          </div>
-
           {/* Academic History */}
           <div>
             <h3 className={`text-lg font-bold mb-4 border-b pb-2 ${boldText} ${divider}`}>Academic History</h3>
@@ -389,7 +379,8 @@ const StudentProfileTabs = ({ activeTab, student, onEditClick, onDeleteClick }) 
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr className={`${theadRow}`}>
-                      <th className="p-3 font-semibold rounded-tl-lg">School Year</th>
+                      <th className="p-3 font-semibold rounded-tl-lg">School Name</th>
+                      <th className="p-3 font-semibold">School Year</th>
                       <th className="p-3 font-semibold">Semester</th>
                       <th className="p-3 font-semibold text-center">GPA</th>
                       <th className="p-3 font-semibold">Standing</th>
@@ -399,6 +390,7 @@ const StudentProfileTabs = ({ activeTab, student, onEditClick, onDeleteClick }) 
                   <tbody className={`divide-y ${tbDivide}`}>
                     {student.academic_histories.map(ah => (
                       <tr key={ah.id} className={trHover}>
+                        <td className={`p-3 ${valueRow}`}>{ah.school_name || '—'}</td>
                         <td className={`p-3 ${valueRow}`}>{ah.school_year}</td>
                         <td className={`p-3 ${valueRow}`}>{ah.semester}</td>
                         <td className="p-3 text-center font-bold text-brand-500">{ah.gpa}</td>
