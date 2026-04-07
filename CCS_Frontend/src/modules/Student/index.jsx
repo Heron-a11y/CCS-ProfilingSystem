@@ -8,6 +8,29 @@ import { useDarkMode } from '../../context/DarkModeContext';
 
 const StudentModule = () => {
   const dark = useDarkMode();
+  const STORAGE = import.meta.env.VITE_STORAGE_URL || 'https://ccs-profilingsystem-production.up.railway.app/storage';
+
+  const Avatar = ({ student, size = 'md' }) => {
+    const sz = size === 'sm' ? 'w-7 h-7 text-xs' : size === 'lg' ? 'w-10 h-10 text-sm' : 'w-9 h-9 text-sm';
+    const initials = `${student.first_name?.[0] ?? ''}${student.last_name?.[0] ?? ''}`;
+    if (student.profile_photo) {
+      return (
+        <img
+          src={`${STORAGE}/${student.profile_photo}?v=${student.updated_at ?? ''}`}
+          alt={initials}
+          className={`${sz} rounded-full object-cover shrink-0`}
+          onError={e => {
+            e.currentTarget.outerHTML = `<div class="${sz} rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold shrink-0">${initials}</div>`;
+          }}
+        />
+      );
+    }
+    return (
+      <div className={`${sz} rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold shrink-0`}>
+        {initials}
+      </div>
+    );
+  };
   const [activeTab, setActiveTab] = useState('overview');
   const [students, setStudents] = useState([]);
   const [stats, setStats] = useState({ total: 0, enrolled: 0, notEnrolled: 0 });
@@ -313,9 +336,7 @@ const StudentModule = () => {
                         <div key={s.id} onClick={() => handleStudentClick(s.id)}
                           className={`p-4 rounded-xl border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md ${dark ? 'bg-slate-800 border-slate-700 hover:border-brand-500/40' : 'bg-slate-50 border-slate-200 hover:border-brand-400/50 hover:shadow-brand-500/10'}`}>
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold text-sm shrink-0">
-                              {s.first_name?.[0]}{s.last_name?.[0]}
-                            </div>
+                            <Avatar student={s} size="lg" />
                             <div className="flex-1 min-w-0">
                               <p className={`text-sm font-semibold truncate ${boldText}`}>{s.first_name} {s.last_name}</p>
                               <p className={`text-xs truncate ${labelText}`}>{s.student_number || `ID: ${s.id}`}</p>
@@ -353,9 +374,7 @@ const StudentModule = () => {
                               className={`cursor-pointer transition-colors ${rowHover}`}>
                               <td className="px-3 py-3">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-7 h-7 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold text-xs shrink-0">
-                                    {s.first_name?.[0]}{s.last_name?.[0]}
-                                  </div>
+                                  <Avatar student={s} size="sm" />
                                   <span className={`font-medium ${boldText}`}>{s.first_name} {s.last_name}</span>
                                 </div>
                               </td>
@@ -381,9 +400,7 @@ const StudentModule = () => {
                         <div key={s.id} onClick={() => handleStudentClick(s.id)}
                           className={`py-4 flex items-center justify-between group cursor-pointer -mx-4 px-4 rounded-lg transition-colors ${rowHover}`}>
                           <div className="flex items-center space-x-3">
-                            <div className="w-9 h-9 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold text-sm shrink-0">
-                              {s.first_name?.[0]}{s.last_name?.[0]}
-                            </div>
+                            <Avatar student={s} />
                             <div>
                               <p className={`text-sm font-semibold group-hover:text-brand-500 transition-colors ${boldText}`}>
                                 {s.first_name} {s.middle_name ? s.middle_name[0] + '. ' : ''}{s.last_name}

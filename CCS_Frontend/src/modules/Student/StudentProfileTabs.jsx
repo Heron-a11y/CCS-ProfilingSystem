@@ -103,14 +103,16 @@ const StudentProfileTabs = ({ activeTab, student, onEditClick, onDeleteClick }) 
         <div className="w-20 h-20 rounded-full shrink-0 overflow-hidden">
           {student.profile_photo
             ? <img
-                src={`${import.meta.env.VITE_STORAGE_URL || 'https://ccs-profilingsystem-production.up.railway.app/storage'}/${student.profile_photo}`}
+                src={`${import.meta.env.VITE_STORAGE_URL || 'https://ccs-profilingsystem-production.up.railway.app/storage'}/${student.profile_photo}?v=${student.updated_at ?? Date.now()}`}
                 alt={`${student.first_name} ${student.last_name}`}
                 className="w-full h-full object-cover"
+                onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
               />
-            : <div className={`w-full h-full flex items-center justify-center font-bold text-2xl ${getYearLevelColor(student.year_level, dark)}`}>
-                {student.first_name[0]}{student.last_name[0]}
-              </div>
-          }
+            : null}
+          <div className={`w-full h-full flex items-center justify-center font-bold text-2xl ${getYearLevelColor(student.year_level, dark)}`}
+            style={{ display: student.profile_photo ? 'none' : 'flex' }}>
+            {student.first_name[0]}{student.last_name[0]}
+          </div>
         </div>
         <div className="flex-1">
           <div className="flex justify-between items-start">
