@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
+import { STORAGE_URL } from '../../utils/config';
 import AddStudentModal from './AddStudentModal';
 import EditStudentModal from './EditStudentModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -8,7 +9,6 @@ import { useDarkMode } from '../../context/DarkModeContext';
 
 const StudentModule = () => {
   const dark = useDarkMode();
-  const STORAGE = import.meta.env.VITE_STORAGE_URL || 'https://ccs-profilingsystem-production.up.railway.app/storage';
 
   const Avatar = ({ student, size = 'md' }) => {
     const sz = size === 'sm' ? 'w-7 h-7 text-xs' : size === 'lg' ? 'w-10 h-10 text-sm' : 'w-9 h-9 text-sm';
@@ -16,7 +16,7 @@ const StudentModule = () => {
     if (student.profile_photo) {
       return (
         <img
-          src={`${STORAGE}/${student.profile_photo}?v=${student.updated_at ?? ''}`}
+          src={`${STORAGE_URL}/${student.profile_photo}?v=${student.updated_at ?? ''}`}
           alt={initials}
           className={`${sz} rounded-full object-cover shrink-0`}
           onError={e => {

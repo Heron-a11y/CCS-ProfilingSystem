@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDarkMode } from '../../context/DarkModeContext';
+import { STORAGE_URL } from '../../utils/config';
 
 // Helpers
 const getAge = (birthDate) => {
@@ -103,7 +104,7 @@ const StudentProfileTabs = ({ activeTab, student, onEditClick, onDeleteClick }) 
         <div className="w-20 h-20 rounded-full shrink-0 overflow-hidden">
           {student.profile_photo
             ? <img
-                src={`${import.meta.env.VITE_STORAGE_URL || 'https://ccs-profilingsystem-production.up.railway.app/storage'}/${student.profile_photo}?v=${student.updated_at ?? Date.now()}`}
+                src={`${STORAGE_URL}/${student.profile_photo}?v=${student.updated_at ?? Date.now()}`}
                 alt={`${student.first_name} ${student.last_name}`}
                 className="w-full h-full object-cover"
                 onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
