@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 import AddStudentModal from './AddStudentModal';
 import EditStudentModal from './EditStudentModal';
+import DeleteConfirmModal from './DeleteConfirmModal';
 import StudentProfileTabs from './StudentProfileTabs';
 import { useDarkMode } from '../../context/DarkModeContext';
 
@@ -13,6 +14,8 @@ const StudentModule = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [listSearch, setListSearch] = useState('');
   const [listFilter, setListFilter] = useState('All');
@@ -94,18 +97,22 @@ const StudentModule = () => {
     }
   };
 
-  const handleEditStudent  = () => setIsEditModalOpen(true);
-  const handleDeleteStudent = async (id) => {
-    if (window.confirm("Are you sure you want to delete this student? This action cannot be undone.")) {
-      try {
-        await api.students.delete(id);
-        await reloadStudents();
-        setSelectedStudent(null);
-        setActiveTab('overview');
-      } catch (error) {
-        console.error("Failed to delete student:", error);
-        alert("Failed to delete student. Please try again.");
-      }
+  const handleEditStudent = () => setIsEditModalOpen(true);
+  const handleDeleteStudent = (id) => {
+    setStudentToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+  const confirmDelete = async () => {
+    try {
+      await api.students.delete(studentToDelete);
+      await reloadStudents();
+      setSelectedStudent(null);
+      setActiveTab('overview');
+    } catch (error) {
+      console.error("Failed to delete student:", error);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setStudentToDelete(null);
     }
   };
 
@@ -243,14 +250,14 @@ const StudentModule = () => {
                 </div>
 
                 {/* Search + enrollment filter */}
-                <div className="flex gap-2 mb-3 flex-wrap">
-                  <div className="relative flex-1 min-w-[160px]">
+                <div className="flex gap-3 mb-3">
+                  <div className="relative flex-1">
                     <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <input value={listSearch} onChange={e => setListSearch(e.target.value)} placeholder="Search name or number..."
-                      className={`w-full pl-9 pr-3 py-2 rounded-lg border text-sm outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-100 placeholder-slate-500 focus:border-brand-400' : 'bg-white border-slate-200 text-slate-700 placeholder-slate-400 focus:border-brand-400'}`} />
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-100 placeholder-slate-500 focus:border-brand-400' : 'bg-white border-slate-200 text-slate-700 placeholder-slate-400 focus:border-brand-400'}`} />
                   </div>
                   <select value={listFilter} onChange={e => setListFilter(e.target.value)}
-                    className={`rounded-lg border text-sm px-3 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200 focus:border-brand-400' : 'bg-white border-slate-200 text-slate-700 focus:border-brand-400'}`}>
+                    className={`rounded-xl border text-sm px-3 py-2.5 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200 focus:border-brand-400' : 'bg-white border-slate-200 text-slate-700 focus:border-brand-400'}`}>
                     <option value="All">All</option>
                     <option value="Enrolled">Enrolled</option>
                     <option value="Not Enrolled">Not Enrolled</option>
@@ -258,26 +265,26 @@ const StudentModule = () => {
                 </div>
 
                 {/* Advanced filters row */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5 p-3 rounded-xl ${dark ? 'bg-slate-800/60 border border-slate-700/60' : 'bg-slate-50 border border-slate-200'}`}>
                   <select value={filterSkill} onChange={e => setFilterSkill(e.target.value)}
-                    className={`rounded-lg border text-xs px-2 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
+                    className={`rounded-lg border text-xs px-2.5 py-2 outline-none transition-colors ${dark ? 'bg-slate-700 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
                     <option value="">All Skills</option>
                     {availableSkills.map(s => <option key={s.id} value={s.id}>{s.skill_name}</option>)}
                   </select>
                   <select value={filterCourse} onChange={e => setFilterCourse(e.target.value)}
-                    className={`rounded-lg border text-xs px-2 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
+                    className={`rounded-lg border text-xs px-2.5 py-2 outline-none transition-colors ${dark ? 'bg-slate-700 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
                     <option value="">All Courses</option>
                     {availableCourses.map(c => <option key={c.id} value={c.id}>{c.course_code}</option>)}
                   </select>
                   <select value={filterAffil} onChange={e => setFilterAffil(e.target.value)}
-                    className={`rounded-lg border text-xs px-2 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
+                    className={`rounded-lg border text-xs px-2.5 py-2 outline-none transition-colors ${dark ? 'bg-slate-700 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
                     <option value="">All Affiliations</option>
                     {[...new Set(students.flatMap(s => s.affiliations?.map(a => a.organization_name) ?? []))].sort().map(org => (
                       <option key={org} value={org}>{org}</option>
                     ))}
                   </select>
                   <select value={filterYear} onChange={e => setFilterYear(e.target.value)}
-                    className={`rounded-lg border text-xs px-2 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
+                    className={`rounded-lg border text-xs px-2.5 py-2 outline-none transition-colors ${dark ? 'bg-slate-700 border-slate-600 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
                     <option value="">All Years</option>
                     {['1st Year','2nd Year','3rd Year','4th Year'].map(y => <option key={y} value={y}>{y}</option>)}
                   </select>
@@ -372,7 +379,7 @@ const StudentModule = () => {
                     <div className={`divide-y max-h-[420px] overflow-y-auto pr-1 ${divider}`}>
                       {filtered.map(s => (
                         <div key={s.id} onClick={() => handleStudentClick(s.id)}
-                          className={`py-3.5 flex items-center justify-between group cursor-pointer -mx-4 px-4 rounded-lg transition-colors ${rowHover}`}>
+                          className={`py-4 flex items-center justify-between group cursor-pointer -mx-4 px-4 rounded-lg transition-colors ${rowHover}`}>
                           <div className="flex items-center space-x-3">
                             <div className="w-9 h-9 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold text-sm shrink-0">
                               {s.first_name?.[0]}{s.last_name?.[0]}
@@ -444,6 +451,13 @@ const StudentModule = () => {
           await reloadStudents();
           if (selectedStudent) handleStudentClick(selectedStudent.id);
         }}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        studentName={selectedStudent ? `${selectedStudent.first_name} ${selectedStudent.last_name}` : ''}
+        onConfirm={confirmDelete}
+        onCancel={() => { setIsDeleteModalOpen(false); setStudentToDelete(null); }}
       />
     </div>
   );
