@@ -915,7 +915,7 @@ const StudentDashboard = ({ user, onLogout }) => {
      PANEL: ACADEMIC HISTORY
   ════════════════════════════════ */
   const AcademicPanel = () => {
-    const [modal, setModal] = useState(null); // null | 'add' | record
+    const [modal, setModal] = useState(null);
     const [deleting, setDeleting] = useState(null);
     const s = student;
 
@@ -929,40 +929,105 @@ const StudentDashboard = ({ user, onLogout }) => {
 
     if (loadingProfile) return <Spinner />;
 
+    // Compute summary stats
+    const histories = s?.academic_histories ?? [];
+    const gpas = histories.filter(h => h.gpa).map(h => parseFloat(h.gpa));
+    const latestGpa = gpas.length ? gpas[gpas.length - 1].toFixed(2) : null;
+    const bestGpa = gpas.length ? Math.min(...gpas).toFixed(2) : null;
+    const totalCompleted = histories.reduce((sum, h) => sum + (Number(h.completed_units) || 0), 0);
+    const deansCount = histories.filter(h => h.academic_standing === "Dean's List").length;
+
+    const standingStyle = (standing) => {
+      if (standing === "Dean's List") return dark
+        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+        : 'bg-amber-50 text-amber-700 border border-amber-200';
+      if (standing === 'Good Standing') return dark
+        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+        : 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+      if (standing === 'Academic Probation') return dark
+        ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
+        : 'bg-orange-50 text-orange-700 border border-orange-200';
+      return dark
+        ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+        : 'bg-red-50 text-red-700 border border-red-200';
+    };
+
     return (
       <div className="space-y-5">
         {modal && <AcademicModal studentId={s?.id} record={modal === 'add' ? null : modal} onClose={() => setModal(null)} onSaved={() => { setModal(null); loadStudent(); }} />}
 
+        {/* Summary stats */}
+        {s && histories.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Latest GPA', value: latestGpa ?? '—', icon: '⭐', note: 'Most recent semester' },
+              { label: 'Best GPA', value: bestGpa ?? '—', icon: '🏆', note: 'Lowest = best in PH' },
+              { label: 'Units Completed', value: totalCompleted, icon: '📦', note: 'Across all semesters' },
+              { label: "Dean's List", value: `${deansCount}x`, icon: '🎖️', note: 'Semesters achieved' },
+            ].map(st => (
+              <div key={st.label} className="rounded-2xl border p-4"
+                style={dark ? {
+                  background: 'linear-gradient(135deg, #2a1200 0%, #1a0d00 100%)',
+                  borderColor: 'rgba(249,115,22,0.4)',
+                  boxShadow: '0 0 10px rgba(249,115,22,0.15)',
+                } : {
+                  background: '#fff8f5',
+                  borderColor: 'rgba(249,115,22,0.3)',
+                  boxShadow: '0 0 8px rgba(249,115,22,0.1)',
+                }}>
+                <div className="text-xl mb-1">{st.icon}</div>
+                <div className={`text-2xl font-bold ${dark ? 'text-orange-100' : 'text-slate-800'}`}>{st.value}</div>
+                <div className={`text-xs font-semibold mt-0.5 ${dark ? 'text-orange-400' : 'text-orange-500'}`}>{st.label}</div>
+                <div className={`text-[10px] mt-0.5 ${dark ? 'text-orange-300/40' : 'text-slate-400'}`}>{st.note}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <SectionCard title="Academic History" icon="📊" action={s && <AddBtn onClick={() => setModal('add')} label="Add Record" />}>
           {!s ? <EmptyState icon="📚" title="No profile linked." /> :
-           s.academic_histories?.length > 0 ? (
+           histories.length > 0 ? (
             <div className="overflow-x-auto -mx-5 -mb-5">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-slate-900/60 text-slate-500 text-xs uppercase tracking-wider">
+                  <tr className={`text-xs uppercase tracking-wider ${dark ? 'bg-orange-500/10 text-orange-400/70' : 'bg-orange-50 text-orange-500/80'}`}>
                     <th className="px-5 py-3 text-left font-semibold">School Year</th>
                     <th className="px-5 py-3 text-left font-semibold">Semester</th>
                     <th className="px-5 py-3 text-center font-semibold">GPA</th>
                     <th className="px-5 py-3 text-left font-semibold">Standing</th>
-                    <th className="px-5 py-3 text-right font-semibold">Units</th>
+                    <th className="px-5 py-3 text-center font-semibold">Units Done / Total</th>
                     <th className="px-5 py-3 text-right font-semibold">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/40">
-                  {s.academic_histories.map(ah => (
-                    <tr key={ah.id} className="hover:bg-slate-700/20 transition-colors">
-                      <td className="px-5 py-3.5 text-slate-200 font-medium">{ah.school_year}</td>
-                      <td className="px-5 py-3.5 text-slate-300">{ah.semester}</td>
-                      <td className="px-5 py-3.5 text-center font-bold text-brand-400">{ah.gpa ?? '—'}</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${ah.academic_standing === 'Good Standing' || ah.academic_standing === "Dean's List" ? 'bg-green-900/40 text-green-300' : 'bg-yellow-900/40 text-yellow-300'}`}>{ah.academic_standing}</span>
+                <tbody className={`divide-y ${dark ? 'divide-orange-500/10' : 'divide-orange-100'}`}>
+                  {histories.map(ah => (
+                    <tr key={ah.id} className={`transition-colors ${dark ? 'hover:bg-orange-500/5' : 'hover:bg-orange-50/60'}`}>
+                      <td className={`px-5 py-3.5 font-semibold ${dark ? 'text-orange-100' : 'text-slate-800'}`}>{ah.school_year}</td>
+                      <td className={`px-5 py-3.5 ${dark ? 'text-orange-200/70' : 'text-slate-600'}`}>{ah.semester}</td>
+                      <td className="px-5 py-3.5 text-center">
+                        {ah.gpa
+                          ? <span className={`text-base font-bold ${dark ? 'text-orange-300' : 'text-orange-500'}`}>{parseFloat(ah.gpa).toFixed(2)}</span>
+                          : <span className={`text-xs ${dark ? 'text-orange-300/30' : 'text-slate-400'}`}>—</span>}
                       </td>
-                      <td className="px-5 py-3.5 text-right text-slate-400">{ah.completed_units} / {ah.total_units}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${standingStyle(ah.academic_standing)}`}>
+                          {ah.academic_standing === "Dean's List" && '🏆 '}
+                          {ah.academic_standing === 'Good Standing' && '✓ '}
+                          {ah.academic_standing}
+                        </span>
+                      </td>
+                      <td className={`px-5 py-3.5 text-center ${dark ? 'text-orange-200/60' : 'text-slate-500'}`}>
+                        <span className={`font-semibold ${dark ? 'text-orange-100' : 'text-slate-700'}`}>{ah.completed_units}</span>
+                        <span className={`mx-1 ${dark ? 'text-orange-300/30' : 'text-slate-300'}`}>/</span>
+                        {ah.total_units}
+                      </td>
                       <td className="px-5 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <BtnEdit onClick={() => setModal(ah)} />
                           <BtnDanger onClick={() => del(ah.id)} disabled={deleting === ah.id}>
-                            {deleting === ah.id ? <div className="w-3 h-3 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" /> : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
+                            {deleting === ah.id
+                              ? <div className="w-3 h-3 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                              : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
                           </BtnDanger>
                         </div>
                       </td>
@@ -981,9 +1046,9 @@ const StudentDashboard = ({ user, onLogout }) => {
               <Row label="Last Year Attended"   value={val(s.last_year_attended)} />
               <Row label="LRN"                  value={val(s.lrn)} />
               {s.honors_received && (
-                <div className="mt-3 p-3 rounded-xl bg-amber-900/20 border border-amber-800/40">
-                  <p className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Honors / Awards</p>
-                  <p className="text-sm text-slate-200">{s.honors_received}</p>
+                <div className={`mt-3 p-3 rounded-xl border ${dark ? 'bg-amber-900/20 border-amber-800/40' : 'bg-amber-50 border-amber-200'}`}>
+                  <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${dark ? 'text-amber-400' : 'text-amber-600'}`}>🏆 Honors / Awards</p>
+                  <p className={`text-sm ${dark ? 'text-orange-100' : 'text-slate-700'}`}>{s.honors_received}</p>
                 </div>
               )}
             </div>
