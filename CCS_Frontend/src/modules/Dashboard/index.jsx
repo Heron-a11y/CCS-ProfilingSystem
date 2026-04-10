@@ -10,8 +10,10 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
-const StatCard = ({ icon: Icon, label, value, sub, gradient, iconBg, dark }) => (
-  <div className={`relative overflow-hidden rounded-2xl p-5 shadow-sm border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-100'}`}>
+const StatCard = ({ icon: Icon, label, value, sub, gradient, iconBg, glowColor, dark }) => (
+  <div className={`relative overflow-hidden rounded-2xl p-5 shadow-sm border transition-all duration-300 cursor-default
+    hover:-translate-y-2 hover:shadow-xl ${glowColor}
+    ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-100'}`}>
     {/* Subtle background gradient blob */}
     <div className={`absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-10 ${gradient}`} />
     <div className="relative flex items-start justify-between">
@@ -121,17 +123,23 @@ const AdminDashboard = () => {
       {/* ── Stat Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard icon={UserGroupIcon}          label="Total Students" value={students.length} sub={`${enrolled} enrolled · ${notEnrolled} inactive`}
-          gradient="bg-orange-500" iconBg={dark ? 'bg-orange-900/40 text-orange-400' : 'bg-orange-50 text-orange-500'} dark={dark} />
+          gradient="bg-orange-500" iconBg={dark ? 'bg-orange-900/40 text-orange-400' : 'bg-orange-50 text-orange-500'}
+          glowColor="hover:border-orange-400/60 hover:shadow-orange-400/30" dark={dark} />
         <StatCard icon={CheckCircleIcon}         label="Enrolled"       value={enrolled}        sub="Active this semester"
-          gradient="bg-green-500"  iconBg={dark ? 'bg-green-900/40 text-green-400'  : 'bg-green-50 text-green-500'}  dark={dark} />
+          gradient="bg-green-500"  iconBg={dark ? 'bg-green-900/40 text-green-400'  : 'bg-green-50 text-green-500'}
+          glowColor="hover:border-green-400/60 hover:shadow-green-400/30" dark={dark} />
         <StatCard icon={UsersIcon}               label="Faculty"        value={faculties.length} sub="Teaching staff"
-          gradient="bg-blue-500"   iconBg={dark ? 'bg-blue-900/40 text-blue-400'    : 'bg-blue-50 text-blue-500'}    dark={dark} />
+          gradient="bg-blue-500"   iconBg={dark ? 'bg-blue-900/40 text-blue-400'    : 'bg-blue-50 text-blue-500'}
+          glowColor="hover:border-blue-400/60 hover:shadow-blue-400/30" dark={dark} />
         <StatCard icon={ExclamationTriangleIcon} label="Violations"     value={violations}      sub="Across all students"
-          gradient="bg-red-500"    iconBg={dark ? 'bg-red-900/40 text-red-400'      : 'bg-red-50 text-red-500'}      dark={dark} />
+          gradient="bg-red-500"    iconBg={dark ? 'bg-red-900/40 text-red-400'      : 'bg-red-50 text-red-500'}
+          glowColor="hover:border-red-400/60 hover:shadow-red-400/30" dark={dark} />
         <StatCard icon={StarIcon}                label="Events"         value={events.length}   sub={`${upcomingEvents.length} upcoming`}
-          gradient="bg-violet-500" iconBg={dark ? 'bg-violet-900/40 text-violet-400': 'bg-violet-50 text-violet-500'} dark={dark} />
+          gradient="bg-violet-500" iconBg={dark ? 'bg-violet-900/40 text-violet-400': 'bg-violet-50 text-violet-500'}
+          glowColor="hover:border-violet-400/60 hover:shadow-violet-400/30" dark={dark} />
         <StatCard icon={NoSymbolIcon}            label="Not Enrolled"   value={notEnrolled}     sub="Inactive students"
-          gradient="bg-slate-500"  iconBg={dark ? 'bg-slate-800 text-slate-400'     : 'bg-slate-100 text-slate-500'} dark={dark} />
+          gradient="bg-slate-500"  iconBg={dark ? 'bg-slate-800 text-slate-400'     : 'bg-slate-100 text-slate-500'}
+          glowColor="hover:border-slate-400/60 hover:shadow-slate-400/20" dark={dark} />
       </div>
 
       {/* ── Charts Row ── */}
