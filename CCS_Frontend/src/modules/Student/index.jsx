@@ -97,9 +97,14 @@ const StudentCard = ({ student: s, onSelect, dark }) => {
             <AcademicCapIcon className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">{s.program || 'No program'}</span>
           </div>
-          <div className={`flex items-center gap-1.5 ${labelText}`}>
-            <CalendarDaysIcon className="w-3.5 h-3.5 shrink-0" />
-            <span>{s.year_level || 'N/A'}</span>
+          <div className="flex items-center justify-between">
+            <div className={`flex items-center gap-1.5 ${labelText}`}>
+              <CalendarDaysIcon className="w-3.5 h-3.5 shrink-0" />
+              <span>{s.year_level || 'N/A'}</span>
+            </div>
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
+              {s.student_type || 'N/A'}
+            </span>
           </div>
         </div>
         {/* Footer badge */}
@@ -440,6 +445,7 @@ const StudentModule = () => {
                             <th className="px-3 py-2.5 text-left font-bold hidden sm:table-cell">Number</th>
                             <th className="px-3 py-2.5 text-left font-bold hidden md:table-cell">Program</th>
                             <th className="px-3 py-2.5 text-left font-bold hidden md:table-cell">Year</th>
+                            <th className="px-3 py-2.5 text-left font-bold hidden lg:table-cell">Type</th>
                             <th className="px-3 py-2.5 text-center font-bold">Status</th>
                           </tr>
                         </thead>
@@ -456,6 +462,7 @@ const StudentModule = () => {
                               <td className={`px-3 py-3 hidden sm:table-cell font-mono text-xs ${labelText}`}>{s.student_number || `#${s.id}`}</td>
                               <td className={`px-3 py-3 hidden md:table-cell text-xs ${labelText}`}>{s.program || '—'}</td>
                               <td className={`px-3 py-3 hidden md:table-cell text-xs ${labelText}`}>{s.year_level || '—'}</td>
+                              <td className={`px-3 py-3 hidden lg:table-cell text-xs ${labelText}`}>{s.student_type || '—'}</td>
                               <td className="px-3 py-3 text-center">
                                 {s.enrollment_status === 'Enrolled'
                                   ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-500/15 text-green-400">Enrolled</span>
@@ -486,6 +493,9 @@ const StudentModule = () => {
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <CalendarDaysIcon className="w-3 h-3" />{s.year_level || 'N/A'}
+                                </span>
+                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
+                                  {s.student_type || 'N/A'}
                                 </span>
                                 <span className="flex items-center gap-1 font-mono">
                                   <IdentificationIcon className="w-3 h-3" />{s.student_number || s.id}
