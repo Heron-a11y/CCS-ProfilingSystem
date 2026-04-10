@@ -112,7 +112,9 @@ const StudentProfileTabs = ({ activeTab, student, onEditClick, onDeleteClick }) 
         <div className="w-20 h-20 rounded-full shrink-0 overflow-hidden">
           {student.profile_photo
             ? <img
-                src={`${STORAGE_URL}/${student.profile_photo}?v=${student.updated_at ?? Date.now()}`}
+                src={student.profile_photo.startsWith('http')
+                  ? student.profile_photo
+                  : `${STORAGE_URL}/${student.profile_photo}?v=${student.updated_at ?? Date.now()}`}
                 alt={`${student.first_name} ${student.last_name}`}
                 className="w-full h-full object-cover"
                 onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}

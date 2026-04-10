@@ -349,7 +349,6 @@ HTML;
                 'file',
                 'max:10240',
                 function ($attribute, $value, $fail) {
-                    // Validate by reading magic bytes — no re-encoding
                     $finfo = finfo_open(FILEINFO_MIME_TYPE);
                     $mime  = finfo_file($finfo, $value->getRealPath());
                     finfo_close($finfo);
@@ -361,21 +360,29 @@ HTML;
             ],
         ]);
 
-        // Delete old photo if exists
-        if ($student->profile_photo) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($student->profile_photo);
+        // Delete old photo from Cloudinary if exists
+        if ($student->profile_photo && str_starts_with($student->profile_photo, 'http')) {
+            try {
+                // Extract public_id from the stored URL
+                $publicId = pathinfo(parse_url($student->profile_photo, PHP_URL_PATH), PATHINFO_FILENAME);
+                \Cloudinary\Cloudinary::uploadApi()->destroy('ccs_profiles/' . $publicId);
+            } catch (\Throwable $e) {
+                \Log::warning('Cloudinary delete failed: ' . $e->getMessage());
+            }
         }
 
-        // Store the raw file bytes without any processing
-        $file      = $request->file('photo');
-        $ext       = strtolower($file->getClientOriginalExtension()) ?: 'jpg';
-        $filename  = \Illuminate\Support\Str::random(40) . '.' . $ext;
-        $file->storeAs('profile_photos', $filename, 'public');
+        // Upload to Cloudinary — persists across Railway redeployments
+        $file   = $request->file('photo');
+        $result = \Cloudinary\Cloudinary::uploadApi()->upload($file->getRealPath(), [
+            'folder'         => 'ccs_profiles',
+            'transformation' => [['width' => 400, 'height' => 400, 'crop' => 'fill', 'gravity' => 'face']],
+        ]);
 
-        $student->update(['profile_photo' => 'profile_photos/' . $filename]);
+        $url = $result['secure_url'];
+        $student->update(['profile_photo' => $url]);
 
         return response()->json([
-            'profile_photo' => 'profile_photos/' . $filename,
+            'profile_photo' => $url,
             'updated_at'    => $student->fresh()->updated_at,
         ]);
     }

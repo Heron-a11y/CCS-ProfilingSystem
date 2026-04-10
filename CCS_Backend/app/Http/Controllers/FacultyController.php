@@ -90,14 +90,26 @@ class FacultyController extends Controller
     {
         $request->validate(['photo' => 'required|image|max:10240']);
 
-        if ($faculty->profile_photo) {
-            Storage::disk('public')->delete($faculty->profile_photo);
+        // Delete old photo from Cloudinary if exists
+        if ($faculty->profile_photo && str_starts_with($faculty->profile_photo, 'http')) {
+            try {
+                $publicId = pathinfo(parse_url($faculty->profile_photo, PHP_URL_PATH), PATHINFO_FILENAME);
+                \Cloudinary\Cloudinary::uploadApi()->destroy('ccs_faculty/' . $publicId);
+            } catch (\Throwable $e) {
+                \Log::warning('Cloudinary delete failed: ' . $e->getMessage());
+            }
         }
 
-        $path = $request->file('photo')->store('faculty-photos', 'public');
-        $faculty->update(['profile_photo' => $path]);
+        // Upload to Cloudinary
+        $result = \Cloudinary\Cloudinary::uploadApi()->upload($request->file('photo')->getRealPath(), [
+            'folder'         => 'ccs_faculty',
+            'transformation' => [['width' => 400, 'height' => 400, 'crop' => 'fill', 'gravity' => 'face']],
+        ]);
 
-        return response()->json(['profile_photo' => $path, 'faculty' => $faculty->load('department')]);
+        $url = $result['secure_url'];
+        $faculty->update(['profile_photo' => $url]);
+
+        return response()->json(['profile_photo' => $url, 'faculty' => $faculty->load('department')]);
     }
 
     public function export()
