@@ -204,7 +204,6 @@ const EventsModule = () => {
                 );
               })}
             </div>
-            </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-slate-500 py-12">
               <CalendarDaysIcon className="w-16 h-16 text-slate-300 mb-4" />
