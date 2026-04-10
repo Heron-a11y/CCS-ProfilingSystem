@@ -1,19 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
 import { useCurrentUser } from '../context/UserContext';
 import {
-  MagnifyingGlassIcon, SunIcon, MoonIcon, BellIcon, UserCircleIcon,
+  MagnifyingGlassIcon, SunIcon, MoonIcon, BellIcon,
 } from '@heroicons/react/24/outline';
 
 const Topnav = ({ currentModule, userName = "Admin User", darkMode = false, onToggleDark }) => {
-  // Part 4: Global State — read logged-in user from UserContext (global state)
   const currentUser = useCurrentUser();
   const displayName = currentUser?.name || currentUser?.email || userName;
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const searchRef = useRef(null);
+
+  const closeSearch = () => { setShowDropdown(false); setSearchQuery(''); setSearchResults(null); };
+
+  const handleResultClick = (type, id) => {
+    closeSearch();
+    if (type === 'student') navigate(`/admin/users/${id}`);
+    else if (type === 'faculty') navigate(`/admin/reports/${id}`);
+    else if (type === 'event') navigate('/admin/events');
+    else if (type === 'subject') navigate('/admin/instruction');
+  };
 
   const getModuleTitle = (moduleId) => {
     const titles = {
@@ -98,7 +109,8 @@ const Topnav = ({ currentModule, userName = "Admin User", darkMode = false, onTo
                     <h4 className="px-3 py-1.5 text-xs font-semibold text-brand-600 bg-brand-50 rounded-md mb-2">Students</h4>
                     <ul className="space-y-1">
                       {searchResults.students.map(s => (
-                        <li key={s.id} className="px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
+                        <li key={s.id} onClick={() => handleResultClick('student', s.id)}
+                          className="px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
                           <p className="font-semibold text-sm text-slate-800">{s.first_name} {s.last_name}</p>
                           <p className="text-xs text-slate-500 truncate">{s.email}</p>
                         </li>
@@ -113,7 +125,8 @@ const Topnav = ({ currentModule, userName = "Admin User", darkMode = false, onTo
                     <h4 className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-md mb-2">Faculty</h4>
                     <ul className="space-y-1">
                       {searchResults.faculties.map(f => (
-                        <li key={f.id} className="px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
+                        <li key={f.id} onClick={() => handleResultClick('faculty', f.id)}
+                          className="px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
                           <p className="font-semibold text-sm text-slate-800">{f.first_name} {f.last_name}</p>
                           <p className="text-xs text-slate-500 truncate">{f.position}</p>
                         </li>
@@ -128,7 +141,8 @@ const Topnav = ({ currentModule, userName = "Admin User", darkMode = false, onTo
                     <h4 className="px-3 py-1.5 text-xs font-semibold text-amber-600 bg-amber-50 rounded-md mb-2">Subjects</h4>
                     <ul className="space-y-1">
                       {searchResults.subjects.map(sub => (
-                        <li key={sub.id} className="px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
+                        <li key={sub.id} onClick={() => handleResultClick('subject', sub.id)}
+                          className="px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
                           <p className="font-semibold text-sm text-slate-800">{sub.subject_code}</p>
                           <p className="text-xs text-slate-500 truncate">{sub.descriptive_title}</p>
                         </li>
@@ -143,7 +157,8 @@ const Topnav = ({ currentModule, userName = "Admin User", darkMode = false, onTo
                     <h4 className="px-3 py-1.5 text-xs font-semibold text-purple-600 bg-purple-50 rounded-md mb-2">Events</h4>
                     <ul className="space-y-1">
                       {searchResults.events.map(ev => (
-                        <li key={ev.id} className="px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
+                        <li key={ev.id} onClick={() => handleResultClick('event', ev.id)}
+                          className="px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
                           <p className="font-semibold text-sm text-slate-800">{ev.eventName}</p>
                           <p className="text-xs text-slate-500 truncate">{ev.eventType}</p>
                         </li>
