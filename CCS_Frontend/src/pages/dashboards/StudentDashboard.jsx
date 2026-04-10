@@ -764,7 +764,7 @@ const StudentDashboard = ({ user, onLogout }) => {
   const [active, setActive] = useState(() => searchParams.get('section') || 'dashboard');
 
   const navigateTo = (section) => {
-    navigateTo(section);
+    setActive(section);
     setSearchParams({ section }, { replace: true });
   };
   const [tasks, setTasks]               = useState(TASKS_DEFAULT);
