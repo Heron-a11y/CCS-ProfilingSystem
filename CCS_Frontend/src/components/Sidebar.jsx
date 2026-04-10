@@ -6,10 +6,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { useDarkMode } from '../context/DarkModeContext';
 
-const Sidebar = ({ currentModule, setCurrentModule, isOpen, setIsOpen, user, onLogout }) => {
+const Sidebar = ({ currentModule, setCurrentModule, isOpen, setIsOpen, user, onLogout, onHoverChange }) => {
   const dark = useDarkMode();
   const [hovered, setHovered] = useState(false);
   const expanded = isOpen || hovered;
+
+  const handleMouseEnter = () => { setHovered(true);  onHoverChange?.(true); };
+  const handleMouseLeave = () => { setHovered(false); onHoverChange?.(false); };
 
   const modules = [
     { id: 'dashboard',   label: 'Dashboard',            Icon: HomeIcon },
@@ -25,8 +28,8 @@ const Sidebar = ({ currentModule, setCurrentModule, isOpen, setIsOpen, user, onL
       className={`fixed inset-y-0 left-0 z-50 flex flex-col h-full border-r transition-all duration-300 ease-in-out ${
         expanded ? 'w-64 shadow-2xl shadow-slate-900/50' : 'w-16'
       } ${dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Logo header */}
       <div className={`flex items-center border-b h-20 overflow-hidden shrink-0 transition-all duration-300 ${

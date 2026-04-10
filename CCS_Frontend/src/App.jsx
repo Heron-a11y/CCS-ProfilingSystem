@@ -40,6 +40,7 @@ function AdminLayout({ user, onLogout }) {
   const location  = useLocation();
   const navigate  = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem('adminDarkMode') === 'true'
   );
@@ -76,10 +77,11 @@ function AdminLayout({ user, onLogout }) {
           setCurrentModule={setCurrentModule}
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}
+          onHoverChange={setIsSidebarHovered}
           user={user}
           onLogout={onLogout}
         />
-        <div className={`flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-16'}`}>
+        <div className={`flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-300 ease-in-out ${isSidebarOpen || isSidebarHovered ? 'ml-64' : 'ml-16'}`}>
           <Topnav currentModule={currentModule} darkMode={darkMode} onToggleDark={handleToggleDark} userName={user?.name || user?.email || 'Admin'} />
           <main className={`flex-1 overflow-x-hidden overflow-y-auto p-8 transition-colors duration-300 ${darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className="max-w-7xl mx-auto space-y-6 h-full">
