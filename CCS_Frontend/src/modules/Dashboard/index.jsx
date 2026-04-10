@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { api } from '../../utils/api';
 import { STORAGE_URL } from '../../utils/config';
 import { useDarkMode } from '../../context/DarkModeContext';
@@ -31,6 +32,7 @@ const StatCard = ({ icon: Icon, label, value, sub, gradient, iconBg, glowColor, 
 
 const AdminDashboard = () => {
   const dark = useDarkMode();
+  const location = useLocation();
   const [students, setStudents]   = useState([]);
   const [faculties, setFaculties] = useState([]);
   const [events, setEvents]       = useState([]);
@@ -52,18 +54,19 @@ const AdminDashboard = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  // Fetch on mount and every time the user navigates back to this page
+  // Refetch every time the dashboard route is navigated to
   useEffect(() => {
     fetchAll();
-    const onVisible = () => { if (document.visibilityState === 'visible') fetchAll(); };
-    document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
-  }, [fetchAll]);
+  }, [fetchAll, location.pathname]);
 
   const enrolled       = students.filter(s => s.enrollment_status === 'Enrolled').length;
   const notEnrolled    = students.filter(s => s.enrollment_status !== 'Enrolled').length;
   const violations     = students.reduce((acc, s) => acc + (s.violations?.length || 0), 0);
-  const upcomingEvents = events.filter(e => new Date(e.eventDate) >= new Date()).slice(0, 5);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const upcomingEvents = events
+    .filter(e => { const d = new Date(e.eventDate); d.setHours(0,0,0,0); return d >= today; })
+    .sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate))
+    .slice(0, 5);
   const recentStudents = [...students].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
 
   const yearBreakdown = ['1st Year','2nd Year','3rd Year','4th Year'].map(y => ({
@@ -145,8 +148,7 @@ const AdminDashboard = () => {
           glowColor="hover:border-red-400/60 hover:shadow-red-400/30" dark={dark} />
         <StatCard icon={StarIcon}                label="Events"         value={events.length}   sub={`${upcomingEvents.length} upcoming`}
           gradient="bg-violet-500" iconBg={dark ? 'bg-violet-900/40 text-violet-400': 'bg-violet-50 text-violet-500'}
-          glowColor="hover:border-violet-400/60 hover:shadow-violet-400/30" dark={dark} />
-        <StatCard icon={NoSymbolIcon}            label="Not Enrolled"   value={notEnrolled}     sub="Inactive students"
+          glowColor="hover:border-violet-400/60 hover:shadow-violet-400/30" dark={dark} />        <StatCard icon={NoSymbolIcon}            label="Not Enrolled"   value={notEnrolled}     sub="Inactive students"
           gradient="bg-slate-500"  iconBg={dark ? 'bg-slate-800 text-slate-400'     : 'bg-slate-100 text-slate-500'}
           glowColor="hover:border-slate-400/60 hover:shadow-slate-400/20" dark={dark} />
       </div>
