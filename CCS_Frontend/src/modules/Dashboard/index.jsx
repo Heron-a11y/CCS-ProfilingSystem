@@ -61,6 +61,26 @@ const AdminDashboard = () => {
     label: y, count: students.filter(s => s.year_level === y).length,
   }));
   const maxYear = Math.max(...yearBreakdown.map(y => y.count), 1);
+  const totalStudents = students.length || 1;
+
+  const RingChart = ({ pct, color = '#f97316', trackColor }) => {
+    const r = 15.9;
+    const circ = 2 * Math.PI * r;
+    const dash = (pct / 100) * circ;
+    return (
+      <div className="relative w-12 h-12 shrink-0">
+        <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r={r} fill="none" stroke={trackColor} strokeWidth="3.5" />
+          <circle cx="18" cy="18" r={r} fill="none" stroke={color} strokeWidth="3.5"
+            strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"
+            style={{ transition: 'stroke-dasharray 0.7s ease' }} />
+        </svg>
+        <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-extrabold ${dark ? 'text-slate-100' : 'text-slate-800'}`}>
+          {pct}%
+        </span>
+      </div>
+    );
+  };
 
   const programs = [...new Set(students.map(s => s.program).filter(Boolean))];
   const programBreakdown = programs.map(p => ({
@@ -154,7 +174,9 @@ const AdminDashboard = () => {
             <h2 className={`text-sm font-bold ${boldText}`}>Students by Year Level</h2>
           </div>
           <div className="space-y-4">
-            {yearBreakdown.map(({ label, count }) => (
+            {yearBreakdown.map(({ label, count }) => {
+              const pct = Math.round((count / totalStudents) * 100);
+              return (
               <div key={label} className="flex items-center gap-3">
                 <span className={`text-xs font-semibold w-14 shrink-0 ${subText}`}>{label}</span>
                 <div className={`flex-1 h-2.5 rounded-full overflow-hidden ${dark ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -162,8 +184,10 @@ const AdminDashboard = () => {
                     style={{ width: `${(count / maxYear) * 100}%` }} />
                 </div>
                 <span className={`text-xs font-bold w-5 text-right ${boldText}`}>{count}</span>
+                <RingChart pct={pct} color="#f97316" trackColor={dark ? '#1e293b' : '#f1f5f9'} />
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -178,16 +202,20 @@ const AdminDashboard = () => {
           {programBreakdown.length === 0
             ? <p className={`text-sm italic ${subText}`}>No program data.</p>
             : <div className="space-y-4">
-                {programBreakdown.map(({ label, count }) => (
+                {programBreakdown.map(({ label, count }) => {
+                  const pct = Math.round((count / totalStudents) * 100);
+                  return (
                   <div key={label} className="flex items-center gap-3">
                     <span className={`text-xs font-semibold flex-1 truncate ${subText}`}>{label}</span>
                     <div className={`w-32 h-2.5 rounded-full overflow-hidden ${dark ? 'bg-slate-800' : 'bg-slate-100'}`}>
                       <div className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600 transition-all duration-700"
-                        style={{ width: `${(count / students.length) * 100}%` }} />
+                        style={{ width: `${(count / totalStudents) * 100}%` }} />
                     </div>
                     <span className={`text-xs font-bold w-5 text-right ${boldText}`}>{count}</span>
+                    <RingChart pct={pct} color="#3b82f6" trackColor={dark ? '#1e293b' : '#f1f5f9'} />
                   </div>
-                ))}
+                  );
+                })}
               </div>
           }
         </div>

@@ -67,13 +67,23 @@ const EventsModule = () => {
     return c[status] || 'bg-slate-100 text-slate-700';
   };
 
+  const getStatusGlow = (status) => {
+    const map = {
+      Upcoming:  'hover:border-blue-400/60 hover:shadow-blue-400/30',
+      Ongoing:   'hover:border-orange-400/60 hover:shadow-orange-400/30',
+      Completed: 'hover:border-green-400/60 hover:shadow-green-400/30',
+      Cancelled: 'hover:border-red-400/60 hover:shadow-red-400/30',
+    };
+    return map[status] || 'hover:border-slate-400/40 hover:shadow-slate-400/10';
+  };
+
   const getTypeIcon = (type) => {
     const map = {
-      Academic:         { Icon: AcademicCapIcon, bg: dark ? 'bg-indigo-900/40 text-indigo-300' : 'bg-indigo-50 text-indigo-500', glow: 'hover:border-indigo-400/60 hover:shadow-indigo-400/20' },
-      Sports:           { Icon: TrophyIcon,      bg: dark ? 'bg-orange-900/40 text-orange-300' : 'bg-orange-50 text-orange-500', glow: 'hover:border-orange-400/60 hover:shadow-orange-400/20' },
-      Cultural:         { Icon: SparklesIcon,    bg: dark ? 'bg-purple-900/40 text-purple-300' : 'bg-purple-50 text-purple-500', glow: 'hover:border-purple-400/60 hover:shadow-purple-400/20' },
-      CommunityService: { Icon: HeartIcon,       bg: dark ? 'bg-teal-900/40 text-teal-300'   : 'bg-teal-50 text-teal-500',     glow: 'hover:border-teal-400/60 hover:shadow-teal-400/20' },
-      Other:            { Icon: StarIcon,        bg: dark ? 'bg-slate-700 text-slate-300'     : 'bg-slate-100 text-slate-500',  glow: 'hover:border-slate-400/60 hover:shadow-slate-400/20' },
+      Academic:         { Icon: AcademicCapIcon, bg: dark ? 'bg-indigo-900/40 text-indigo-300' : 'bg-indigo-50 text-indigo-500' },
+      Sports:           { Icon: TrophyIcon,      bg: dark ? 'bg-orange-900/40 text-orange-300' : 'bg-orange-50 text-orange-500' },
+      Cultural:         { Icon: SparklesIcon,    bg: dark ? 'bg-purple-900/40 text-purple-300' : 'bg-purple-50 text-purple-500' },
+      CommunityService: { Icon: HeartIcon,       bg: dark ? 'bg-teal-900/40 text-teal-300'   : 'bg-teal-50 text-teal-500'     },
+      Other:            { Icon: StarIcon,        bg: dark ? 'bg-slate-700 text-slate-300'     : 'bg-slate-100 text-slate-500'  },
     };
     return map[type] || map.Other;
   };
@@ -133,10 +143,11 @@ const EventsModule = () => {
           ) : events.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {events.map((event) => {
-                const { Icon: TypeIcon, bg: typeBg, glow } = getTypeIcon(event.eventType);
+                const { Icon: TypeIcon, bg: typeBg } = getTypeIcon(event.eventType);
+                const statusGlow = getStatusGlow(event.status);
                 return (
                   <div key={event.id}
-                    className={`relative rounded-2xl border overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${glow} ${dark ? `bg-slate-800 border-slate-700` : `bg-white border-slate-200`}`}>
+                    className={`relative rounded-2xl border overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${statusGlow} ${dark ? `bg-slate-800 border-slate-700` : `bg-white border-slate-200`}`}>
 
                     {/* Top accent bar */}
                     <div className={`h-1 w-full ${
