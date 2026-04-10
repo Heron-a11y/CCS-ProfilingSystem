@@ -5,33 +5,27 @@ import { useDarkMode } from '../../context/DarkModeContext';
 import {
   UserGroupIcon, UsersIcon, AcademicCapIcon, CalendarDaysIcon,
   StarIcon, ExclamationTriangleIcon, CheckCircleIcon, ClockIcon,
-  ArrowTrendingUpIcon, ChartBarIcon, BellAlertIcon,
+  ArrowTrendingUpIcon, ChartBarIcon, BellAlertIcon, MapPinIcon,
+  NoSymbolIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
-const StatCard = ({ icon: Icon, label, value, sub, accent, dark }) => {
-  const accents = {
-    orange: { border: 'border-l-orange-500', icon: dark ? 'bg-orange-900/30 text-orange-400' : 'bg-orange-50 text-orange-500' },
-    blue:   { border: 'border-l-brand-500',  icon: dark ? 'bg-brand-900/30 text-brand-400'  : 'bg-brand-50 text-brand-500'  },
-    green:  { border: 'border-l-green-500',  icon: dark ? 'bg-green-900/30 text-green-400'  : 'bg-green-50 text-green-500'  },
-    slate:  { border: 'border-l-slate-400',  icon: dark ? 'bg-slate-800 text-slate-400'     : 'bg-slate-100 text-slate-500' },
-    red:    { border: 'border-l-red-500',    icon: dark ? 'bg-red-900/30 text-red-400'      : 'bg-red-50 text-red-500'      },
-    violet: { border: 'border-l-violet-500', icon: dark ? 'bg-violet-900/30 text-violet-400': 'bg-violet-50 text-violet-500'},
-  };
-  const a = accents[accent] || accents.blue;
-  return (
-    <div className={`p-5 rounded-2xl border border-l-4 shadow-sm flex items-center gap-4 transition-colors duration-300 ${a.border} ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-100'}`}>
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${a.icon}`}>
-        <Icon className="w-6 h-6" />
-      </div>
+const StatCard = ({ icon: Icon, label, value, sub, gradient, iconBg, dark }) => (
+  <div className={`relative overflow-hidden rounded-2xl p-5 shadow-sm border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-100'}`}>
+    {/* Subtle background gradient blob */}
+    <div className={`absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-10 ${gradient}`} />
+    <div className="relative flex items-start justify-between">
       <div>
-        <p className={`text-xs font-semibold uppercase tracking-wider ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{label}</p>
-        <p className={`text-2xl font-bold mt-0.5 ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{value}</p>
-        {sub && <p className={`text-xs mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{sub}</p>}
+        <p className={`text-xs font-bold uppercase tracking-widest mb-2 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{label}</p>
+        <p className={`text-3xl font-extrabold tracking-tight ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{value}</p>
+        {sub && <p className={`text-xs mt-1.5 font-medium ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{sub}</p>}
+      </div>
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+        <Icon className="w-5 h-5" />
       </div>
     </div>
-  );
-};
+  </div>
+);
 
 const AdminDashboard = () => {
   const dark = useDarkMode();
@@ -40,131 +34,150 @@ const AdminDashboard = () => {
   const [events, setEvents]       = useState([]);
   const [loading, setLoading]     = useState(true);
 
-  const card    = dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-100';
+  const card     = dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-100';
   const boldText = dark ? 'text-slate-100' : 'text-slate-800';
   const subText  = dark ? 'text-slate-400' : 'text-slate-500';
   const divider  = dark ? 'divide-slate-700/60' : 'divide-slate-100';
-  const rowHover = dark ? 'hover:bg-slate-800' : 'hover:bg-slate-50';
+  const rowHover = dark ? 'hover:bg-slate-800/60' : 'hover:bg-slate-50';
 
   useEffect(() => {
     Promise.all([
       api.students.getAll().catch(() => []),
       api.faculties.getAll().catch(() => []),
       api.events.getAll().catch(() => []),
-    ]).then(([s, f, e]) => {
-      setStudents(s);
-      setFaculties(f);
-      setEvents(e);
-    }).finally(() => setLoading(false));
+    ]).then(([s, f, e]) => { setStudents(s); setFaculties(f); setEvents(e); })
+      .finally(() => setLoading(false));
   }, []);
 
-  const enrolled    = students.filter(s => s.enrollment_status === 'Enrolled').length;
-  const notEnrolled = students.filter(s => s.enrollment_status !== 'Enrolled').length;
-  const violations  = students.reduce((acc, s) => acc + (s.violations?.length || 0), 0);
+  const enrolled       = students.filter(s => s.enrollment_status === 'Enrolled').length;
+  const notEnrolled    = students.filter(s => s.enrollment_status !== 'Enrolled').length;
+  const violations     = students.reduce((acc, s) => acc + (s.violations?.length || 0), 0);
   const upcomingEvents = events.filter(e => new Date(e.eventDate) >= new Date()).slice(0, 5);
   const recentStudents = [...students].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
 
-  // Year level breakdown
   const yearBreakdown = ['1st Year','2nd Year','3rd Year','4th Year'].map(y => ({
-    label: y,
-    count: students.filter(s => s.year_level === y).length,
+    label: y, count: students.filter(s => s.year_level === y).length,
   }));
   const maxYear = Math.max(...yearBreakdown.map(y => y.count), 1);
 
-  // Program breakdown
   const programs = [...new Set(students.map(s => s.program).filter(Boolean))];
   const programBreakdown = programs.map(p => ({
-    label: p,
-    count: students.filter(s => s.program === p).length,
+    label: p, count: students.filter(s => s.program === p).length,
   })).sort((a, b) => b.count - a.count);
 
-  const Avatar = ({ student, size = 'sm' }) => {
+  const Avatar = ({ student }) => {
     const [imgError, setImgError] = useState(false);
-    const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
     const initials = `${student.first_name?.[0] ?? ''}${student.last_name?.[0] ?? ''}`;
     const photoSrc = student.profile_photo
-      ? (student.profile_photo.startsWith('http')
-          ? student.profile_photo
-          : `${STORAGE_URL}/${student.profile_photo}`)
+      ? (student.profile_photo.startsWith('http') ? student.profile_photo : `${STORAGE_URL}/${student.profile_photo}`)
       : null;
-    if (photoSrc && !imgError) {
-      return <img src={photoSrc} alt={initials} className={`${sz} rounded-full object-cover shrink-0`} onError={() => setImgError(true)} />;
-    }
-    return <div className={`${sz} rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold shrink-0`}>{initials}</div>;
+    if (photoSrc && !imgError)
+      return <img src={photoSrc} alt={initials} className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-white" onError={() => setImgError(true)} />;
+    return (
+      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center font-bold text-xs shrink-0 ring-2 ring-white">
+        {initials}
+      </div>
+    );
   };
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-500" />
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500" />
     </div>
   );
 
+  const enrollPct = students.length ? Math.round((enrolled / students.length) * 100) : 0;
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className={`p-6 rounded-2xl shadow-sm border transition-colors duration-300 ${card}`}>
-        <h1 className={`text-3xl font-bold tracking-tight mb-1 ${boldText}`}>Admin Dashboard</h1>
-        <p className={subText}>Overview of the CCS Profiling System.</p>
+
+      {/* ── Hero Header ── */}
+      <div className={`relative overflow-hidden rounded-2xl p-7 shadow-sm border transition-colors duration-300 ${card}`}>
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-brand-500/5 pointer-events-none" />
+        <div className="relative flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${dark ? 'text-orange-400' : 'text-orange-500'}`}>CCS Profiling System</p>
+            <h1 className={`text-3xl font-extrabold tracking-tight ${boldText}`}>Admin Dashboard</h1>
+            <p className={`mt-1 text-sm ${subText}`}>Overview of students, faculty, and system activity.</p>
+          </div>
+          {/* Enrollment ring */}
+          <div className="flex items-center gap-4">
+            <div className="relative w-16 h-16">
+              <svg className="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke={dark ? '#1e293b' : '#f1f5f9'} strokeWidth="3" />
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f97316" strokeWidth="3"
+                  strokeDasharray={`${enrollPct} ${100 - enrollPct}`} strokeLinecap="round" />
+              </svg>
+              <span className={`absolute inset-0 flex items-center justify-center text-xs font-bold ${boldText}`}>{enrollPct}%</span>
+            </div>
+            <div>
+              <p className={`text-xs font-semibold ${subText}`}>Enrollment Rate</p>
+              <p className={`text-lg font-bold ${boldText}`}>{enrolled} / {students.length}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Stat Cards */}
+      {/* ── Stat Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard icon={UserGroupIcon}          label="Total Students"    value={students.length}  sub={`${enrolled} enrolled`}       accent="orange" dark={dark} />
-        <StatCard icon={CheckCircleIcon}         label="Enrolled"          value={enrolled}         sub="Active this semester"         accent="green"  dark={dark} />
-        <StatCard icon={UsersIcon}               label="Faculty"           value={faculties.length} sub="Teaching staff"               accent="blue"   dark={dark} />
-        <StatCard icon={ExclamationTriangleIcon} label="Violations"        value={violations}       sub="Across all students"          accent="red"    dark={dark} />
-        <StatCard icon={StarIcon}                label="Events"            value={events.length}    sub={`${upcomingEvents.length} upcoming`} accent="violet" dark={dark} />
-        <StatCard icon={AcademicCapIcon}         label="Not Enrolled"      value={notEnrolled}      sub="Inactive students"            accent="slate"  dark={dark} />
+        <StatCard icon={UserGroupIcon}          label="Total Students" value={students.length} sub={`${enrolled} enrolled · ${notEnrolled} inactive`}
+          gradient="bg-orange-500" iconBg={dark ? 'bg-orange-900/40 text-orange-400' : 'bg-orange-50 text-orange-500'} dark={dark} />
+        <StatCard icon={CheckCircleIcon}         label="Enrolled"       value={enrolled}        sub="Active this semester"
+          gradient="bg-green-500"  iconBg={dark ? 'bg-green-900/40 text-green-400'  : 'bg-green-50 text-green-500'}  dark={dark} />
+        <StatCard icon={UsersIcon}               label="Faculty"        value={faculties.length} sub="Teaching staff"
+          gradient="bg-blue-500"   iconBg={dark ? 'bg-blue-900/40 text-blue-400'    : 'bg-blue-50 text-blue-500'}    dark={dark} />
+        <StatCard icon={ExclamationTriangleIcon} label="Violations"     value={violations}      sub="Across all students"
+          gradient="bg-red-500"    iconBg={dark ? 'bg-red-900/40 text-red-400'      : 'bg-red-50 text-red-500'}      dark={dark} />
+        <StatCard icon={StarIcon}                label="Events"         value={events.length}   sub={`${upcomingEvents.length} upcoming`}
+          gradient="bg-violet-500" iconBg={dark ? 'bg-violet-900/40 text-violet-400': 'bg-violet-50 text-violet-500'} dark={dark} />
+        <StatCard icon={NoSymbolIcon}            label="Not Enrolled"   value={notEnrolled}     sub="Inactive students"
+          gradient="bg-slate-500"  iconBg={dark ? 'bg-slate-800 text-slate-400'     : 'bg-slate-100 text-slate-500'} dark={dark} />
       </div>
 
-      {/* Middle row: Year breakdown + Program breakdown */}
+      {/* ── Charts Row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Year Level Breakdown */}
+        {/* Year Level */}
         <div className={`p-6 rounded-2xl border shadow-sm transition-colors duration-300 ${card}`}>
-          <div className="flex items-center gap-2 mb-5">
-            <ChartBarIcon className={`w-5 h-5 ${dark ? 'text-brand-400' : 'text-brand-500'}`} />
-            <h2 className={`text-base font-bold ${boldText}`}>Students by Year Level</h2>
+          <div className="flex items-center gap-2 mb-6">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${dark ? 'bg-orange-900/40 text-orange-400' : 'bg-orange-50 text-orange-500'}`}>
+              <ChartBarIcon className="w-4 h-4" />
+            </div>
+            <h2 className={`text-sm font-bold ${boldText}`}>Students by Year Level</h2>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {yearBreakdown.map(({ label, count }) => (
-              <div key={label}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className={subText}>{label}</span>
-                  <span className={`font-semibold ${boldText}`}>{count}</span>
+              <div key={label} className="flex items-center gap-3">
+                <span className={`text-xs font-semibold w-14 shrink-0 ${subText}`}>{label}</span>
+                <div className={`flex-1 h-2.5 rounded-full overflow-hidden ${dark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                  <div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-500 transition-all duration-700"
+                    style={{ width: `${(count / maxYear) * 100}%` }} />
                 </div>
-                <div className={`h-2 rounded-full overflow-hidden ${dark ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-500 transition-all duration-700"
-                    style={{ width: `${(count / maxYear) * 100}%` }}
-                  />
-                </div>
+                <span className={`text-xs font-bold w-5 text-right ${boldText}`}>{count}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Program Breakdown */}
+        {/* Program */}
         <div className={`p-6 rounded-2xl border shadow-sm transition-colors duration-300 ${card}`}>
-          <div className="flex items-center gap-2 mb-5">
-            <AcademicCapIcon className={`w-5 h-5 ${dark ? 'text-brand-400' : 'text-brand-500'}`} />
-            <h2 className={`text-base font-bold ${boldText}`}>Students by Program</h2>
+          <div className="flex items-center gap-2 mb-6">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${dark ? 'bg-brand-900/40 text-brand-400' : 'bg-brand-50 text-brand-500'}`}>
+              <AcademicCapIcon className="w-4 h-4" />
+            </div>
+            <h2 className={`text-sm font-bold ${boldText}`}>Students by Program</h2>
           </div>
           {programBreakdown.length === 0
             ? <p className={`text-sm italic ${subText}`}>No program data.</p>
-            : <div className="space-y-3">
+            : <div className="space-y-4">
                 {programBreakdown.map(({ label, count }) => (
-                  <div key={label}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className={`truncate max-w-[70%] ${subText}`}>{label}</span>
-                      <span className={`font-semibold ${boldText}`}>{count}</span>
+                  <div key={label} className="flex items-center gap-3">
+                    <span className={`text-xs font-semibold flex-1 truncate ${subText}`}>{label}</span>
+                    <div className={`w-32 h-2.5 rounded-full overflow-hidden ${dark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                      <div className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600 transition-all duration-700"
+                        style={{ width: `${(count / students.length) * 100}%` }} />
                     </div>
-                    <div className={`h-2 rounded-full overflow-hidden ${dark ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600 transition-all duration-700"
-                        style={{ width: `${(count / students.length) * 100}%` }}
-                      />
-                    </div>
+                    <span className={`text-xs font-bold w-5 text-right ${boldText}`}>{count}</span>
                   </div>
                 ))}
               </div>
@@ -172,20 +185,23 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Bottom row: Recent Students + Upcoming Events */}
+      {/* ── Bottom Row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Recent Students */}
-        <div className={`p-6 rounded-2xl border shadow-sm transition-colors duration-300 ${card}`}>
-          <div className="flex items-center gap-2 mb-5">
-            <ArrowTrendingUpIcon className={`w-5 h-5 ${dark ? 'text-brand-400' : 'text-brand-500'}`} />
-            <h2 className={`text-base font-bold ${boldText}`}>Recently Added Students</h2>
+        <div className={`rounded-2xl border shadow-sm transition-colors duration-300 ${card}`}>
+          <div className={`flex items-center gap-2 px-6 py-4 border-b ${dark ? 'border-slate-700/60' : 'border-slate-100'}`}>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${dark ? 'bg-orange-900/40 text-orange-400' : 'bg-orange-50 text-orange-500'}`}>
+              <ArrowTrendingUpIcon className="w-4 h-4" />
+            </div>
+            <h2 className={`text-sm font-bold ${boldText}`}>Recently Added Students</h2>
+            <span className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{recentStudents.length}</span>
           </div>
           <div className={`divide-y ${divider}`}>
             {recentStudents.length === 0
-              ? <p className={`text-sm italic ${subText}`}>No students yet.</p>
+              ? <p className={`p-6 text-sm italic ${subText}`}>No students yet.</p>
               : recentStudents.map(s => (
-                <div key={s.id} className={`flex items-center gap-3 py-3 rounded-lg transition-colors ${rowHover}`}>
+                <div key={s.id} className={`flex items-center gap-3 px-6 py-3.5 transition-colors ${rowHover}`}>
                   <Avatar student={s} />
                   <div className="flex-1 min-w-0">
                     <p className={`text-sm font-semibold truncate ${boldText}`}>{s.first_name} {s.last_name}</p>
@@ -204,37 +220,45 @@ const AdminDashboard = () => {
         </div>
 
         {/* Upcoming Events */}
-        <div className={`p-6 rounded-2xl border shadow-sm transition-colors duration-300 ${card}`}>
-          <div className="flex items-center gap-2 mb-5">
-            <BellAlertIcon className={`w-5 h-5 ${dark ? 'text-brand-400' : 'text-brand-500'}`} />
-            <h2 className={`text-base font-bold ${boldText}`}>Upcoming Events</h2>
+        <div className={`rounded-2xl border shadow-sm transition-colors duration-300 ${card}`}>
+          <div className={`flex items-center gap-2 px-6 py-4 border-b ${dark ? 'border-slate-700/60' : 'border-slate-100'}`}>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${dark ? 'bg-violet-900/40 text-violet-400' : 'bg-violet-50 text-violet-500'}`}>
+              <BellAlertIcon className="w-4 h-4" />
+            </div>
+            <h2 className={`text-sm font-bold ${boldText}`}>Upcoming Events</h2>
+            <span className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{upcomingEvents.length}</span>
           </div>
           {upcomingEvents.length === 0
-            ? <div className={`flex flex-col items-center justify-center py-8 rounded-xl ${dark ? 'bg-slate-800/40' : 'bg-slate-50'}`}>
-                <CalendarDaysIcon className={`w-8 h-8 mb-2 ${dark ? 'text-slate-600' : 'text-slate-300'}`} />
+            ? <div className={`flex flex-col items-center justify-center py-12 ${dark ? 'text-slate-600' : 'text-slate-300'}`}>
+                <CalendarDaysIcon className="w-10 h-10 mb-2" />
                 <p className={`text-sm ${subText}`}>No upcoming events.</p>
               </div>
-            : <div className="space-y-3">
-                {upcomingEvents.map(e => (
-                  <div key={e.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-colors ${dark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-100 bg-slate-50'}`}>
-                    <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 text-center ${dark ? 'bg-brand-900/40 text-brand-300' : 'bg-brand-50 text-brand-600'}`}>
-                      <span className="text-[10px] font-bold uppercase leading-none">
-                        {new Date(e.eventDate).toLocaleString('default', { month: 'short' })}
-                      </span>
-                      <span className="text-base font-bold leading-tight">
-                        {new Date(e.eventDate).getDate()}
-                      </span>
+            : <div className={`divide-y ${divider}`}>
+                {upcomingEvents.map(e => {
+                  const d = new Date(e.eventDate);
+                  return (
+                    <div key={e.id} className={`flex items-start gap-4 px-6 py-4 transition-colors ${rowHover}`}>
+                      {/* Date chip */}
+                      <div className={`w-11 h-11 rounded-xl flex flex-col items-center justify-center shrink-0 text-center border ${dark ? 'bg-slate-800 border-slate-700 text-orange-400' : 'bg-orange-50 border-orange-100 text-orange-600'}`}>
+                        <span className="text-[9px] font-bold uppercase leading-none">
+                          {d.toLocaleString('default', { month: 'short' })}
+                        </span>
+                        <span className="text-base font-extrabold leading-tight">{d.getDate()}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-semibold truncate ${boldText}`}>{e.eventName}</p>
+                        <div className={`flex items-center gap-1 mt-0.5 text-xs ${subText}`}>
+                          <MapPinIcon className="w-3 h-3 shrink-0" />
+                          <span className="truncate">{e.location || 'No location'}</span>
+                        </div>
+                      </div>
+                      <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${dark ? 'bg-violet-900/40 text-violet-300' : 'bg-violet-50 text-violet-600'}`}>
+                        <ClockIcon className="w-3 h-3" />
+                        {d.toLocaleDateString()}
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold truncate ${boldText}`}>{e.eventName || e.title}</p>
-                      <p className={`text-xs truncate ${subText}`}>{e.location || 'No location'}</p>
-                    </div>
-                    <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${dark ? 'bg-violet-900/40 text-violet-300' : 'bg-violet-50 text-violet-600'}`}>
-                      <ClockIcon className="w-3 h-3" />
-                      {new Date(e.eventDate).toLocaleDateString()}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
           }
         </div>
