@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../utils/api';
 import { STORAGE_URL } from '../../utils/config';
 import { useDarkMode } from '../../context/DarkModeContext';
@@ -42,7 +42,8 @@ const AdminDashboard = () => {
   const divider  = dark ? 'divide-slate-700/60' : 'divide-slate-100';
   const rowHover = dark ? 'hover:bg-slate-800/60' : 'hover:bg-slate-50';
 
-  useEffect(() => {
+  const fetchAll = useCallback(() => {
+    setLoading(true);
     Promise.all([
       api.students.getAll().catch(() => []),
       api.faculties.getAll().catch(() => []),
@@ -50,6 +51,14 @@ const AdminDashboard = () => {
     ]).then(([s, f, e]) => { setStudents(s); setFaculties(f); setEvents(e); })
       .finally(() => setLoading(false));
   }, []);
+
+  // Fetch on mount and every time the user navigates back to this page
+  useEffect(() => {
+    fetchAll();
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchAll(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [fetchAll]);
 
   const enrolled       = students.filter(s => s.enrollment_status === 'Enrolled').length;
   const notEnrolled    = students.filter(s => s.enrollment_status !== 'Enrolled').length;
