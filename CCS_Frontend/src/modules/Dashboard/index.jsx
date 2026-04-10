@@ -61,7 +61,7 @@ const AdminDashboard = () => {
   const enrolled    = students.filter(s => s.enrollment_status === 'Enrolled').length;
   const notEnrolled = students.filter(s => s.enrollment_status !== 'Enrolled').length;
   const violations  = students.reduce((acc, s) => acc + (s.violations?.length || 0), 0);
-  const upcomingEvents = events.filter(e => new Date(e.event_date) >= new Date()).slice(0, 5);
+  const upcomingEvents = events.filter(e => new Date(e.eventDate) >= new Date()).slice(0, 5);
   const recentStudents = [...students].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
 
   // Year level breakdown
@@ -219,19 +219,19 @@ const AdminDashboard = () => {
                   <div key={e.id} className={`flex items-start gap-3 p-3 rounded-xl border transition-colors ${dark ? 'border-slate-700 bg-slate-800/40' : 'border-slate-100 bg-slate-50'}`}>
                     <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 text-center ${dark ? 'bg-brand-900/40 text-brand-300' : 'bg-brand-50 text-brand-600'}`}>
                       <span className="text-[10px] font-bold uppercase leading-none">
-                        {new Date(e.event_date).toLocaleString('default', { month: 'short' })}
+                        {new Date(e.eventDate).toLocaleString('default', { month: 'short' })}
                       </span>
                       <span className="text-base font-bold leading-tight">
-                        {new Date(e.event_date).getDate()}
+                        {new Date(e.eventDate).getDate()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold truncate ${boldText}`}>{e.title || e.event_name}</p>
-                      <p className={`text-xs truncate ${subText}`}>{e.location || e.venue || 'No location'}</p>
+                      <p className={`text-sm font-semibold truncate ${boldText}`}>{e.eventName || e.title}</p>
+                      <p className={`text-xs truncate ${subText}`}>{e.location || 'No location'}</p>
                     </div>
                     <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${dark ? 'bg-violet-900/40 text-violet-300' : 'bg-violet-50 text-violet-600'}`}>
                       <ClockIcon className="w-3 h-3" />
-                      {new Date(e.event_date).toLocaleDateString()}
+                      {new Date(e.eventDate).toLocaleDateString()}
                     </div>
                   </div>
                 ))}
