@@ -294,7 +294,7 @@ const StudentProfileTabs = ({ activeTab, student, onEditClick, onDeleteClick }) 
                         <p className={`text-xs font-semibold ${dark?'text-orange-400':'text-orange-600'}`}>{mh.emergency_contact_number||'N/A'}</p>
                       </div>
                     </div>
-                  ))}
+                  ) : null)}
                 </div>
               ):(
                 <div className={`flex flex-col items-center justify-center py-8 rounded-xl border ${dark?'border-slate-700 bg-slate-800/40':'border-slate-100 bg-white'}`}>
