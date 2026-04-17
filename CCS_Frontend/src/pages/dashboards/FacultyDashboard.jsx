@@ -88,7 +88,7 @@ const FModal = ({title,onClose,children,footer,wide}) => {
   const dark=useTheme();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className={`absolute inset-0 backdrop-blur-sm ${dark?'bg-slate-950':'bg-slate-900'}`} onClick={onClose}/>
+      <div className={`absolute inset-0 backdrop-blur-md ${dark?'bg-slate-950/40':'bg-slate-900/20'}`} onClick={onClose}/>
       <div className={`relative w-full border rounded-2xl shadow-2xl flex flex-col max-h-[90vh] ${wide?'max-w-3xl':'max-w-2xl'} ${dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-200'}`}>
         <div className={`flex items-center justify-between px-6 py-5 border-b ${dark?'border-slate-700/60':'border-slate-100'}`}>
           <h3 className={`text-base font-bold ${dark?'text-slate-100':'text-slate-800'}`}>{title}</h3>
@@ -174,24 +174,34 @@ const DashboardPanel = ({user,initials,subjectsCount,studentsCount,schedulesCoun
 
 const BasicInfoModal = ({faculty,onClose,onSaved}) => {
   const dark=useTheme();
-  const [form,setForm]=useState({first_name:faculty.first_name??'',middle_name:faculty.middle_name??'',last_name:faculty.last_name??'',suffix:faculty.suffix??'',position:faculty.position??'',employment_status:faculty.employment_status??'',hire_date:faculty.hire_date?faculty.hire_date.split('T')[0]:'',department_id:faculty.department_id??''});
-  const [depts,setDepts]=useState([]); const [saving,setSaving]=useState(false); const [err,setErr]=useState(null);
+  const [form,setForm]=useState({
+    employee_id:faculty.employee_id??'',
+    first_name:faculty.first_name??'',middle_name:faculty.middle_name??'',
+    last_name:faculty.last_name??'',suffix:faculty.suffix??'',
+    gender:faculty.gender??'',
+    date_of_birth:faculty.date_of_birth?faculty.date_of_birth.split('T')[0]:'',
+    civil_status:faculty.civil_status??'',nationality:faculty.nationality??'Filipino',
+  });
+  const [saving,setSaving]=useState(false);const [err,setErr]=useState(null);
   const set=(k)=>(e)=>setForm(f=>({...f,[k]:e.target.value}));
-  useEffect(()=>{api.departments.getAll().then(setDepts).catch(()=>{});},[]);
   const save=async()=>{setSaving(true);setErr(null);try{onSaved(await api.faculties.update(faculty.id,form));onClose();}catch(e){setErr(e.message);}finally{setSaving(false);}};
-  const inp=mkInp(dark);const lbl=mkLbl(dark);
+  const inp=mkInp(dark);const lbl=mkLbl(dark);const sel=`${inp} appearance-none`;
   return (
     <FModal title="Edit Basic Information" onClose={onClose} footer={<><BtnGhost onClick={onClose}>Cancel</BtnGhost><BtnPrimary loading={saving} onClick={save}>Save</BtnPrimary></>}>
       <ErrMsg msg={err}/>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div><label className={lbl}>First Name *</label><input className={inp} value={form.first_name} onChange={set('first_name')}/></div>
-        <div><label className={lbl}>Middle Name</label><input className={inp} value={form.middle_name} onChange={set('middle_name')}/></div>
-        <div><label className={lbl}>Last Name *</label><input className={inp} value={form.last_name} onChange={set('last_name')}/></div>
-        <div><label className={lbl}>Suffix</label><input className={inp} value={form.suffix} onChange={set('suffix')} placeholder="Jr., Sr., III..."/></div>
-        <div><label className={lbl}>Position / Title</label><input className={inp} value={form.position} onChange={set('position')} placeholder="Instructor, Professor..."/></div>
-        <div><label className={lbl}>Employment Status</label><select className={`${inp} appearance-none`} value={form.employment_status} onChange={set('employment_status')}><option value="">Select...</option><option>Full-Time</option><option>Part-Time</option></select></div>
-        <div><label className={lbl}>Hire Date</label><input type="date" className={inp} value={form.hire_date} onChange={set('hire_date')}/></div>
-        <div><label className={lbl}>Department / Program</label><select className={`${inp} appearance-none`} value={form.department_id} onChange={set('department_id')}><option value="">Select...</option>{depts.map(d=><option key={d.id} value={d.id}>{d.department_name}</option>)}</select></div>
+      <div className="space-y-4">
+        <p className={`text-[10px] font-bold uppercase tracking-widest ${dark?'text-orange-400/70':'text-orange-500'}`}>Identity</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label className={lbl}>Employee / Faculty ID</label><input className={inp} value={form.employee_id} onChange={set('employee_id')} placeholder="e.g. FAC-2024-001"/></div>
+          <div><label className={lbl}>First Name *</label><input className={inp} value={form.first_name} onChange={set('first_name')}/></div>
+          <div><label className={lbl}>Middle Name</label><input className={inp} value={form.middle_name} onChange={set('middle_name')}/></div>
+          <div><label className={lbl}>Last Name *</label><input className={inp} value={form.last_name} onChange={set('last_name')}/></div>
+          <div><label className={lbl}>Suffix</label><input className={inp} value={form.suffix} onChange={set('suffix')} placeholder="Jr., Sr., III..."/></div>
+          <div><label className={lbl}>Gender</label><select className={sel} value={form.gender} onChange={set('gender')}><option value="">Select...</option><option>Male</option><option>Female</option></select></div>
+          <div><label className={lbl}>Date of Birth</label><input type="date" className={inp} value={form.date_of_birth} onChange={set('date_of_birth')} max={new Date(Date.now()-86400000).toISOString().split('T')[0]}/></div>
+          <div><label className={lbl}>Civil Status</label><select className={sel} value={form.civil_status} onChange={set('civil_status')}><option value="">Select...</option><option>Single</option><option>Married</option><option>Widowed</option><option>Separated</option></select></div>
+          <div><label className={lbl}>Nationality</label><input className={inp} value={form.nationality} onChange={set('nationality')} placeholder="e.g. Filipino"/></div>
+        </div>
       </div>
     </FModal>
   );
@@ -199,18 +209,121 @@ const BasicInfoModal = ({faculty,onClose,onSaved}) => {
 
 const ContactModal = ({faculty,onClose,onSaved}) => {
   const dark=useTheme();
-  const [form,setForm]=useState({contact_number:faculty.contact_number??'',office_location:faculty.office_location??'',office_hours:faculty.office_hours??''});
+  const [form,setForm]=useState({
+    email:faculty.email??'',personal_email:faculty.personal_email??'',
+    contact_number:faculty.contact_number??'',telephone_number:faculty.telephone_number??'',
+    home_address:faculty.home_address??'',office_address:faculty.office_address??'',
+    office_location:faculty.office_location??'',office_hours:faculty.office_hours??'',
+  });
   const [saving,setSaving]=useState(false);const [err,setErr]=useState(null);
   const set=(k)=>(e)=>setForm(f=>({...f,[k]:e.target.value}));
   const save=async()=>{setSaving(true);setErr(null);try{onSaved(await api.faculties.update(faculty.id,form));onClose();}catch(e){setErr(e.message);}finally{setSaving(false);}};
   const inp=mkInp(dark);const lbl=mkLbl(dark);
   return (
-    <FModal title="Edit Contact Details" onClose={onClose} footer={<><BtnGhost onClick={onClose}>Cancel</BtnGhost><BtnPrimary loading={saving} onClick={save}>Save</BtnPrimary></>}>
+    <FModal title="Edit Contact Information" onClose={onClose} footer={<><BtnGhost onClick={onClose}>Cancel</BtnGhost><BtnPrimary loading={saving} onClick={save}>Save</BtnPrimary></>}>
       <ErrMsg msg={err}/>
       <div className="space-y-4">
-        <div><label className={lbl}>Contact Number</label><input className={inp} value={form.contact_number} onChange={set('contact_number')} placeholder="+63 9XX XXX XXXX"/></div>
-        <div><label className={lbl}>Office Location / Consultation Room</label><input className={inp} value={form.office_location} onChange={set('office_location')} placeholder="e.g. Room 201, CCS Building"/></div>
-        <div><label className={lbl}>Office Hours / Availability</label><input className={inp} value={form.office_hours} onChange={set('office_hours')} placeholder="e.g. MWF 1:00–3:00 PM"/></div>
+        <p className={`text-[10px] font-bold uppercase tracking-widest ${dark?'text-orange-400/70':'text-orange-500'}`}>Email</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label className={lbl}>Institutional Email</label><input type="email" className={inp} value={form.email} onChange={set('email')} placeholder="name@school.edu.ph"/></div>
+          <div><label className={lbl}>Personal Email</label><input type="email" className={inp} value={form.personal_email} onChange={set('personal_email')} placeholder="name@gmail.com"/></div>
+        </div>
+        <p className={`text-[10px] font-bold uppercase tracking-widest ${dark?'text-orange-400/70':'text-orange-500'}`}>Phone</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label className={lbl}>Mobile Number</label><input className={inp} value={form.contact_number} onChange={set('contact_number')} placeholder="09XXXXXXXXX"/></div>
+          <div><label className={lbl}>Telephone Number</label><input className={inp} value={form.telephone_number} onChange={set('telephone_number')} placeholder="(02) XXXX-XXXX"/></div>
+        </div>
+        <p className={`text-[10px] font-bold uppercase tracking-widest ${dark?'text-orange-400/70':'text-orange-500'}`}>Address</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label className={lbl}>Home Address</label><textarea className={`${inp} resize-none`} rows={2} value={form.home_address} onChange={set('home_address')} placeholder="Street, Barangay, City, Province"/></div>
+          <div><label className={lbl}>Office Address</label><textarea className={`${inp} resize-none`} rows={2} value={form.office_address} onChange={set('office_address')} placeholder="Building, Room, Campus"/></div>
+          <div><label className={lbl}>Office Location / Room</label><input className={inp} value={form.office_location} onChange={set('office_location')} placeholder="e.g. Room 201, CCS Building"/></div>
+          <div><label className={lbl}>Office Hours</label><input className={inp} value={form.office_hours} onChange={set('office_hours')} placeholder="e.g. MWF 1:00–3:00 PM"/></div>
+        </div>
+      </div>
+    </FModal>
+  );
+};
+
+const ProfessionalInfoModal = ({faculty,onClose,onSaved,depts}) => {
+  const dark=useTheme();
+  const [form,setForm]=useState({
+    position:faculty.position??'',academic_rank:faculty.academic_rank??'',
+    area_of_specialization:faculty.area_of_specialization??'',
+    employment_status:faculty.employment_status??'',
+    hire_date:faculty.hire_date?faculty.hire_date.split('T')[0]:'',
+    years_of_service:faculty.years_of_service??'',
+    department_id:faculty.department_id??'',
+    courses_handled:faculty.courses_handled??[],
+  });
+  const [saving,setSaving]=useState(false);const [err,setErr]=useState(null);
+  const set=(k)=>(e)=>setForm(f=>({...f,[k]:e.target.value}));
+  const [courseInput,setCourseInput]=useState('');
+  const addCourse=()=>{if(!courseInput.trim())return;setForm(f=>({...f,courses_handled:[...(f.courses_handled??[]),courseInput.trim()]}));setCourseInput('');};
+  const removeCourse=(i)=>setForm(f=>({...f,courses_handled:f.courses_handled.filter((_,idx)=>idx!==i)}));
+  const save=async()=>{setSaving(true);setErr(null);try{onSaved(await api.faculties.update(faculty.id,{...form,years_of_service:form.years_of_service?Number(form.years_of_service):null}));onClose();}catch(e){setErr(e.message);}finally{setSaving(false);}};
+  const inp=mkInp(dark);const lbl=mkLbl(dark);const sel=`${inp} appearance-none`;
+  return (
+    <FModal title="Edit Professional Information" onClose={onClose} wide footer={<><BtnGhost onClick={onClose}>Cancel</BtnGhost><BtnPrimary loading={saving} onClick={save}>Save</BtnPrimary></>}>
+      <ErrMsg msg={err}/>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label className={lbl}>Academic Rank</label><select className={sel} value={form.academic_rank} onChange={set('academic_rank')}><option value="">Select...</option><option>Instructor I</option><option>Instructor II</option><option>Instructor III</option><option>Assistant Professor I</option><option>Assistant Professor II</option><option>Assistant Professor III</option><option>Associate Professor I</option><option>Associate Professor II</option><option>Professor I</option><option>Professor II</option><option>Professor III</option></select></div>
+          <div><label className={lbl}>Position / Title</label><input className={inp} value={form.position} onChange={set('position')} placeholder="e.g. Program Chair"/></div>
+          <div><label className={lbl}>Department</label><select className={sel} value={form.department_id} onChange={set('department_id')}><option value="">Select...</option>{(depts??[]).map(d=><option key={d.id} value={d.id}>{d.department_name}</option>)}</select></div>
+          <div><label className={lbl}>Area of Specialization</label><input className={inp} value={form.area_of_specialization} onChange={set('area_of_specialization')} placeholder="e.g. Web Development, Data Science"/></div>
+          <div><label className={lbl}>Employment Status</label><select className={sel} value={form.employment_status} onChange={set('employment_status')}><option value="">Select...</option><option>Full-Time</option><option>Part-Time</option><option>Contractual</option></select></div>
+          <div><label className={lbl}>Date Hired</label><input type="date" className={inp} value={form.hire_date} onChange={set('hire_date')} max={new Date().toISOString().split('T')[0]}/></div>
+          <div><label className={lbl}>Years of Service</label><input type="number" className={inp} value={form.years_of_service} onChange={set('years_of_service')} min="0" placeholder="e.g. 5"/></div>
+        </div>
+        <div>
+          <label className={lbl}>Courses Handled / Subjects Taught</label>
+          <div className="flex gap-2 mb-2"><input className={`${inp} flex-1`} value={courseInput} onChange={e=>setCourseInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&(e.preventDefault(),addCourse())} placeholder="e.g. IT 111 – Introduction to Computing"/><button type="button" onClick={addCourse} className="px-3 py-2 rounded-xl text-xs font-bold text-white" style={{background:'linear-gradient(135deg,#f26522,#e04f0f)'}}>Add</button></div>
+          <div className="flex flex-wrap gap-2">{(form.courses_handled??[]).map((c,i)=>(<span key={i} className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${dark?'bg-slate-800 border-slate-700 text-slate-300':'bg-slate-100 border-slate-200 text-slate-600'}`}>{c}<button onClick={()=>removeCourse(i)} className="text-red-400 hover:text-red-300">×</button></span>))}</div>
+        </div>
+      </div>
+    </FModal>
+  );
+};
+
+const EducationModal = ({faculty,onClose,onSaved}) => {
+  const dark=useTheme();
+  const emptyDeg=()=>({course:'',school:'',year_graduated:''});
+  const [bachelors,setBachelors]=useState(faculty.bachelors_degree??emptyDeg());
+  const [masters,setMasters]=useState(faculty.masters_degree??emptyDeg());
+  const [doctorate,setDoctorate]=useState(faculty.doctorate_degree??emptyDeg());
+  const [certs,setCerts]=useState(faculty.certifications??[]);
+  const [certInput,setCertInput]=useState('');
+  const [saving,setSaving]=useState(false);const [err,setErr]=useState(null);
+  const inp=mkInp(dark);const lbl=mkLbl(dark);
+  const DegFields=({label,val,setVal})=>(
+    <div className={`p-4 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}>
+      <p className={`text-xs font-bold mb-3 ${dark?'text-orange-400':'text-orange-500'}`}>{label}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div><label className={lbl}>Course / Program</label><input className={inp} value={val.course??''} onChange={e=>setVal(v=>({...v,course:e.target.value}))} placeholder="e.g. BS Computer Science"/></div>
+        <div><label className={lbl}>School / University</label><input className={inp} value={val.school??''} onChange={e=>setVal(v=>({...v,school:e.target.value}))} placeholder="e.g. University of the Philippines"/></div>
+        <div><label className={lbl}>Year Graduated</label><input className={inp} value={val.year_graduated??''} onChange={e=>setVal(v=>({...v,year_graduated:e.target.value}))} placeholder="e.g. 2015"/></div>
+      </div>
+    </div>
+  );
+  const addCert=()=>{if(!certInput.trim())return;setCerts(c=>[...c,certInput.trim()]);setCertInput('');};
+  const save=async()=>{
+    setSaving(true);setErr(null);
+    try{onSaved(await api.faculties.update(faculty.id,{bachelors_degree:bachelors,masters_degree:masters,doctorate_degree:doctorate,certifications:certs}));onClose();}
+    catch(e){setErr(e.message);}finally{setSaving(false);}
+  };
+  return (
+    <FModal title="Edit Educational Background" onClose={onClose} wide footer={<><BtnGhost onClick={onClose}>Cancel</BtnGhost><BtnPrimary loading={saving} onClick={save}>Save</BtnPrimary></>}>
+      <ErrMsg msg={err}/>
+      <div className="space-y-4">
+        <DegFields label="Bachelor's Degree" val={bachelors} setVal={setBachelors}/>
+        <DegFields label="Master's Degree" val={masters} setVal={setMasters}/>
+        <DegFields label="Doctorate Degree (if applicable)" val={doctorate} setVal={setDoctorate}/>
+        <div>
+          <label className={lbl}>Certifications / Trainings</label>
+          <div className="flex gap-2 mb-2"><input className={`${inp} flex-1`} value={certInput} onChange={e=>setCertInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&(e.preventDefault(),addCert())} placeholder="e.g. AWS Certified Developer"/><button type="button" onClick={addCert} className="px-3 py-2 rounded-xl text-xs font-bold text-white" style={{background:'linear-gradient(135deg,#f26522,#e04f0f)'}}>Add</button></div>
+          <div className="flex flex-wrap gap-2">{certs.map((c,i)=>(<span key={i} className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${dark?'bg-slate-800 border-slate-700 text-slate-300':'bg-slate-100 border-slate-200 text-slate-600'}`}>{c}<button onClick={()=>setCerts(cs=>cs.filter((_,idx)=>idx!==i))} className="text-red-400 hover:text-red-300">×</button></span>))}</div>
+        </div>
       </div>
     </FModal>
   );
@@ -288,8 +401,14 @@ const ProfilePanel = ({faculty,loading,err,onReload}) => {
   const [modal,setModal]=useState(null);
   const [photoUploading,setPhotoUploading]=useState(false);
   const [photoErr,setPhotoErr]=useState(null);
+  const [depts,setDepts]=useState([]);
 
-  const refresh=(updated)=>{onReload(updated);setModal(null);};
+  useEffect(()=>{api.departments.getAll().then(setDepts).catch(()=>{});},[]);
+
+  const refresh=async(updated)=>{
+    onReload(updated);
+    setModal(null);
+  };
 
   const handlePhoto=async(e)=>{
     const file=e.target.files?.[0]; if(!file) return;
@@ -318,16 +437,11 @@ const ProfilePanel = ({faculty,loading,err,onReload}) => {
 
   return (
     <div className="space-y-5">
-      {modal==='basic'    &&<BasicInfoModal faculty={f} onClose={()=>setModal(null)} onSaved={refresh}/>}
-      {modal==='contact'  &&<ContactModal   faculty={f} onClose={()=>setModal(null)} onSaved={refresh}/>}
-      {modal==='bio'      &&<TextFieldModal title="Edit Biography" fieldKey="biography" value={f.biography} faculty={f} onClose={()=>setModal(null)} onSaved={refresh}/>}
-      {modal==='research' &&<TextFieldModal title="Edit Research Interests" fieldKey="research_interests" value={f.research_interests} faculty={f} onClose={()=>setModal(null)} onSaved={refresh}/>}
-      {modal==='social'   &&<SocialLinksModal faculty={f} onClose={()=>setModal(null)} onSaved={refresh}/>}
-      {modal==='education'&&<ListEditorModal title="Edit Educational Attainment" items={f.educational_attainment??[]} fields={[{key:'degree',label:'Degree / Certification',placeholder:'e.g. Master of Science in IT'},{key:'institution',label:'Institution',placeholder:'e.g. University of the Philippines'},{key:'year',label:'Year Completed',placeholder:'e.g. 2018'},{key:'field',label:'Field of Study',placeholder:'e.g. Information Technology'}]} onClose={()=>setModal(null)} onSave={async(list)=>refresh(await api.faculties.update(f.id,{educational_attainment:list}))}/>}
-      {modal==='expertise'&&<ListEditorModal title="Edit Areas of Expertise" items={(f.expertise_areas??[]).map(e=>typeof e==='string'?{area:e}:e)} fields={[{key:'area',label:'Area / Specialization',placeholder:'e.g. Machine Learning, Web Development'}]} onClose={()=>setModal(null)} onSave={async(list)=>refresh(await api.faculties.update(f.id,{expertise_areas:list.map(r=>r.area).filter(Boolean)}))}/>}
-      {modal==='experience'&&<ListEditorModal title="Edit Work Experience" items={f.work_experience??[]} fields={[{key:'title',label:'Position / Role',placeholder:'e.g. Senior Developer'},{key:'company',label:'Company / Institution',placeholder:'e.g. Acme Corp'},{key:'period',label:'Period',placeholder:'e.g. 2015–2020'},{key:'type',label:'Type',placeholder:'Teaching / Industry'},{key:'description',label:'Description',placeholder:'Brief description...',textarea:true,full:true}]} onClose={()=>setModal(null)} onSave={async(list)=>refresh(await api.faculties.update(f.id,{work_experience:list}))}/>}
-      {modal==='achievements'&&<ListEditorModal title="Edit Achievements & Awards" items={f.achievements??[]} fields={[{key:'title',label:'Award / Achievement',placeholder:'e.g. Best Research Paper'},{key:'organization',label:'Awarding Body',placeholder:'e.g. IEEE Philippines'},{key:'year',label:'Year',placeholder:'e.g. 2023'}]} onClose={()=>setModal(null)} onSave={async(list)=>refresh(await api.faculties.update(f.id,{achievements:list}))}/>}
-      {modal==='publications'&&<ListEditorModal title="Edit Publications & Research" items={f.publications??[]} fields={[{key:'title',label:'Title',placeholder:'Publication title',full:true},{key:'journal',label:'Journal / Conference',placeholder:'e.g. IEEE Access'},{key:'year',label:'Year',placeholder:'e.g. 2024'},{key:'url',label:'URL / DOI',placeholder:'https://...'}]} onClose={()=>setModal(null)} onSave={async(list)=>refresh(await api.faculties.update(f.id,{publications:list}))}/>}
+      {modal==='basic'       &&<BasicInfoModal faculty={f} onClose={()=>setModal(null)} onSaved={refresh}/>}
+      {modal==='contact'     &&<ContactModal   faculty={f} onClose={()=>setModal(null)} onSaved={refresh}/>}
+      {modal==='professional'&&<ProfessionalInfoModal faculty={f} onClose={()=>setModal(null)} onSaved={refresh} depts={depts}/>}
+      {modal==='education'   &&<EducationModal faculty={f} onClose={()=>setModal(null)} onSaved={refresh}/>}
+      {modal==='social'      &&<SocialLinksModal faculty={f} onClose={()=>setModal(null)} onSaved={refresh}/>}
 
       {/* Hero */}
       <div className={`relative overflow-hidden rounded-2xl border p-6 ${dark?'bg-gradient-to-br from-blue-600/20 via-purple-600/10 to-transparent border-blue-500/20':'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-100'}`}>
@@ -346,8 +460,9 @@ const ProfilePanel = ({faculty,loading,err,onReload}) => {
             <p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{val(f.email)}</p>
             <div className="flex flex-wrap gap-1.5 mt-2 justify-center sm:justify-start">
               {f.department?.department_name&&<Tag text={f.department.department_name} color="blue"/>}
+              {f.academic_rank&&<Tag text={f.academic_rank} color="purple"/>}
               {f.employment_status&&<Tag text={f.employment_status} color={f.employment_status==='Full-Time'?'green':'amber'}/>}
-              {f.id&&<Tag text={`ID: ${f.id}`} color="slate"/>}
+              {f.employee_id&&<Tag text={`ID: ${f.employee_id}`} color="slate"/>}
             </div>
           </div>
           <BtnEdit onClick={()=>setModal('basic')}/>
@@ -355,33 +470,66 @@ const ProfilePanel = ({faculty,loading,err,onReload}) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <SectionCard title="Contact Details" icon="📬" action={<BtnEdit onClick={()=>setModal('contact')}/>}>
-          <Row label="School Email"    value={val(f.email)}/><Row label="Contact Number"  value={val(f.contact_number)}/><Row label="Office Location" value={val(f.office_location)}/><Row label="Office Hours"    value={val(f.office_hours)}/>
+        {/* Basic Information */}
+        <SectionCard title="Basic Information" icon="👤" action={<BtnEdit onClick={()=>setModal('basic')}/>}>
+          <Row label="Employee / Faculty ID" value={val(f.employee_id)}/>
+          <Row label="Full Name" value={val([f.first_name,f.middle_name?f.middle_name[0]+'.':null,f.last_name,f.suffix].filter(Boolean).join(' '))}/>
+          <Row label="Gender" value={val(f.gender)}/>
+          <Row label="Date of Birth" value={fmt(f.date_of_birth)}/>
+          <Row label="Age" value={f.date_of_birth?String(new Date().getFullYear()-new Date(f.date_of_birth).getFullYear()):'—'}/>
+          <Row label="Civil Status" value={val(f.civil_status)}/>
+          <Row label="Nationality" value={val(f.nationality)}/>
         </SectionCard>
-        <SectionCard title="Employment Details" icon="🏢" action={<BtnEdit onClick={()=>setModal('basic')}/>}>
-          <Row label="Employee / Faculty ID" value={val(f.id)}/><Row label="Position / Title" value={val(f.position)}/><Row label="Employment Status" value={val(f.employment_status)}/><Row label="Date Hired" value={fmt(f.hire_date)}/><Row label="Department" value={val(f.department?.department_name)}/>
+
+        {/* Contact Information */}
+        <SectionCard title="Contact Information" icon="📬" action={<BtnEdit onClick={()=>setModal('contact')}/>}>
+          <Row label="Institutional Email" value={val(f.email)}/>
+          <Row label="Personal Email" value={val(f.personal_email)}/>
+          <Row label="Mobile Number" value={val(f.contact_number)}/>
+          <Row label="Telephone Number" value={val(f.telephone_number)}/>
+          <Row label="Home Address" value={val(f.home_address)}/>
+          <Row label="Office Address" value={val(f.office_address)}/>
         </SectionCard>
-        <SectionCard title="Educational Attainment" icon="🎓" action={<BtnEdit onClick={()=>setModal('education')}/>}>
-          {f.educational_attainment?.length>0?(<div className="space-y-3">{f.educational_attainment.map((e,i)=>(<div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}><p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{e.degree}</p><p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{e.institution}{e.year?` · ${e.year}`:''}</p>{e.field&&<p className={`text-xs mt-0.5 ${dark?'text-slate-500':'text-slate-400'}`}>{e.field}</p>}</div>))}</div>):<Empty text="No entries yet. Click Edit to add."/>}
+
+        {/* Professional Information */}
+        <SectionCard title="Professional Information" icon="🏢" action={<BtnEdit onClick={()=>setModal('professional')}/>}>
+          <Row label="Academic Rank" value={val(f.academic_rank)}/>
+          <Row label="Department" value={val(f.department?.department_name)}/>
+          <Row label="Area of Specialization" value={val(f.area_of_specialization)}/>
+          <Row label="Employment Status" value={val(f.employment_status)}/>
+          <Row label="Date Hired" value={fmt(f.hire_date)}/>
+          <Row label="Years of Service" value={f.years_of_service!=null?`${f.years_of_service} year${f.years_of_service!==1?'s':''}`:val(null)}/>
+          {f.courses_handled?.length>0&&(
+            <div className="mt-2">
+              <p className={`text-xs mb-1.5 ${dark?'text-slate-500':'text-slate-400'}`}>Courses Handled</p>
+              <div className="flex flex-wrap gap-1.5">{f.courses_handled.map((c,i)=>(<span key={i} className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${dark?'bg-slate-700 text-slate-300':'bg-slate-100 text-slate-600'}`}>{c}</span>))}</div>
+            </div>
+          )}
         </SectionCard>
-        <SectionCard title="Areas of Expertise" icon="🧠" action={<BtnEdit onClick={()=>setModal('expertise')}/>}>
-          {f.expertise_areas?.length>0?(<div className="flex flex-wrap gap-2">{f.expertise_areas.map((e,i)=>(<span key={i} className={`text-xs px-3 py-1 rounded-full font-medium ${dark?'bg-purple-900/40 text-purple-300 border border-purple-700/30':'bg-purple-100 text-purple-700'}`}>{typeof e==='string'?e:e.area}</span>))}</div>):<Empty text="No expertise areas listed yet."/>}
+
+        {/* Educational Background */}
+        <SectionCard title="Educational Background" icon="🎓" action={<BtnEdit onClick={()=>setModal('education')}/>}>
+          {[
+            {label:"Bachelor's Degree", deg:f.bachelors_degree},
+            {label:"Master's Degree",   deg:f.masters_degree},
+            {label:"Doctorate Degree",  deg:f.doctorate_degree},
+          ].map(({label,deg})=>deg?.course||deg?.school?(
+            <div key={label} className={`mb-3 p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}>
+              <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${dark?'text-orange-400/70':'text-orange-500'}`}>{label}</p>
+              <p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{deg.course}</p>
+              <p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{deg.school}{deg.year_graduated?` · ${deg.year_graduated}`:''}</p>
+            </div>
+          ):null)}
+          {f.certifications?.length>0&&(
+            <div className="mt-2">
+              <p className={`text-[10px] font-bold uppercase tracking-wider mb-1.5 ${dark?'text-orange-400/70':'text-orange-500'}`}>Certifications / Trainings</p>
+              <div className="flex flex-wrap gap-1.5">{f.certifications.map((c,i)=>(<span key={i} className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${dark?'bg-emerald-900/40 text-emerald-300':'bg-emerald-100 text-emerald-700'}`}>{c}</span>))}</div>
+            </div>
+          )}
+          {!f.bachelors_degree?.course&&!f.masters_degree?.course&&!f.doctorate_degree?.course&&!f.certifications?.length&&<Empty text="No educational background added yet."/>}
         </SectionCard>
-        <SectionCard title="Work Experience" icon="💼" action={<BtnEdit onClick={()=>setModal('experience')}/>}>
-          {f.work_experience?.length>0?(<div className="space-y-3">{f.work_experience.map((e,i)=>(<div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}><div className="flex items-start justify-between gap-2"><div><p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{e.title}</p><p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{e.company}{e.period?` · ${e.period}`:''}</p></div>{e.type&&<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${dark?'bg-slate-700 text-slate-300':'bg-slate-100 text-slate-600'}`}>{e.type}</span>}</div>{e.description&&<p className={`text-xs mt-1.5 leading-relaxed ${dark?'text-slate-500':'text-slate-400'}`}>{e.description}</p>}</div>))}</div>):<Empty text="No work experience listed yet."/>}
-        </SectionCard>
-        <SectionCard title="Research Interests" icon="🔬" action={<BtnEdit onClick={()=>setModal('research')}/>}>
-          {f.research_interests?<p className={`text-sm leading-relaxed ${dark?'text-slate-300':'text-slate-600'}`}>{f.research_interests}</p>:<Empty text="No research interests listed yet."/>}
-        </SectionCard>
-        <SectionCard title="Biography" icon="📝" action={<BtnEdit onClick={()=>setModal('bio')}/>}>
-          {f.biography?<p className={`text-sm leading-relaxed ${dark?'text-slate-300':'text-slate-600'}`}>{f.biography}</p>:<Empty text="No biography added yet."/>}
-        </SectionCard>
-        <SectionCard title="Achievements & Awards" icon="🏆" action={<BtnEdit onClick={()=>setModal('achievements')}/>}>
-          {f.achievements?.length>0?(<div className="space-y-2">{f.achievements.map((a,i)=>(<div key={i} className="flex items-start gap-3"><span className="text-amber-400 mt-0.5 shrink-0">🥇</span><div><p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{a.title}</p><p className={`text-xs ${dark?'text-slate-400':'text-slate-500'}`}>{a.organization}{a.year?` · ${a.year}`:''}</p></div></div>))}</div>):<Empty text="No achievements listed yet."/>}
-        </SectionCard>
-        <SectionCard title="Publications & Research Papers" icon="📄" action={<BtnEdit onClick={()=>setModal('publications')}/>}>
-          {f.publications?.length>0?(<div className="space-y-3">{f.publications.map((p,i)=>(<div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}><p className={`text-sm font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{p.title}</p><p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{p.journal}{p.year?` · ${p.year}`:''}</p>{p.url&&<a href={p.url} target="_blank" rel="noreferrer" className="text-xs text-brand-400 hover:underline mt-0.5 block truncate">{p.url}</a>}</div>))}</div>):<Empty text="No publications listed yet."/>}
-        </SectionCard>
+
+        {/* Social Links */}
         <SectionCard title="Social & Professional Links" icon="🔗" action={<BtnEdit onClick={()=>setModal('social')}/>}>
           {f.social_links&&Object.values(f.social_links).some(v=>v)?(<div className="space-y-2">{Object.entries(f.social_links).filter(([,v])=>v).map(([k,v])=>(<div key={k} className="flex items-center gap-2"><span className={`text-xs w-28 shrink-0 capitalize ${dark?'text-slate-500':'text-slate-400'}`}>{k}</span><a href={v} target="_blank" rel="noreferrer" className="text-xs text-brand-400 hover:underline truncate">{v}</a></div>))}</div>):<Empty text="No links added yet."/>}
         </SectionCard>
@@ -992,7 +1140,7 @@ const FacultyDashboard = ({user,onLogout}) => {
   const renderPanel=()=>{
     switch(active){
       case 'dashboard': return <DashboardPanel user={user} initials={initials} subjectsCount={subjectsCount} studentsCount={studentsCount} schedulesCount={schedulesCount}/>;
-      case 'profile':   return <ProfilePanel faculty={faculty} loading={loadingProfile} err={profileErr} onReload={(updated)=>setFaculty(updated)}/>;
+      case 'profile':   return <ProfilePanel faculty={faculty} loading={loadingProfile} err={profileErr} onReload={(updated)=>{if(updated) setFaculty(updated); loadFaculty();}}/>;
       case 'subjects':  return <SubjectsPanel facultyId={user?.faculty_id}/>;
       case 'schedule':  return <SchedulePanel facultyId={user?.faculty_id}/>;
       case 'students':  return <StudentsPanel facultyId={user?.faculty_id} facultyName={facultyName}/>;
