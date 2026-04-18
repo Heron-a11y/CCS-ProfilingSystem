@@ -1,7 +1,17 @@
 import { useState, useEffect, useCallback, createContext, useContext, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../../utils/api';
-import { Pin, PinOff } from 'lucide-react';
+/* Pin / PinOff replaced with inline SVGs — lucide-react is not installed */
+const PinIcon    = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 00-1.11-1.79l-1.78-.9A2 2 0 0115 10.76V6h1a2 2 0 000-4H8a2 2 0 000 4h1v4.76a2 2 0 01-1.11 1.79l-1.78.9A2 2 0 005 15.24V17z"/>
+  </svg>
+);
+const PinOffIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="2" y1="2" x2="22" y2="22"/><line x1="12" y1="17" x2="12" y2="22"/><path d="M9 9v1.76a2 2 0 01-1.11 1.79l-1.78.9A2 2 0 005 15.24V17h12"/><path d="M15 9.34V6h1a2 2 0 000-4H7.89"/>
+  </svg>
+);
 
 const ThemeCtx = createContext(true);
 const useTheme = () => useContext(ThemeCtx);
@@ -461,9 +471,12 @@ const ProfilePanel = ({faculty,loading,err,onReload}) => {
   const [modal,setModal]=useState(null);
   const [photoUploading,setPhotoUploading]=useState(false);
   const [photoErr,setPhotoErr]=useState(null);
+  const [localPhotoUrl,setLocalPhotoUrl]=useState(null);
   const [depts,setDepts]=useState([]);
 
   useEffect(()=>{api.departments.getAll().then(setDepts).catch(()=>{});},[]);
+  // Clear local blob preview once the reloaded faculty data arrives
+  useEffect(()=>{ setLocalPhotoUrl(null); },[faculty?.profile_photo]);
 
   const refresh=async()=>{
     setModal(null);
@@ -474,8 +487,12 @@ const ProfilePanel = ({faculty,loading,err,onReload}) => {
     const file=e.target.files?.[0]; if(!file) return;
     if(file.size>10*1024*1024){setPhotoErr('Max 10 MB.');e.target.value='';return;}
     setPhotoErr(null);setPhotoUploading(true);
-    try{await api.faculties.uploadPhoto(faculty.id,file);await onReload();}
-    catch(ex){setPhotoErr(ex.message||'Upload failed.');}
+    try{
+      setLocalPhotoUrl(URL.createObjectURL(file));
+      await api.faculties.uploadPhoto(faculty.id,file);
+      await onReload();
+    }
+    catch(ex){setPhotoErr(ex.message||'Upload failed.');setLocalPhotoUrl(null);}
     finally{setPhotoUploading(false);e.target.value='';}
   };
 
@@ -486,7 +503,11 @@ const ProfilePanel = ({faculty,loading,err,onReload}) => {
   const f=faculty;
   const fullName=[f.first_name,f.middle_name?f.middle_name[0]+'.':null,f.last_name].filter(Boolean).join(' ');
   const initials=`${f.first_name?.[0]??''}${f.last_name?.[0]??''}`.toUpperCase();
-  const photoUrl=f.profile_photo?`${import.meta.env.VITE_STORAGE_URL || "http://localhost:8000/storage"}/${f.profile_photo}?v=${f.updated_at??Date.now()}`:null;
+  const photoUrl = f.profile_photo
+    ? (f.profile_photo.startsWith('http')
+        ? f.profile_photo
+        : `${import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/storage'}/${f.profile_photo}?v=${f.updated_at ?? Date.now()}`)
+    : null;
 
   // StudentProfileTabs-style tokens
   const wrap     = dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-100';
@@ -518,7 +539,7 @@ const ProfilePanel = ({faculty,loading,err,onReload}) => {
         {/* Circular photo */}
         <div className="relative group w-20 h-20 rounded-full shrink-0 overflow-hidden bg-gradient-to-tr from-blue-500 to-purple-500">
           {/* Photo layer */}
-          {photoUrl&&<img src={photoUrl} alt="Profile" className="absolute inset-0 w-full h-full object-cover object-top z-10"/>}
+          {(localPhotoUrl||photoUrl)&&<img src={localPhotoUrl||photoUrl} alt="Profile" className="absolute inset-0 w-full h-full object-cover object-top z-10"/>}
           {/* Initials fallback layer */}
           <div className="absolute inset-0 flex items-center justify-center font-bold text-2xl text-white">
             {initials}
@@ -1247,8 +1268,8 @@ const FacultyDashboard = ({user,onLogout}) => {
                 }`}>
                 {/* Pin = sidebar locked open, PinOff = free to collapse */}
                 {sidebarPinned
-                  ? <Pin className="w-5 h-5"/>
-                  : <PinOff className="w-5 h-5"/>
+                  ? <PinIcon className="w-5 h-5"/>
+                  : <PinOffIcon className="w-5 h-5"/>
                 }
               </button>
             )}
