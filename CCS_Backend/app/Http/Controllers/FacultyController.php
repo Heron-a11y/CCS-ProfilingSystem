@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Faculty;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class FacultyController extends Controller
@@ -34,7 +35,78 @@ class FacultyController extends Controller
 
         $faculty = Faculty::create($validated);
         $faculty->load('department');
+
+        // Send welcome email notification
+        try {
+            $fullName = trim($validated['first_name'] . ' ' . $validated['last_name']);
+            $apiKey   = config('services.brevo.key', env('BREVO_API_KEY'));
+            \Illuminate\Support\Facades\Http::withHeaders([
+                'api-key'      => $apiKey,
+                'Content-Type' => 'application/json',
+            ])->post('https://api.brevo.com/v3/smtp/email', [
+                'sender' => [
+                    'name'  => config('mail.from.name'),
+                    'email' => config('mail.from.address'),
+                ],
+                'to'      => [['email' => $validated['email'], 'name' => $fullName]],
+                'subject' => 'Your CCS Profiling System Faculty Account Has Been Created',
+                'htmlContent' => $this->buildWelcomeEmail($fullName, $validated['email']),
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Faculty welcome email error: ' . $e->getMessage());
+        }
+
         return response()->json($faculty, 201);
+    }
+
+    private function buildWelcomeEmail(string $name, string $email): string
+    {
+        $loginUrl = rtrim(env('FRONTEND_URL', 'https://ccs-profiling-system-iota.vercel.app'), '/') . '/faculty/login';
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:560px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+    <div style="background:linear-gradient(135deg,#f26522,#e04f0f);padding:32px 40px;text-align:center;">
+      <h1 style="color:#fff;margin:0;font-size:22px;font-weight:800;letter-spacing:-0.5px;">CCS Profiling System</h1>
+      <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;">Pamantasan ng Cabuyao — College of Computing Studies</p>
+    </div>
+    <div style="padding:36px 40px;">
+      <p style="color:#1e293b;font-size:16px;font-weight:700;margin:0 0 8px;">Hello, {$name}!</p>
+      <p style="color:#475569;font-size:14px;line-height:1.6;margin:0 0 24px;">Your faculty profile has been successfully created by the administration. You can now log in to the <strong>CCS Profile Hub</strong> using your registered email address.</p>
+
+      <div style="background:#fff7f0;border:1.5px solid #fed7aa;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+        <p style="margin:0 0 12px;font-size:12px;font-weight:700;color:#c2410c;text-transform:uppercase;letter-spacing:0.05em;">Your Login Credentials</p>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:6px 0;font-size:13px;color:#64748b;width:140px;">Email Address</td>
+            <td style="padding:6px 0;font-size:14px;font-weight:700;color:#1e293b;font-family:monospace;">{$email}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:13px;color:#64748b;">Password</td>
+            <td style="padding:6px 0;font-size:14px;color:#475569;">Set during your account registration</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:10px;padding:14px 18px;margin-bottom:24px;">
+        <p style="margin:0;font-size:13px;color:#92400e;line-height:1.5;">⚠️ <strong>Important:</strong> If you have not yet registered your account, please go to the Faculty Login page and sign up using this email address.</p>
+      </div>
+
+      <p style="color:#475569;font-size:13px;line-height:1.6;margin:0 0 24px;">If you have any concerns, please contact the CCS administration office.</p>
+
+      <div style="text-align:center;margin:8px 0 8px;">
+        <a href="{$loginUrl}" style="display:inline-block;background:linear-gradient(135deg,#f26522,#e04f0f);color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:12px;box-shadow:0 4px 14px rgba(242,101,34,0.4);">Go to Faculty Login →</a>
+      </div>
+    </div>
+    <div style="background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+      <p style="margin:0;font-size:12px;color:#94a3b8;">© 2026 CCS Profiling System · Pamantasan ng Cabuyao</p>
+    </div>
+  </div>
+</body>
+</html>
+HTML;
     }
 
     public function show(Faculty $faculty)
