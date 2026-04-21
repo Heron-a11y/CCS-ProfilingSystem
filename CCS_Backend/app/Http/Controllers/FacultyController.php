@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Faculty;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
@@ -36,11 +38,26 @@ class FacultyController extends Controller
         $faculty = Faculty::create($validated);
         $faculty->load('department');
 
+        // Create the User account with a temporary password (hire date in mm/dd/yyyy)
+        $hireDate     = \Carbon\Carbon::parse($validated['hire_date']);
+        $tempPassword = $hireDate->format('m/d/Y');
+
+        DB::table('users')->insertOrIgnore([
+            'name'                 => trim($validated['first_name'] . ' ' . $validated['last_name']),
+            'email'                => strtolower(trim($validated['email'])),
+            'password'             => Hash::make($tempPassword),
+            'role'                 => 'faculty',
+            'faculty_id'           => $faculty->id,
+            'must_change_password' => true,
+            'created_at'           => now(),
+            'updated_at'           => now(),
+        ]);
+
         // Send welcome email notification
         try {
             $fullName = trim($validated['first_name'] . ' ' . $validated['last_name']);
             $apiKey   = config('services.brevo.key', env('BREVO_API_KEY'));
-            \Illuminate\Support\Facades\Http::withHeaders([
+            Http::withHeaders([
                 'api-key'      => $apiKey,
                 'Content-Type' => 'application/json',
             ])->post('https://api.brevo.com/v3/smtp/email', [
@@ -50,7 +67,7 @@ class FacultyController extends Controller
                 ],
                 'to'      => [['email' => $validated['email'], 'name' => $fullName]],
                 'subject' => 'Your CCS Profiling System Faculty Account Has Been Created',
-                'htmlContent' => $this->buildWelcomeEmail($fullName, $validated['email']),
+                'htmlContent' => $this->buildWelcomeEmail($fullName, $validated['email'], $tempPassword),
             ]);
         } catch (\Throwable $e) {
             \Log::error('Faculty welcome email error: ' . $e->getMessage());
@@ -59,7 +76,7 @@ class FacultyController extends Controller
         return response()->json($faculty, 201);
     }
 
-    private function buildWelcomeEmail(string $name, string $email): string
+    private function buildWelcomeEmail(string $name, string $email, string $tempPassword): string
     {
         $loginUrl = rtrim(env('FRONTEND_URL', 'https://ccs-profiling-system-iota.vercel.app'), '/') . '/faculty/login';
         return <<<HTML
@@ -74,24 +91,24 @@ class FacultyController extends Controller
     </div>
     <div style="padding:36px 40px;">
       <p style="color:#1e293b;font-size:16px;font-weight:700;margin:0 0 8px;">Hello, {$name}!</p>
-      <p style="color:#475569;font-size:14px;line-height:1.6;margin:0 0 24px;">Your faculty profile has been successfully created by the administration. You can now log in to the <strong>CCS Profile Hub</strong> using your registered email address.</p>
+      <p style="color:#475569;font-size:14px;line-height:1.6;margin:0 0 24px;">Your faculty account has been successfully created by the administration. You can now log in to the <strong>CCS Profile Hub</strong> using the credentials below.</p>
 
       <div style="background:#fff7f0;border:1.5px solid #fed7aa;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
         <p style="margin:0 0 12px;font-size:12px;font-weight:700;color:#c2410c;text-transform:uppercase;letter-spacing:0.05em;">Your Login Credentials</p>
         <table style="width:100%;border-collapse:collapse;">
           <tr>
-            <td style="padding:6px 0;font-size:13px;color:#64748b;width:140px;">Email Address</td>
+            <td style="padding:6px 0;font-size:13px;color:#64748b;width:160px;">Email Address</td>
             <td style="padding:6px 0;font-size:14px;font-weight:700;color:#1e293b;font-family:monospace;">{$email}</td>
           </tr>
           <tr>
-            <td style="padding:6px 0;font-size:13px;color:#64748b;">Password</td>
-            <td style="padding:6px 0;font-size:14px;color:#475569;">Set during your account registration</td>
+            <td style="padding:6px 0;font-size:13px;color:#64748b;">Temporary Password</td>
+            <td style="padding:6px 0;font-size:14px;font-weight:700;color:#1e293b;font-family:monospace;">{$tempPassword}</td>
           </tr>
         </table>
       </div>
 
       <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:10px;padding:14px 18px;margin-bottom:24px;">
-        <p style="margin:0;font-size:13px;color:#92400e;line-height:1.5;">⚠️ <strong>Important:</strong> If you have not yet registered your account, please go to the Faculty Login page and sign up using this email address.</p>
+        <p style="margin:0;font-size:13px;color:#92400e;line-height:1.5;">⚠️ <strong>Important:</strong> Your temporary password is your hire date in <strong>mm/dd/yyyy</strong> format. You will be required to change it upon your first login.</p>
       </div>
 
       <p style="color:#475569;font-size:13px;line-height:1.6;margin:0 0 24px;">If you have any concerns, please contact the CCS administration office.</p>

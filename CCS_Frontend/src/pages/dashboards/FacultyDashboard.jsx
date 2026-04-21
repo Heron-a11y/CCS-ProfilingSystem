@@ -1173,6 +1173,78 @@ const StudentsPanel = ({facultyId,facultyName}) => {
   );
 };
 
+/* ════ FORCE CHANGE PASSWORD MODAL ════ */
+const FacultyForceChangePasswordModal = ({dark,onChanged}) => {
+  const [newPw,setNewPw]=useState('');
+  const [confirmPw,setConfirm]=useState('');
+  const [showNew,setShowNew]=useState(false);
+  const [showConf,setShowConf]=useState(false);
+  const [saving,setSaving]=useState(false);
+  const [err,setErr]=useState('');
+
+  const handleSubmit=async(e)=>{
+    e.preventDefault(); setErr('');
+    if(newPw.length<8){setErr('Password must be at least 8 characters.');return;}
+    if(newPw!==confirmPw){setErr('Passwords do not match.');return;}
+    setSaving(true);
+    try{
+      await api.auth.changePassword({new_password:newPw,new_password_confirmation:confirmPw});
+      onChanged();
+    }catch(ex){setErr(ex.message||'Failed to change password.');}
+    finally{setSaving(false);}
+  };
+
+  const inp=`w-full pr-10 pl-4 py-3 rounded-xl border text-sm outline-none transition-colors ${dark?'bg-slate-800 border-slate-700 text-slate-100 placeholder-slate-500 focus:border-orange-500':'bg-white border-slate-300 text-slate-800 placeholder-slate-400 focus:border-orange-500'}`;
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" style={{background:'rgba(0,0,0,0.7)',backdropFilter:'blur(6px)'}}>
+      <div className={`w-full max-w-md rounded-2xl border shadow-2xl overflow-hidden ${dark?'bg-slate-900 border-slate-700':'bg-white border-slate-200'}`}>
+        <div className="px-6 py-5 border-b" style={{background:'linear-gradient(135deg,#f26522,#e04f0f)',borderColor:'transparent'}}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+            </div>
+            <div>
+              <h2 className="text-base font-black text-white">Change Your Password</h2>
+              <p className="text-xs text-white/80 mt-0.5">You must set a new password before continuing.</p>
+            </div>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className={`flex items-start gap-3 p-3.5 rounded-xl border text-xs ${dark?'bg-amber-900/20 border-amber-500/30 text-amber-300':'bg-amber-50 border-amber-300 text-amber-700'}`}>
+            <svg className={`w-4 h-4 shrink-0 mt-0.5 ${dark?'text-amber-400':'text-amber-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Your account was created by the administration. Your temporary password was your hire date (mm/dd/yyyy). Please set a new secure password now.
+          </div>
+          {err&&<div className={`flex items-center gap-2 p-3 rounded-xl text-xs border ${dark?'bg-red-900/20 border-red-500/30 text-red-400':'bg-red-50 border-red-200 text-red-600'}`}><svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{err}</div>}
+          <div>
+            <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${dark?'text-slate-400':'text-slate-500'}`}>New Password</label>
+            <div className="relative">
+              <input type={showNew?'text':'password'} value={newPw} onChange={e=>setNewPw(e.target.value)} placeholder="Min. 8 characters" className={inp} required/>
+              <button type="button" onClick={()=>setShowNew(p=>!p)} className={`absolute right-3 top-1/2 -translate-y-1/2 ${dark?'text-slate-500 hover:text-slate-300':'text-slate-400 hover:text-slate-600'}`}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${dark?'text-slate-400':'text-slate-500'}`}>Confirm New Password</label>
+            <div className="relative">
+              <input type={showConf?'text':'password'} value={confirmPw} onChange={e=>setConfirm(e.target.value)} placeholder="Re-enter new password" className={inp} required/>
+              <button type="button" onClick={()=>setShowConf(p=>!p)} className={`absolute right-3 top-1/2 -translate-y-1/2 ${dark?'text-slate-500 hover:text-slate-300':'text-slate-400 hover:text-slate-600'}`}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          <button type="submit" disabled={saving}
+            className="w-full py-3 rounded-xl text-white text-sm font-bold transition-all disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98]"
+            style={{background:'linear-gradient(135deg,#f26522,#e04f0f)',boxShadow:'0 4px 14px rgba(242,101,34,0.35)'}}>
+            {saving?<span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>Saving...</span>:'Set New Password'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 /* ════ MAIN COMPONENT ════ */
 const FacultyDashboard = ({user,onLogout}) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1186,6 +1258,7 @@ const FacultyDashboard = ({user,onLogout}) => {
   const [sidebarHovered,setSidebarHovered]=useState(false);
   const [dark,setDark]=useState(()=>localStorage.getItem('fd_theme')!=='light');
   const [faculty,setFaculty]=useState(null);
+  const [mustChangePassword,setMustChangePassword]=useState(()=>user?.must_change_password===true);
   const [loadingProfile,setLoadingProfile]=useState(false);
   const [profileErr,setProfileErr]=useState(null);
   const [subjectsCount,setSubjectsCount]=useState('—');
@@ -1235,6 +1308,14 @@ const FacultyDashboard = ({user,onLogout}) => {
 
   return (
     <ThemeCtx.Provider value={dark}>
+      {mustChangePassword&&(
+        <FacultyForceChangePasswordModal dark={dark} onChanged={()=>{
+          setMustChangePassword(false);
+          const stored=JSON.parse(localStorage.getItem('auth_user')||'{}');
+          stored.must_change_password=false;
+          localStorage.setItem('auth_user',JSON.stringify(stored));
+        }}/>
+      )}
       <div className={`flex h-screen w-screen overflow-hidden font-sans transition-colors duration-300 ${dark?'bg-slate-950 text-slate-100':'bg-slate-50 text-slate-900'}`}>
         {dark&&<><div className="fixed top-0 right-0 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[150px] pointer-events-none"/><div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none"/></>}
 
