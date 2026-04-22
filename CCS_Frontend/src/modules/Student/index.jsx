@@ -13,6 +13,7 @@ import AddStudentModal from './AddStudentModal';
 import EditStudentModal from './EditStudentModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import StudentProfileTabs from './StudentProfileTabs';
+import ExportModal from './ExportModal';
 import { useDarkMode } from '../../context/DarkModeContext';
 
 const Avatar = ({ student, size = 'md' }) => {
@@ -96,6 +97,11 @@ const StudentModule = ({ students: propStudents = [], skills: propSkills = [], c
   const availableSkills = propSkills;
   const availableCourses = propCourses;
   const isLoading       = propLoading;
+  const [schedules, setSchedules] = useState([]);
+
+  useEffect(() => {
+    api.schedules.getAll().then(setSchedules).catch(() => {});
+  }, []);
   const stats = {
     total:      students.length,
     enrolled:   students.filter(s => s.enrollment_status === 'Enrolled').length,
@@ -105,6 +111,7 @@ const StudentModule = ({ students: propStudents = [], skills: propSkills = [], c
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [listSearch, setListSearch] = useState('');
@@ -169,6 +176,7 @@ const StudentModule = ({ students: propStudents = [], skills: propSkills = [], c
     { id: 'personal_details',      label: 'Personal Details' },
     { id: 'skills_certifications', label: 'Skills & Certifications' },
     { id: 'academic_history',      label: 'Academic History' },
+    { id: 'subjects',              label: 'Subjects' },
     { id: 'violations',            label: 'Violations' },
   ];
 
@@ -209,7 +217,7 @@ const StudentModule = ({ students: propStudents = [], skills: propSkills = [], c
               </div>
             </div>
             <button
-              onClick={() => window.open('http://localhost:8000/api/students/export/csv', '_blank')}
+              onClick={() => setIsExportModalOpen(true)}
               className={`flex items-center gap-1.5 px-3 py-2 font-semibold text-xs rounded-xl transition-colors border ${dark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'}`}>
               <ArrowUpTrayIcon className="w-3.5 h-3.5" />Export
             </button>
@@ -502,6 +510,7 @@ const StudentModule = ({ students: propStudents = [], skills: propSkills = [], c
               <StudentProfileTabs
                 activeTab={activeTab}
                 student={selectedStudent}
+                schedules={schedules}
                 onEditClick={handleEditStudent}
                 onDeleteClick={handleDeleteStudent}
               />
@@ -512,6 +521,12 @@ const StudentModule = ({ students: propStudents = [], skills: propSkills = [], c
       </div>
 
       <AddStudentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onStudentAdded={() => reloadStudents()} />
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        students={students}
+        selectedStudent={selectedStudent}
+      />
       <EditStudentModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}

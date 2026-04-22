@@ -69,7 +69,7 @@ const getStudentTypeBadge = (type, dark) => {
   return m[type] || 'bg-slate-100 text-slate-700 border border-slate-200';
 };
 
-const StudentProfileTabs = ({ activeTab, student, onEditClick, onDeleteClick }) => {
+const StudentProfileTabs = ({ activeTab, student, schedules = [], onEditClick, onDeleteClick }) => {
   const dark = useDarkMode();
 
   // Theme tokens
@@ -534,6 +534,119 @@ const StudentProfileTabs = ({ activeTab, student, onEditClick, onDeleteClick }) 
           )}
         </div>
       )}
+
+      {/* Subjects Tab */}
+      {activeTab === 'subjects' && (() => {
+        const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const DAY_COLORS = {
+          Monday: 'bg-blue-100 text-blue-700', Tuesday: 'bg-green-100 text-green-700',
+          Wednesday: 'bg-yellow-100 text-yellow-700', Thursday: 'bg-purple-100 text-purple-700',
+          Friday: 'bg-pink-100 text-pink-700', Saturday: 'bg-orange-100 text-orange-700',
+        };
+        const fmt = (t) => {
+          if (!t) return '—';
+          const [h, m] = t.split(':');
+          const hr = parseInt(h, 10);
+          return `${hr % 12 || 12}:${m} ${hr >= 12 ? 'PM' : 'AM'}`;
+        };
+        // Find schedules for this student's section
+        const studentSection = student.section;
+        const mySchedules = schedules.filter(s =>
+          s.section?.section_name === studentSection ||
+          String(s.section_id) === String(student.section_id)
+        ).sort((a, b) => DAYS.indexOf(a.day_of_week) - DAYS.indexOf(b.day_of_week));
+
+        const totalUnits = mySchedules.reduce((sum, s) => sum + (s.subject?.total_units || 0), 0);
+
+        return (
+          <div className="space-y-5">
+            {/* Header */}
+            <div className={`flex items-center justify-between pb-4 border-b ${divider}`}>
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${dark ? 'bg-brand-900/40 text-brand-400' : 'bg-brand-50 text-brand-600'}`}>
+                  <AcademicCapIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className={`text-base font-bold ${boldText}`}>Enrolled Subjects</h3>
+                  <p className={`text-xs ${subText}`}>
+                    {studentSection ? `Section ${studentSection}` : 'No section assigned'} · {mySchedules.length} subject{mySchedules.length !== 1 ? 's' : ''} · {totalUnits} units
+                  </p>
+                </div>
+              </div>
+              {mySchedules.length > 0 && (
+                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${dark ? 'bg-brand-900/40 text-brand-300' : 'bg-brand-50 text-brand-600'}`}>
+                  {totalUnits} total units
+                </span>
+              )}
+            </div>
+
+            {mySchedules.length === 0 ? (
+              <div className={`flex flex-col items-center justify-center py-14 rounded-2xl border ${dark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${dark ? 'bg-slate-700' : 'bg-slate-100'}`}>
+                  <AcademicCapIcon className={`w-8 h-8 ${dark ? 'text-slate-500' : 'text-slate-400'}`} />
+                </div>
+                <h4 className={`text-base font-bold mb-1 ${boldText}`}>No Subjects Found</h4>
+                <p className={`text-sm ${subText}`}>
+                  {studentSection
+                    ? `No schedules assigned to section ${studentSection} yet.`
+                    : 'This student has no section assigned. Assign a section to see subjects.'}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {mySchedules.map((s, idx) => (
+                  <div key={s.id}
+                    className={`relative rounded-2xl border overflow-hidden transition-all duration-200 hover:shadow-md ${dark ? 'bg-slate-800/60 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
+                    {/* Left accent */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${DAY_COLORS[s.day_of_week]?.replace('bg-', 'bg-').split(' ')[0] || 'bg-slate-300'}`} />
+                    <div className="pl-5 pr-5 py-4">
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
+                        {/* Subject info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${dark ? 'bg-brand-900/40 text-brand-300' : 'bg-brand-50 text-brand-600'}`}>
+                              {s.subject?.subject_code}
+                            </span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${DAY_COLORS[s.day_of_week] || 'bg-slate-100 text-slate-700'}`}>
+                              {s.day_of_week}
+                            </span>
+                          </div>
+                          <h4 className={`font-bold text-sm ${boldText}`}>{s.subject?.descriptive_title}</h4>
+                          <div className={`flex items-center gap-3 mt-1 text-xs ${subText}`}>
+                            <span className="flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              {fmt(s.start_time)} – {fmt(s.end_time)}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                              {s.room}
+                            </span>
+                          </div>
+                        </div>
+                        {/* Faculty + units */}
+                        <div className="flex flex-col items-end gap-2 shrink-0">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px] ${dark ? 'bg-orange-900/40 text-orange-300' : 'bg-orange-100 text-orange-700'}`}>
+                              {s.faculty?.first_name?.[0]}{s.faculty?.last_name?.[0]}
+                            </div>
+                            <div className="text-right">
+                              <p className={`text-xs font-semibold ${boldText}`}>{s.faculty?.first_name} {s.faculty?.last_name}</p>
+                              <p className={`text-[10px] ${dark ? 'text-orange-400' : 'text-orange-600'}`}>{s.faculty?.position}</p>
+                            </div>
+                          </div>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${dark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
+                            {s.subject?.total_units} unit{s.subject?.total_units !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Violations Tab */}
       {activeTab === 'violations' && (

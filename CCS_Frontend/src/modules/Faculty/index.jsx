@@ -84,6 +84,11 @@ const FacultyModule = ({ faculties: propFaculties = [], loading: propLoading = f
 
   const faculties  = propFaculties;
   const isLoading  = propLoading;
+  const [schedules, setSchedules] = useState([]);
+
+  useEffect(() => {
+    api.schedules.getAll().then(setSchedules).catch(() => {});
+  }, []);
   const stats = {
     total:    faculties.length,
     fullTime: faculties.filter(f => f.employment_status === 'Full-Time').length,
@@ -421,6 +426,7 @@ const FacultyModule = ({ faculties: propFaculties = [], loading: propLoading = f
         isOpen={isDetailModalOpen}
         onClose={() => { setIsDetailModalOpen(false); setSelectedFaculty(null); navigate('/admin/reports', { replace: true }); }}
         faculty={selectedFaculty}
+        allSchedules={schedules}
       />
       <EditFacultyModal
         isOpen={isEditModalOpen}
