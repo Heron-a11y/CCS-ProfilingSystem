@@ -139,6 +139,7 @@ export const api = {
   },
   sections: {
     getAll: () => cachedGet('sections', () => fetchApi('/sections')),
+    create: (data) => { cache.bust('sections'); return fetchApi('/sections', { method: 'POST', body: JSON.stringify(data) }); },
   },
   schedules: {
     getAll: () => cachedGet('schedules', () => fetchApi('/schedules')),
@@ -162,5 +163,12 @@ export const api = {
   },
   auth: {
     changePassword: (data) => fetchApi('/auth/change-password', { method: 'POST', body: JSON.stringify(data) }),
+  },
+  notifications: {
+    getAll: () => fetchApi('/notifications'),
+    markRead: (id) => fetchApi(`/notifications/${id}/read`, { method: 'POST' }),
+    markAllRead: () => fetchApi('/notifications/read-all', { method: 'POST' }),
+    delete: (id) => fetchApi(`/notifications/${id}`, { method: 'DELETE' }),
+    clearAll: () => fetchApi('/notifications/clear-all', { method: 'DELETE' }),
   },
 };

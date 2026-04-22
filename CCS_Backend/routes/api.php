@@ -134,6 +134,15 @@ Route::apiResource('events',      \App\Http\Controllers\EventController::class);
 Route::apiResource('skills',      \App\Http\Controllers\SkillController::class);
 
 // ══════════════════════════════════════════════════════════════
+// NOTIFICATIONS
+// ══════════════════════════════════════════════════════════════
+Route::get('/notifications',              [\App\Http\Controllers\NotificationController::class, 'index']);
+Route::post('/notifications/{id}/read',   [\App\Http\Controllers\NotificationController::class, 'markRead']);
+Route::post('/notifications/read-all',    [\App\Http\Controllers\NotificationController::class, 'markAllRead']);
+Route::delete('/notifications/clear-all', [\App\Http\Controllers\NotificationController::class, 'clearAll']);
+Route::delete('/notifications/{id}',      [\App\Http\Controllers\NotificationController::class, 'destroy']);
+
+// ══════════════════════════════════════════════════════════════
 // ENROLLMENT & CURRICULUM ROUTES
 // ══════════════════════════════════════════════════════════════
 use App\Http\Controllers\EnrollmentController;
