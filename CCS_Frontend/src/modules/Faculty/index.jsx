@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../utils/api';
 import AddFacultyModal from './AddFacultyModal';
 import EditFacultyModal from './EditFacultyModal';
-import FacultyDetailModal from './FacultyDetailModal';
 import DeleteFacultyModal from './DeleteFacultyModal';
+import FacultyProfileTabs from './FacultyProfileTabs';
 import { useDarkMode } from '../../context/DarkModeContext';
 import {
   UsersIcon, CheckCircleIcon, ClockIcon,
@@ -98,30 +98,35 @@ const FacultyModule = ({ faculties: propFaculties = [], loading: propLoading = f
   const [viewMode, setViewMode]     = useState('list');
   const [listSearch, setListSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [isModalOpen, setIsModalOpen]   = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen]     = useState(false);
+  const [isModalOpen, setIsModalOpen]         = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [facultyToDelete, setFacultyToDelete]     = useState(null);
-  const [selectedFaculty, setSelectedFaculty]     = useState(null);
+  const [facultyToDelete, setFacultyToDelete] = useState(null);
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
+
+  const tabs = [
+    { id: 'overview',         label: 'Overview' },
+    { id: 'personal_details', label: 'Personal Details' },
+    { id: 'subjects',         label: 'Subjects' },
+  ];
 
   const reloadFaculties = async () => { if (onReload) await onReload(); };
 
   useEffect(() => {
     if (routeId) {
       api.faculties.get(routeId)
-        .then(f => { setSelectedFaculty(f); setActiveTab('faculty_details'); setIsDetailModalOpen(true); })
+        .then(f => { setSelectedFaculty(f); setActiveTab('personal_details'); })
         .catch(() => {});
     }
   }, []); // eslint-disable-line
 
   const handleFacultyClick = (f) => {
     setSelectedFaculty(f);
-    setIsDetailModalOpen(true);
+    setActiveTab('personal_details');
     navigate(`/admin/reports/${f.id}`, { replace: true });
   };
 
-  const handleEditFaculty   = (f) => { setSelectedFaculty(f); setIsEditModalOpen(true); };
+  const handleEditFaculty   = (f) => { setSelectedFaculty(f || selectedFaculty); setIsEditModalOpen(true); };
   const handleDeleteFaculty = (id) => { setFacultyToDelete(id); setIsDeleteModalOpen(true); };
 
   const confirmDeleteFaculty = async () => {
@@ -129,8 +134,9 @@ const FacultyModule = ({ faculties: propFaculties = [], loading: propLoading = f
       await api.faculties.delete(facultyToDelete);
       await reloadFaculties();
       setIsDeleteModalOpen(false);
-      setIsDetailModalOpen(false);
       setSelectedFaculty(null);
+      setActiveTab('overview');
+      navigate('/admin/reports', { replace: true });
       setFacultyToDelete(null);
     } catch {
       alert('Failed to delete faculty. Please try again.');
@@ -212,9 +218,7 @@ const FacultyModule = ({ faculties: propFaculties = [], loading: propLoading = f
 
         {/* Tabs */}
         <div className={`flex border-b px-6 pt-2 transition-colors duration-300 ${tabBar}`}>
-          {[{ id: 'overview', label: 'Overview' }, { id: 'faculty_details', label: 'Faculty Details' }]
-            .filter(tab => selectedFaculty || tab.id === 'overview')
-            .map(tab => (
+          {tabs.filter(tab => selectedFaculty || tab.id === 'overview').map(tab => (
             <button key={tab.id}
               onClick={() => {
                 if (tab.id === 'overview') { setSelectedFaculty(null); navigate('/admin/reports', { replace: true }); }
@@ -405,7 +409,7 @@ const FacultyModule = ({ faculties: propFaculties = [], loading: propLoading = f
           </div>
         )}
 
-        {/* Faculty Details placeholder when no faculty selected */}
+        {/* No faculty selected placeholder */}
         {activeTab !== 'overview' && !selectedFaculty && (
           <div className="h-full flex flex-col items-center justify-center text-center min-h-[400px] p-6">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${dark ? 'bg-slate-800' : 'bg-slate-100'}`}>
@@ -419,24 +423,31 @@ const FacultyModule = ({ faculties: propFaculties = [], loading: propLoading = f
             </button>
           </div>
         )}
+
+        {/* Faculty profile inline tabs */}
+        {activeTab !== 'overview' && selectedFaculty && (
+          <div className={`p-6 transition-colors duration-300 ${dark ? 'bg-slate-950/40' : 'bg-slate-50/20'}`}>
+            <FacultyProfileTabs
+              activeTab={activeTab}
+              faculty={selectedFaculty}
+              schedules={schedules}
+              onEditClick={handleEditFaculty}
+              onDeleteClick={handleDeleteFaculty}
+            />
+          </div>
+        )}
       </div>
 
       <AddFacultyModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onFacultyAdded={() => reloadFaculties()} />
-      <FacultyDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={() => { setIsDetailModalOpen(false); setSelectedFaculty(null); navigate('/admin/reports', { replace: true }); }}
-        faculty={selectedFaculty}
-        allSchedules={schedules}
-      />
       <EditFacultyModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         faculty={selectedFaculty}
         onFacultyUpdated={async () => {
-          const data = await reloadFaculties();
+          await reloadFaculties();
           if (selectedFaculty) {
-            const updated = data?.find(f => f.id === selectedFaculty.id);
-            if (updated) { setSelectedFaculty(updated); setIsDetailModalOpen(true); }
+            const fresh = await api.faculties.get(selectedFaculty.id).catch(() => null);
+            if (fresh) setSelectedFaculty(fresh);
           }
         }}
       />

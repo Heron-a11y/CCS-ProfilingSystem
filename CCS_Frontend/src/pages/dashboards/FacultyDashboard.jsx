@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, createContext, useContext, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { api } from '../../utils/api';
+import { api, fetchApi, cache } from '../../utils/api';
 /* Pin / PinOff replaced with inline SVGs — lucide-react is not installed */
 const PinIcon    = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -130,36 +130,59 @@ const NavLink = ({item,active,sidebarExpanded,onSelect}) => {
 };
 
 /* ════ DASHBOARD PANEL ════ */
-const DashboardPanel = ({user,facultyName,initials,subjectsCount,studentsCount,schedulesCount}) => {
+const DashboardPanel = ({user,faculty,facultyName,initials,subjectsCount,studentsCount,schedulesCount,eventsCount}) => {
   const dark=useTheme();
+  const [imgErr,setImgErr]=useState(false);
+
+  const photoSrc=faculty?.profile_photo
+    ? (faculty.profile_photo.startsWith('http')
+        ? faculty.profile_photo
+        : `${import.meta.env.VITE_STORAGE_URL||'http://localhost:8000/storage'}/${faculty.profile_photo}?v=${faculty.updated_at??Date.now()}`)
+    : null;
+
   const stats=[
-    {label:'Subjects Handled',val:subjectsCount,icon:'📚',dc:'from-blue-500/20 to-purple-500/10 border-blue-500/20',lc:'bg-blue-50 border-blue-100'},
-    {label:'Total Students',  val:studentsCount, icon:'👥',dc:'from-brand-500/20 to-amber-500/10 border-brand-500/20',lc:'bg-orange-50 border-orange-100'},
-    {label:'Schedules',       val:schedulesCount,icon:'🗂️',dc:'from-emerald-500/20 to-teal-500/10 border-emerald-500/20',lc:'bg-emerald-50 border-emerald-100'},
-    {label:'Upcoming Events', val:'2',           icon:'📅',dc:'from-rose-500/20 to-pink-500/10 border-rose-500/20',lc:'bg-rose-50 border-rose-100'},
+    {label:'Subjects Handled',val:subjectsCount,accent:'border-l-blue-500',  iconBg:dark?'bg-blue-900/40 text-blue-400':'bg-blue-50 text-blue-500',    icon:'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'},
+    {label:'Total Students',  val:studentsCount, accent:'border-l-orange-500',iconBg:dark?'bg-orange-900/40 text-orange-400':'bg-orange-50 text-orange-500',icon:'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z'},
+    {label:'Schedules',       val:schedulesCount,accent:'border-l-emerald-500',iconBg:dark?'bg-emerald-900/40 text-emerald-400':'bg-emerald-50 text-emerald-500',icon:'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'},
+    {label:'Upcoming Events', val:eventsCount,   accent:'border-l-rose-500',  iconBg:dark?'bg-rose-900/40 text-rose-400':'bg-rose-50 text-rose-500',      icon:'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'},
   ];
+
   return (
     <div className="space-y-6">
-      <div className={`relative overflow-hidden rounded-2xl border p-6 ${dark?'bg-gradient-to-br from-blue-600/20 via-purple-600/10 to-transparent border-blue-500/20':'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-100'}`}>
-        <div className="absolute right-0 top-0 w-48 h-48 bg-blue-500/10 rounded-full -translate-y-1/4 translate-x-1/4 blur-2xl pointer-events-none"/>
-        <div className="relative flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white text-xl font-bold shadow-lg shrink-0">{initials}</div>
+      {/* Welcome card with real profile photo */}
+      <div className={`relative overflow-hidden rounded-2xl border p-6 ${dark?'bg-gradient-to-br from-orange-600/10 via-slate-900 to-slate-900 border-orange-500/20':'bg-gradient-to-br from-orange-50 to-white border-orange-100'}`}>
+        <div className="absolute right-0 top-0 w-56 h-56 bg-orange-500/5 rounded-full -translate-y-1/4 translate-x-1/4 blur-3xl pointer-events-none"/>
+        <div className="relative flex items-center gap-5">
+          <div className="w-16 h-16 rounded-full shrink-0 overflow-hidden ring-2 ring-orange-500/40 shadow-lg">
+            {photoSrc && !imgErr
+              ? <img src={photoSrc} alt={facultyName} className="w-full h-full object-cover object-top" onError={()=>setImgErr(true)}/>
+              : <div className={`w-full h-full flex items-center justify-center text-xl font-bold ${dark?'bg-orange-900/50 text-orange-300':'bg-orange-100 text-orange-600'}`}>{initials}</div>
+            }
+          </div>
           <div>
-            <p className={`text-sm ${dark?'text-slate-400':'text-slate-500'}`}>Welcome back,</p>
-            <h2 className={`text-2xl font-bold ${dark?'text-white':'text-slate-800'}`}>{facultyName||user?.name} 👋</h2>
-            <p className={`text-sm mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>CCS Faculty Member · Profile Hub</p>
+            <p className={`text-xs font-semibold uppercase tracking-wider ${dark?'text-orange-400':'text-orange-500'}`}>Welcome back</p>
+            <h2 className={`text-2xl font-bold mt-0.5 ${dark?'text-white':'text-slate-800'}`}>{facultyName||user?.name} 👋</h2>
+            <p className={`text-sm mt-1 ${dark?'text-slate-400':'text-slate-500'}`}>CCS Faculty Member · Profile Hub</p>
           </div>
         </div>
       </div>
+
+      {/* Stat cards — live data */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {stats.map(s=>(
-          <div key={s.label} className={`rounded-2xl border p-4 ${dark?`bg-gradient-to-br ${s.dc}`:s.lc}`}>
-            <div className="text-2xl mb-1">{s.icon}</div>
-            <div className={`text-2xl font-bold ${dark?'text-white':'text-slate-800'}`}>{s.val}</div>
-            <div className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{s.label}</div>
+          <div key={s.label} className={`p-5 rounded-2xl border-l-4 border shadow-sm flex items-center gap-4 ${s.accent} ${dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-200'}`}>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${s.iconBg}`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={s.icon}/></svg>
+            </div>
+            <div>
+              <p className={`text-xs font-semibold uppercase tracking-wider ${dark?'text-slate-400':'text-slate-500'}`}>{s.label}</p>
+              <p className={`text-2xl font-bold mt-0.5 ${dark?'text-slate-100':'text-slate-800'}`}>{s.val}</p>
+            </div>
           </div>
         ))}
       </div>
+
+      {/* Announcements */}
       <div>
         <h3 className={`text-xs font-bold uppercase tracking-wider mb-4 ${dark?'text-slate-400':'text-slate-500'}`}>📢 Announcements</h3>
         <div className="space-y-3">
@@ -1047,13 +1070,13 @@ const StudentDetailModal = ({student:initialStudent,facultyName,onClose}) => {
         {/* Tab: Academic */}
         {tab==='academic'&&(
           <div className="space-y-3">
-            <SectionCard title="Academic Background" icon="📖">
+            <SectionCard title="Academic Background">
               <Row label="LRN" value={val(s.lrn)}/><Row label="Last School Attended" value={val(s.last_school_attended)}/><Row label="Last Year Attended" value={val(s.last_year_attended)}/><Row label="Honors Received" value={val(s.honors_received)}/>
             </SectionCard>
-            {s.academicHistories?.length>0&&(
-              <SectionCard title="Academic History" icon="📋">
+            {(s.academic_histories??s.academicHistories)?.length>0&&(
+              <SectionCard title="Academic History">
                 <div className="space-y-2">
-                  {s.academicHistories.map((h,i)=>(
+                  {(s.academic_histories??s.academicHistories).map((h,i)=>(
                     <div key={i} className={`p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700/60':'bg-slate-50 border-slate-200'}`}>
                       <Row label="School Year" value={val(h.school_year)}/><Row label="Year Level" value={val(h.year_level)}/><Row label="GWA" value={val(h.gwa)}/><Row label="Status" value={val(h.status)}/>
                     </div>
@@ -1062,7 +1085,7 @@ const StudentDetailModal = ({student:initialStudent,facultyName,onClose}) => {
               </SectionCard>
             )}
             {s.skills?.length>0&&(
-              <SectionCard title="Skills" icon="🛠️">
+              <SectionCard title="Skills">
                 <div className="flex flex-wrap gap-2">
                   {s.skills.map((sk,i)=><span key={i} className={`text-xs px-3 py-1 rounded-full font-medium ${dark?'bg-purple-900/40 text-purple-300':'bg-purple-100 text-purple-700'}`}>{sk.skill_name}</span>)}
                 </div>
@@ -1072,23 +1095,34 @@ const StudentDetailModal = ({student:initialStudent,facultyName,onClose}) => {
         )}
 
         {/* Tab: Medical */}
-        {tab==='medical'&&(
-          <div>
-            {!s.medicalHistories?.length?(
-              <div className={`rounded-2xl border p-10 text-center ${dark?'bg-slate-900/60 border-slate-700/50':'bg-white border-slate-200'}`}>
-                <p className={`text-sm ${dark?'text-slate-400':'text-slate-500'}`}>No medical records on file.</p>
-              </div>
-            ):(
-              <div className="space-y-3">
-                {s.medicalHistories.map((m,i)=>(
-                  <SectionCard key={i} title="Medical Record" icon="🏥">
-                    <Row label="Blood Type" value={val(m.bloodtype)}/><Row label="Existing Conditions" value={val(m.existing_conditions)}/><Row label="Emergency Contact" value={val(m.emergency_contact_name)}/><Row label="Emergency Number" value={val(m.emergency_contact_number)}/>
-                  </SectionCard>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {tab==='medical'&&(()=>{
+          const medRecs=s.medical_histories??s.medicalHistories??[];
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SectionCard title="Medical Record">
+                {medRecs.length>0?medRecs.map((m,i)=>(
+                  <div key={i} className="space-y-1">
+                    <Row label="Blood Type" value={val(m.bloodtype)}/>
+                    <Row label="Conditions / Allergies" value={val(m.existing_conditions||'None reported')}/>
+                  </div>
+                )):<p className={`text-xs text-center py-4 ${dark?'text-slate-500':'text-slate-400'}`}>No medical record yet.</p>}
+              </SectionCard>
+              <SectionCard title="Emergency Contact">
+                {medRecs.length>0&&medRecs[0].emergency_contact_name?(
+                  <div className={`flex items-center gap-3 p-3 rounded-xl border ${dark?'bg-slate-800 border-slate-700':'bg-slate-50 border-slate-100'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${dark?'bg-slate-700 text-slate-400':'bg-slate-200 text-slate-500'}`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    </div>
+                    <div>
+                      <p className={`text-xs font-bold ${dark?'text-slate-100':'text-slate-800'}`}>{medRecs[0].emergency_contact_name}</p>
+                      <p className={`text-xs font-semibold ${dark?'text-orange-400':'text-orange-600'}`}>{medRecs[0].emergency_contact_number||'—'}</p>
+                    </div>
+                  </div>
+                ):<p className={`text-xs text-center py-4 ${dark?'text-slate-500':'text-slate-400'}`}>No emergency contact yet.</p>}
+              </SectionCard>
+            </div>
+          );
+        })()}
       </div>
     </FModal>
   );
@@ -1096,29 +1130,54 @@ const StudentDetailModal = ({student:initialStudent,facultyName,onClose}) => {
 
 const StudentsPanel = ({facultyId,facultyName}) => {
   const dark=useTheme();
-  const [schedules,setSchedules]=useState([]);
   const [students,setStudents]=useState([]);
+  const [sections,setSections]=useState([]);
   const [loading,setLoading]=useState(true);
   const [err,setErr]=useState(null);
   const [search,setSearch]=useState('');
   const [selected,setSelected]=useState(null);
+  const [loadingDetail,setLoadingDetail]=useState(false);
   const [sectionFilter,setSectionFilter]=useState('');
+  const [viewMode,setViewMode]=useState('cards');
 
   const load=useCallback(async()=>{
     setLoading(true);setErr(null);
     try{
-      const [allSch,allStu]=await Promise.all([api.schedules.getAll(),api.students.getAll()]);
-      const mine=allSch.filter(s=>s.faculty_id===facultyId);
-      setSchedules(mine);
-      const mySec=new Set(mine.map(s=>s.section?.section_name).filter(Boolean));
-      setStudents(allStu.filter(s=>s.section&&mySec.has(s.section)));
+      // Always fetch fresh — bypass cache so faculty sees same data as admin
+      const [allStu,allSch]=await Promise.all([
+        fetchApi('/students'),
+        fetchApi('/schedules'),
+      ]);
+      // Sections assigned to this faculty via schedules
+      const mySecNames=new Set(
+        allSch.filter(s=>Number(s.faculty_id)===Number(facultyId))
+              .map(s=>s.section?.section_name)
+              .filter(Boolean)
+      );
+      // If faculty has assigned sections, show only those; otherwise show all students
+      const list=mySecNames.size>0
+        ? allStu.filter(s=>s.section&&mySecNames.has(s.section))
+        : allStu;
+      setStudents(list);
+      // Update shared cache so other panels stay in sync
+      cache.set('students', allStu);
+      cache.set('schedules', allSch);
+      // Build section dropdown from actual student data
+      setSections([...new Set(list.map(s=>s.section).filter(Boolean))].sort());
     }catch{setErr('Could not load students.');}
     finally{setLoading(false);}
   },[facultyId]);
 
   useEffect(()=>{load();},[load]);
 
-  const sections=[...new Set(schedules.map(s=>s.section?.section_name).filter(Boolean))];
+  // Fetch full student detail (with all relations) when clicking a card
+  const openStudent=useCallback(async(s)=>{
+    setLoadingDetail(true);
+    try{const full=await api.students.get(s.id);setSelected(full);}
+    catch{setSelected(s);}
+    finally{setLoadingDetail(false);}
+  },[]);
+
   const filtered=students.filter(s=>{
     const name=`${s.first_name} ${s.last_name}`.toLowerCase();
     const matchSearch=name.includes(search.toLowerCase())||(s.student_number?.includes(search));
@@ -1126,47 +1185,136 @@ const StudentsPanel = ({facultyId,facultyName}) => {
     return matchSearch&&matchSection;
   });
 
+  const enrolled=students.filter(s=>s.enrollment_status==='Enrolled').length;
+  const notEnrolled=students.length-enrolled;
+
   if(loading) return <Spinner/>;
   if(err) return <div className="p-4 rounded-xl bg-red-900/20 border border-red-800/40 text-red-400 text-sm text-center">{err}</div>;
 
   return (
     <div className="space-y-5">
+      {loadingDetail&&(
+        <div className="fixed inset-0 z-40 flex items-center justify-center" style={{background:'rgba(0,0,0,0.3)',backdropFilter:'blur(4px)'}}>
+          <div className={`w-8 h-8 border-4 rounded-full animate-spin border-t-orange-500 ${dark?'border-slate-700':'border-slate-200'}`}/>
+        </div>
+      )}
       {selected&&<StudentDetailModal student={selected} facultyName={facultyName} onClose={()=>setSelected(null)}/>}
-      <div className="flex flex-col sm:flex-row gap-3">
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          {label:'Total Students',value:students.length,iconBg:dark?'bg-orange-900/40 text-orange-400':'bg-orange-50 text-orange-500',accent:'border-l-orange-500'},
+          {label:'Enrolled',value:enrolled,iconBg:dark?'bg-green-900/40 text-green-400':'bg-green-50 text-green-500',accent:'border-l-green-500'},
+          {label:'Not Enrolled',value:notEnrolled,iconBg:dark?'bg-slate-800 text-slate-500':'bg-slate-100 text-slate-400',accent:'border-l-slate-400'},
+        ].map(({label,value,iconBg,accent})=>(
+          <div key={label} className={`p-4 rounded-2xl border-l-4 border shadow-sm flex items-center gap-3 ${accent} ${dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-200'}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div>
+              <p className={`text-xs font-semibold uppercase tracking-wider ${dark?'text-slate-400':'text-slate-500'}`}>{label}</p>
+              <p className={`text-2xl font-bold ${dark?'text-slate-100':'text-slate-800'}`}>{value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Search + Filter + View Toggle */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
         <div className="relative flex-1">
           <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${dark?'text-slate-500':'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           <input className={`${mkInp(dark)} pl-9`} placeholder="Search by name or student number..." value={search} onChange={e=>setSearch(e.target.value)}/>
         </div>
-        {sections.length>0&&<select className={`${mkInp(dark)} appearance-none w-full sm:w-48`} value={sectionFilter} onChange={e=>setSectionFilter(e.target.value)}><option value="">All Sections</option>{sections.map(sec=><option key={sec}>{sec}</option>)}</select>}
+        {sections.length>0&&<select className={`${mkInp(dark)} appearance-none w-full sm:w-44`} value={sectionFilter} onChange={e=>setSectionFilter(e.target.value)}><option value="">All Sections</option>{sections.map(sec=><option key={sec}>{sec}</option>)}</select>}
+        <div className={`flex rounded-xl border overflow-hidden shrink-0 ${dark?'border-slate-700':'border-slate-200'}`}>
+          {[{id:'cards',icon:'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'},{id:'list',icon:'M4 6h16M4 10h16M4 14h16M4 18h16'}].map(({id,icon})=>(
+            <button key={id} onClick={()=>setViewMode(id)} className={`px-3 py-2 transition-colors ${viewMode===id?dark?'bg-orange-500/20 text-orange-400':'bg-orange-50 text-orange-500':dark?'text-slate-500 hover:text-slate-300':'text-slate-400 hover:text-slate-600'}`}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={icon}/></svg>
+            </button>
+          ))}
+        </div>
       </div>
+
       <p className={`text-xs ${dark?'text-slate-500':'text-slate-400'}`}>{filtered.length} student{filtered.length!==1?'s':''} found</p>
+
       {filtered.length===0?(
         <div className={`rounded-2xl border p-12 flex flex-col items-center justify-center text-center ${dark?'bg-slate-900/60 border-slate-700/50':'bg-white border-slate-200'}`}>
           <span className="text-5xl mb-3">👥</span>
           <p className={`text-sm font-semibold ${dark?'text-slate-300':'text-slate-600'}`}>{search||sectionFilter?'No students match your filters.':'No students found in your sections.'}</p>
         </div>
-      ):(
+      ) : viewMode==='cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(s=>{
             const initials=`${s.first_name?.[0]??''}${s.last_name?.[0]??''}`.toUpperCase();
+            const photoSrc=s.profile_photo?(s.profile_photo.startsWith('http')?s.profile_photo:`${import.meta.env.VITE_STORAGE_URL||'http://localhost:8000/storage'}/${s.profile_photo}`):null;
             const violCount=s.violations?.length??0;
             return (
-              <button key={s.id} onClick={()=>setSelected(s)} className={`text-left p-4 rounded-2xl border transition-all ${dark?'bg-slate-900 border-slate-700/60 hover:border-brand-500/50 hover:bg-slate-800':'bg-white border-slate-200 hover:border-brand-300 hover:shadow-md shadow-sm'}`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${dark?'bg-brand-900/50 text-brand-300':'bg-brand-100 text-brand-600'}`}>{initials}</div>
-                  <div className="min-w-0">
-                    <p className={`text-sm font-semibold truncate ${dark?'text-slate-100':'text-slate-800'}`}>{s.first_name} {s.last_name}</p>
-                    {s.student_number&&<p className={`text-xs ${dark?'text-slate-500':'text-slate-400'}`}>{s.student_number}</p>}
+              <button key={s.id} onClick={()=>openStudent(s)}
+                className={`text-left rounded-2xl border cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-xl overflow-hidden group relative ${dark?'bg-slate-800 border-slate-700 hover:border-orange-500/50 hover:shadow-orange-500/10':'bg-white border-slate-200 hover:border-orange-400/60 hover:shadow-orange-500/10'}`}>
+                <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${s.enrollment_status==='Enrolled'?'bg-gradient-to-b from-orange-400 to-orange-500':'bg-gradient-to-b from-slate-300 to-slate-400'}`}/>
+                <div className="pl-4 pr-5 pt-5 pb-5">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-11 h-11 rounded-full shrink-0 overflow-hidden ring-2 ring-white/10">
+                      {photoSrc?<img src={photoSrc} alt={initials} className="w-full h-full object-cover" onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}}/>:null}
+                      <div className={`w-full h-full flex items-center justify-center text-sm font-bold ${dark?'bg-orange-900/40 text-orange-300':'bg-orange-100 text-orange-600'}`} style={{display:photoSrc?'none':'flex'}}>{initials}</div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-bold truncate ${dark?'text-slate-100':'text-slate-800'}`}>{s.first_name} {s.last_name}</p>
+                      {s.student_number&&<p className={`text-xs font-mono ${dark?'text-slate-500':'text-slate-400'}`}>{s.student_number}</p>}
+                    </div>
+                    <svg className={`w-4 h-4 shrink-0 mt-0.5 transition-transform group-hover:translate-x-0.5 ${dark?'text-slate-600':'text-slate-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
                   </div>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {s.section&&<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${dark?'bg-emerald-900/40 text-emerald-300':'bg-emerald-100 text-emerald-700'}`}>{s.section}</span>}
-                  {s.year_level&&<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${dark?'bg-blue-900/40 text-blue-300':'bg-blue-100 text-blue-700'}`}>{s.year_level}</span>}
-                  {violCount>0&&<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${dark?'bg-red-900/40 text-red-300':'bg-red-100 text-red-700'}`}>{violCount} violation{violCount!==1?'s':''}</span>}
+                  <div className={`flex flex-wrap gap-1.5 pt-3 border-t ${dark?'border-slate-700':'border-slate-100'}`}>
+                    {s.section&&<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${dark?'bg-emerald-900/40 text-emerald-300':'bg-emerald-100 text-emerald-700'}`}>{s.section}</span>}
+                    {s.year_level&&<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${dark?'bg-blue-900/40 text-blue-300':'bg-blue-100 text-blue-700'}`}>{s.year_level}</span>}
+                    {s.enrollment_status&&<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${s.enrollment_status==='Enrolled'?dark?'bg-green-900/40 text-green-300':'bg-green-100 text-green-700':dark?'bg-slate-700 text-slate-300':'bg-slate-100 text-slate-600'}`}>{s.enrollment_status}</span>}
+                    {violCount>0&&<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${dark?'bg-red-900/40 text-red-300':'bg-red-100 text-red-700'}`}>{violCount} violation{violCount!==1?'s':''}</span>}
+                  </div>
                 </div>
               </button>
             );
           })}
+        </div>
+      ):(
+        <div className={`rounded-2xl border overflow-hidden ${dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-200 shadow-sm'}`}>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className={`border-b text-xs font-bold uppercase tracking-wider ${dark?'bg-slate-800 border-slate-700 text-slate-400':'bg-slate-50 border-slate-100 text-slate-500'}`}>
+                <th className="px-4 py-3 text-left">Student</th>
+                <th className="px-4 py-3 text-left">Section</th>
+                <th className="px-4 py-3 text-left">Year</th>
+                <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-left">Violations</th>
+              </tr>
+            </thead>
+            <tbody className={`divide-y ${dark?'divide-slate-700/60':'divide-slate-100'}`}>
+              {filtered.map(s=>{
+                const initials=`${s.first_name?.[0]??''}${s.last_name?.[0]??''}`.toUpperCase();
+                const photoSrc=s.profile_photo?(s.profile_photo.startsWith('http')?s.profile_photo:`${import.meta.env.VITE_STORAGE_URL||'http://localhost:8000/storage'}/${s.profile_photo}`):null;
+                const violCount=s.violations?.length??0;
+                return (
+                  <tr key={s.id} onClick={()=>openStudent(s)} className={`cursor-pointer transition-colors ${dark?'hover:bg-slate-800':'hover:bg-slate-50'}`}>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full shrink-0 overflow-hidden">
+                          {photoSrc?<img src={photoSrc} alt={initials} className="w-full h-full object-cover" onError={e=>{e.currentTarget.style.display='none';e.currentTarget.nextSibling.style.display='flex';}}/>:null}
+                          <div className={`w-full h-full flex items-center justify-center text-xs font-bold ${dark?'bg-orange-900/40 text-orange-300':'bg-orange-100 text-orange-600'}`} style={{display:photoSrc?'none':'flex'}}>{initials}</div>
+                        </div>
+                        <div>
+                          <p className={`font-semibold ${dark?'text-slate-100':'text-slate-800'}`}>{s.first_name} {s.last_name}</p>
+                          {s.student_number&&<p className={`text-xs font-mono ${dark?'text-slate-500':'text-slate-400'}`}>{s.student_number}</p>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3"><span className={`text-xs ${dark?'text-slate-300':'text-slate-600'}`}>{s.section||'—'}</span></td>
+                    <td className="px-4 py-3"><span className={`text-xs ${dark?'text-slate-300':'text-slate-600'}`}>{s.year_level||'—'}</span></td>
+                    <td className="px-4 py-3"><span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${s.enrollment_status==='Enrolled'?dark?'bg-green-900/40 text-green-300':'bg-green-100 text-green-700':dark?'bg-slate-700 text-slate-300':'bg-slate-100 text-slate-600'}`}>{s.enrollment_status||'—'}</span></td>
+                    <td className="px-4 py-3">{violCount>0?<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${dark?'bg-red-900/40 text-red-300':'bg-red-100 text-red-700'}`}>{violCount}</span>:<span className={`text-xs ${dark?'text-slate-600':'text-slate-400'}`}>—</span>}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
@@ -1264,6 +1412,7 @@ const FacultyDashboard = ({user,onLogout}) => {
   const [subjectsCount,setSubjectsCount]=useState('—');
   const [studentsCount,setStudentsCount]=useState('—');
   const [schedulesCount,setSchedulesCount]=useState('—');
+  const [eventsCount,setEventsCount]=useState('—');
 
   const toggleTheme=()=>setDark(d=>{const next=!d;localStorage.setItem('fd_theme',next?'dark':'light');return next;});
 
@@ -1279,15 +1428,20 @@ const FacultyDashboard = ({user,onLogout}) => {
 
   useEffect(()=>{
     if(!user?.faculty_id) return;
-    api.schedules.getAll().then(all=>{
-      const mine=all.filter(s=>s.faculty_id===user.faculty_id);
+    // Schedules & subjects for this faculty
+    fetchApi('/schedules').then(all=>{
+      const mine=all.filter(s=>Number(s.faculty_id)===Number(user.faculty_id));
       setSchedulesCount(mine.length);
       setSubjectsCount(new Set(mine.map(s=>s.subject_id).filter(Boolean)).size);
-    }).catch(()=>{});
-    Promise.all([api.students.getAll(),api.schedules.getAll()]).then(([allStu,allSch])=>{
-      const mySec=new Set(allSch.filter(s=>s.faculty_id===user.faculty_id).map(s=>s.section?.section_name).filter(Boolean));
-      setStudentsCount(allStu.filter(s=>s.section&&mySec.has(s.section)).length);
-    }).catch(()=>{});
+    }).catch(()=>{setSchedulesCount(0);setSubjectsCount(0);});
+    // Students — all students (same as admin sees)
+    fetchApi('/students').then(all=>{
+      setStudentsCount(all.length);
+    }).catch(()=>{setStudentsCount(0);});
+    // Events count
+    fetchApi('/events').then(all=>{
+      setEventsCount(all.length);
+    }).catch(()=>{setEventsCount(0);});
   },[user?.faculty_id]);
 
   const sidebarExpanded=sidebarPinned||sidebarHovered;
@@ -1297,7 +1451,7 @@ const FacultyDashboard = ({user,onLogout}) => {
 
   const renderPanel=()=>{
     switch(active){
-      case 'dashboard': return <DashboardPanel user={user} facultyName={facultyName} initials={initials} subjectsCount={subjectsCount} studentsCount={studentsCount} schedulesCount={schedulesCount}/>;
+      case 'dashboard': return <DashboardPanel user={user} faculty={faculty} facultyName={facultyName} initials={initials} subjectsCount={subjectsCount} studentsCount={studentsCount} schedulesCount={schedulesCount} eventsCount={eventsCount}/>;
       case 'profile':   return <ProfilePanel faculty={faculty} loading={loadingProfile} err={profileErr} onReload={loadFaculty}/>;
       case 'subjects':  return <SubjectsPanel facultyId={user?.faculty_id}/>;
       case 'schedule':  return <SchedulePanel facultyId={user?.faculty_id}/>;
