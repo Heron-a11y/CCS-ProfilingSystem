@@ -75,7 +75,13 @@ function AdminLayout({ user, onLogout }) {
 
   const reloadStudents  = async () => { cache.bust('students');  const d = await api.students.getAll().catch(() => []); setStudents(d); };
   const reloadFaculties = async () => { cache.bust('faculties'); const d = await api.faculties.getAll().catch(() => []); setFaculties(d); };
-  const reloadEvents    = async () => { cache.bust('events');    const d = await api.events.getAll().catch(() => []); setEvents(d); };
+  const reloadEvents    = async () => {
+    setDataLoading(p => ({ ...p, events: true }));
+    cache.bust('events');
+    const d = await api.events.getAll().catch(() => []);
+    setEvents(d);
+    setDataLoading(p => ({ ...p, events: false }));
+  };
 
   // Derive currentModule from URL so sidebar stays in sync
   const currentModule = getModuleFromPath(location.pathname);

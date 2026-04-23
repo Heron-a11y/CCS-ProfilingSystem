@@ -72,6 +72,25 @@ const InstructionModule = ({ students = [] }) => {
   const bsitSubjects = subjects.filter(s => s.program === 'BSIT').length;
   const bscsSubjects = subjects.filter(s => s.program === 'BSCS').length;
 
+  // ── Filter state ──────────────────────────────────────────────────────────
+  const [filterProgram,  setFilterProgram]  = useState('All');
+  const [filterYear,     setFilterYear]     = useState('All');
+  const [filterSemester, setFilterSemester] = useState('All');
+  const [filterSearch,   setFilterSearch]   = useState('');
+
+  const filteredSubjects = subjects.filter(s => {
+    const matchProgram  = filterProgram  === 'All' || s.program   === filterProgram;
+    const matchYear     = filterYear     === 'All' || s.year_level === filterYear;
+    const matchSemester = filterSemester === 'All' || s.semester   === filterSemester;
+    const matchSearch   = !filterSearch  ||
+      s.subject_code?.toLowerCase().includes(filterSearch.toLowerCase()) ||
+      s.descriptive_title?.toLowerCase().includes(filterSearch.toLowerCase()) ||
+      s.pre_requisites?.toLowerCase().includes(filterSearch.toLowerCase());
+    return matchProgram && matchYear && matchSemester && matchSearch;
+  });
+
+  const activeFilterCount = [filterProgram !== 'All', filterYear !== 'All', filterSemester !== 'All', !!filterSearch].filter(Boolean).length;
+
   return (
     <div className="space-y-6">
       {/* Header & Stats */}
@@ -118,21 +137,62 @@ const InstructionModule = ({ students = [] }) => {
 
       {/* Main Content Area */}
       <div className={`rounded-2xl shadow-sm border overflow-hidden flex flex-col h-[calc(100vh-280px)] transition-colors duration-300 ${card}`}>
-        <div className={`p-6 border-b flex justify-between items-center transition-colors duration-300 ${tableBar}`}>
-          <div>
+        <div className={`p-4 border-b flex flex-wrap gap-3 items-center transition-colors duration-300 ${tableBar}`}>
+          <div className="flex-1 min-w-0">
             <h2 className={`text-xl font-bold transition-colors duration-300 ${boldText}`}>Curriculum Dashboard</h2>
-            <p className={`text-sm mt-1 ${subText}`}>Manage departmental subjects, descriptive titles, and prerequisites.</p>
+            <p className={`text-sm mt-0.5 ${subText}`}>Manage departmental subjects, descriptive titles, and prerequisites.</p>
           </div>
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium transition-colors shadow-sm shadow-brand-500/30 flex items-center"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Subject
-          </button>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {/* Search */}
+            <div className="relative">
+              <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${dark ? 'text-slate-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input value={filterSearch} onChange={e => setFilterSearch(e.target.value)}
+                placeholder="Search subjects..."
+                className={`pl-9 pr-3 py-2 rounded-xl border text-sm outline-none transition-colors w-44 ${dark ? 'bg-slate-800 border-slate-600 text-slate-100 placeholder-slate-500 focus:border-brand-400' : 'bg-white border-slate-200 text-slate-700 placeholder-slate-400 focus:border-brand-500'}`} />
+            </div>
+            {/* Program filter */}
+            <select value={filterProgram} onChange={e => setFilterProgram(e.target.value)}
+              className={`rounded-xl border text-sm px-3 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200 focus:border-brand-400' : 'bg-white border-slate-200 text-slate-700 focus:border-brand-500'}`}>
+              <option value="All">All Programs</option>
+              <option value="BSIT">BSIT</option>
+              <option value="BSCS">BSCS</option>
+            </select>
+            {/* Year filter */}
+            <select value={filterYear} onChange={e => setFilterYear(e.target.value)}
+              className={`rounded-xl border text-sm px-3 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200 focus:border-brand-400' : 'bg-white border-slate-200 text-slate-700 focus:border-brand-500'}`}>
+              <option value="All">All Years</option>
+              <option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option>
+            </select>
+            {/* Semester filter */}
+            <select value={filterSemester} onChange={e => setFilterSemester(e.target.value)}
+              className={`rounded-xl border text-sm px-3 py-2 outline-none transition-colors ${dark ? 'bg-slate-800 border-slate-600 text-slate-200 focus:border-brand-400' : 'bg-white border-slate-200 text-slate-700 focus:border-brand-500'}`}>
+              <option value="All">All Semesters</option>
+              <option>1st Semester</option><option>2nd Semester</option>
+            </select>
+            {/* Clear filters */}
+            {activeFilterCount > 0 && (
+              <button onClick={() => { setFilterProgram('All'); setFilterYear('All'); setFilterSemester('All'); setFilterSearch(''); }}
+                className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${dark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                Clear ({activeFilterCount})
+              </button>
+            )}
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium transition-colors shadow-sm shadow-brand-500/30 flex items-center text-sm">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Subject
+            </button>
+          </div>
         </div>
+        {/* Results count */}
+        {activeFilterCount > 0 && (
+          <div className={`px-6 py-2 text-xs font-medium border-b ${dark ? 'text-slate-400 border-slate-700/60 bg-slate-800/40' : 'text-slate-500 border-slate-100 bg-slate-50/60'}`}>
+            Showing {filteredSubjects.length} of {subjects.length} subjects
+          </div>
+        )}
 
         {error && (
           <div className="m-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100">
@@ -151,15 +211,15 @@ const InstructionModule = ({ students = [] }) => {
                 <tr className={`sticky top-0 z-10 shadow-sm ${thead}`}>
                   <th className={`p-4 text-xs font-bold uppercase tracking-wider border-b ${thText}`}>Subject Code</th>
                   <th className={`p-4 text-xs font-bold uppercase tracking-wider border-b ${thText}`}>Descriptive Title</th>
-                  <th className={`p-4 text-xs font-bold uppercase tracking-wider border-b text-center ${thText}`}>Lec Units</th>
-                  <th className={`p-4 text-xs font-bold uppercase tracking-wider border-b text-center ${thText}`}>Lab Units</th>
-                  <th className={`p-4 text-xs font-bold uppercase tracking-wider border-b text-center ${thText}`}>Total Units</th>
+                  <th className={`p-4 text-xs font-bold uppercase tracking-wider border-b ${thText}`}>Program</th>
+                  <th className={`p-4 text-xs font-bold uppercase tracking-wider border-b ${thText}`}>Year · Semester</th>
+                  <th className={`p-4 text-xs font-bold uppercase tracking-wider border-b text-center ${thText}`}>Units</th>
                   <th className={`p-4 text-xs font-bold uppercase tracking-wider border-b ${thText}`}>Pre-requisite</th>
                   <th className={`p-4 text-xs font-bold uppercase tracking-wider border-b text-right ${thText}`}>Actions</th>
                 </tr>
               </thead>
               <tbody className={`divide-y ${tbDivide}`}>
-                {subjects.map((subject) => (
+                {filteredSubjects.map((subject) => (
                   <tr key={subject.id} onClick={() => openDetailModal(subject)} className={`transition-colors ${trHover}`}>
                     <td className="p-4">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-brand-500/15 text-brand-400">{subject.subject_code}</span>
@@ -167,8 +227,15 @@ const InstructionModule = ({ students = [] }) => {
                     <td className="p-4">
                       <p className={`font-semibold ${boldText}`}>{subject.descriptive_title}</p>
                     </td>
-                    <td className={`p-4 text-center font-medium ${subText}`}>{subject.lec_units}</td>
-                    <td className={`p-4 text-center font-medium ${subText}`}>{subject.lab_units}</td>
+                    <td className="p-4">
+                      {subject.program ? (
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${subject.program === 'BSIT' ? (dark ? 'bg-blue-900/40 text-blue-300' : 'bg-blue-100 text-blue-700') : (dark ? 'bg-violet-900/40 text-violet-300' : 'bg-violet-100 text-violet-700')}`}>{subject.program}</span>
+                      ) : <span className={`text-xs italic ${subText}`}>—</span>}
+                    </td>
+                    <td className={`p-4 text-xs ${subText}`}>
+                      {subject.year_level ? `${subject.year_level}` : '—'}
+                      {subject.semester ? ` · ${subject.semester}` : ''}
+                    </td>
                     <td className={`p-4 text-center font-bold ${boldText}`}>{subject.total_units}</td>
                     <td className="p-4">
                       {subject.pre_requisites ? (
@@ -194,8 +261,11 @@ const InstructionModule = ({ students = [] }) => {
           ) : (
             <div className={`flex flex-col items-center justify-center h-full py-12 ${subText}`}>
               <svg className={`w-16 h-16 mb-4 ${dark ? 'text-slate-700' : 'text-slate-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-              <p className="text-lg font-medium">No subjects found</p>
-              <p className="text-sm">Click "Add Subject" to define your curriculum.</p>
+              {subjects.length === 0 ? (
+                <><p className="text-lg font-medium">No subjects found</p><p className="text-sm">Click "Add Subject" to define your curriculum.</p></>
+              ) : (
+                <><p className="text-lg font-medium">No subjects match your filters</p><p className="text-sm">Try adjusting the program, year, or semester filters.</p></>
+              )}
             </div>
           )}
         </div>

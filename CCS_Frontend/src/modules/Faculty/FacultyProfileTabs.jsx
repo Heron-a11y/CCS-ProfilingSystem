@@ -142,14 +142,17 @@ const FacultyProfileTabs = ({ activeTab, faculty, schedules = [], onEditClick, o
             </div>
           </div>
 
-          {/* Consultation Hours */}
+          {/* Consultation Hours — read-only for admin, editable only by faculty */}
           <div className={`rounded-2xl border p-5 ${dark ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200'}`}>
             <div className="flex items-start gap-3">
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${dark ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-600'}`}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
               <div className="flex-1">
-                <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${dark ? 'text-amber-400' : 'text-amber-600'}`}>Consultation Hours</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className={`text-[10px] font-bold uppercase tracking-widest ${dark ? 'text-amber-400' : 'text-amber-600'}`}>Consultation Hours</p>
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${dark ? 'bg-slate-700 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>Set by Faculty</span>
+                </div>
                 <p className={`text-sm font-semibold ${dark ? 'text-amber-200' : 'text-amber-900'}`}>
                   {faculty.office_hours || 'No consultation hours set. Contact the faculty directly.'}
                 </p>

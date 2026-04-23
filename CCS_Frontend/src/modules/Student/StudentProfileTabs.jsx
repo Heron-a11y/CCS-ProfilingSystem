@@ -288,7 +288,7 @@ const StudentProfileTabs = ({ activeTab, student, schedules = [], onEditClick, o
                     <div>
                       <p className={`text-xs font-bold ${boldText}`}>{aff.organization_name}</p>
                       <p className={`text-xs ${subText}`}>{aff.position} · {aff.status}</p>
-                      <p className={`text-xs mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Joined: {aff.date_joined}{aff.date_ended ? ` — Ended: ${aff.date_ended}` : ''}</p>
+                      <p className={`text-xs mt-0.5 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Joined: {aff.date_joined ? new Date(aff.date_joined.replace ? aff.date_joined.replace(' ','T') : aff.date_joined).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}{aff.date_ended ? ` — Ended: ${new Date(aff.date_ended.replace ? aff.date_ended.replace(' ','T') : aff.date_ended).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}` : ''}</p>
                     </div>
                   </div>
                 ))}
