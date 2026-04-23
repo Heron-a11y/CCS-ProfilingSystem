@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 import AddEventModal from './AddEventModal';
 import EditEventModal from './EditEventModal';
+import EventAttendeesModal from './EventAttendeesModal';
 import { useDarkMode } from '../../context/DarkModeContext';
 import {
   CalendarDaysIcon, MegaphoneIcon, PlusIcon, MapPinIcon,
@@ -23,6 +24,7 @@ const EventsModule = () => {
   const [error, setError] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
@@ -56,6 +58,11 @@ const EventsModule = () => {
   const openEditModal = (event) => {
     setSelectedEvent(event);
     setIsEditModalOpen(true);
+  };
+
+  const openAttendeesModal = (event) => {
+    setSelectedEvent(event);
+    setIsAttendeesModalOpen(true);
   };
 
   const getStatusColor = (status) => {
@@ -183,7 +190,14 @@ const EventsModule = () => {
                         <div className={`flex items-center gap-2 text-xs ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
                           <CalendarDaysIcon className="w-3.5 h-3.5 shrink-0 text-slate-400" />
                           <span className="font-medium truncate">
-                            {new Date(event.eventDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            {(() => {
+                              const raw = event.eventDate;
+                              if (!raw) return 'No date';
+                              const d = new Date(
+                                (raw.includes('+') || raw.endsWith('Z')) ? raw : raw.replace(' ', 'T')
+                              );
+                              return isNaN(d.getTime()) ? raw : d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                            })()}
                           </span>
                         </div>
                         <div className={`flex items-center gap-2 text-xs ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
@@ -194,7 +208,8 @@ const EventsModule = () => {
 
                       {/* Footer */}
                       <div className={`mt-4 pt-3 border-t flex justify-between items-center ${footerBdr}`}>
-                        <button className={`flex items-center gap-1 text-xs font-semibold transition-colors ${dark ? 'text-brand-400 hover:text-brand-300' : 'text-brand-500 hover:text-brand-600'}`}>
+                        <button className={`flex items-center gap-1 text-xs font-semibold transition-colors ${dark ? 'text-brand-400 hover:text-brand-300' : 'text-brand-500 hover:text-brand-600'}`}
+                          onClick={() => openAttendeesModal(event)}>
                           <UsersIcon className="w-3.5 h-3.5" />
                           View Attendees
                           <ChevronRightIcon className="w-3 h-3" />
@@ -240,6 +255,17 @@ const EventsModule = () => {
             setSelectedEvent(null);
           }}
           onSuccess={fetchEvents}
+        />
+      )}
+
+      {isAttendeesModalOpen && selectedEvent && (
+        <EventAttendeesModal
+          isOpen={isAttendeesModalOpen}
+          event={selectedEvent}
+          onClose={() => {
+            setIsAttendeesModalOpen(false);
+            setSelectedEvent(null);
+          }}
         />
       )}
     </div>

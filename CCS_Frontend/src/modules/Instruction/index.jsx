@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 import AddSubjectModal from './AddSubjectModal';
 import EditSubjectModal from './EditSubjectModal';
+import SubjectDetailModal from './SubjectDetailModal';
 import { useDarkMode } from '../../context/DarkModeContext';
 
-const InstructionModule = () => {
+const InstructionModule = ({ students = [] }) => {
   const dark = useDarkMode();
   const card    = dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-100';
   const boldText = dark ? 'text-slate-100' : 'text-slate-800';
@@ -12,18 +13,21 @@ const InstructionModule = () => {
   const thead    = dark ? 'bg-slate-800 border-slate-700/60' : 'bg-slate-50 border-slate-200';
   const thText   = dark ? 'text-slate-400 border-slate-700/60' : 'text-slate-500 border-slate-200';
   const tbDivide = dark ? 'divide-slate-700/60' : 'divide-slate-100';
-  const trHover  = dark ? 'hover:bg-slate-800' : 'hover:bg-slate-50';
+  const trHover  = dark ? 'hover:bg-slate-800 cursor-pointer' : 'hover:bg-slate-50 cursor-pointer';
   const tableBar = dark ? 'bg-slate-800/60 border-slate-700/60' : 'bg-slate-50/50 border-slate-100';
   const loadBg   = dark ? 'bg-slate-900/80' : 'bg-white/80';
   const [subjects, setSubjects] = useState([]);
+  const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
 
   useEffect(() => {
     fetchSubjects();
+    api.schedules.getAll().then(setSchedules).catch(() => {});
   }, []);
 
   const fetchSubjects = async () => {
@@ -55,28 +59,59 @@ const InstructionModule = () => {
     setIsEditModalOpen(true);
   };
 
+  const openDetailModal = (subject) => {
+    setSelectedSubject(subject);
+    setIsDetailModalOpen(true);
+  };
+
   const totalUnits = subjects.reduce((sum, sub) => sum + (sub.total_units || 0), 0);
+
+  // Analytics derived from subjects + schedules
+  const scheduledSubjectIds = new Set(schedules.map(s => s.subject_id));
+  const scheduledCount = subjects.filter(s => scheduledSubjectIds.has(s.id)).length;
+  const bsitSubjects = subjects.filter(s => s.program === 'BSIT').length;
+  const bscsSubjects = subjects.filter(s => s.program === 'BSCS').length;
 
   return (
     <div className="space-y-6">
       {/* Header & Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className={`rounded-2xl p-6 shadow-sm border flex items-center transition-colors duration-300 ${card}`}>
-          <div className={`w-14 h-14 rounded-xl flex items-center justify-center mr-4 ${dark ? 'bg-brand-900/40 text-brand-400' : 'bg-brand-50 text-brand-600'}`}>
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className={`rounded-2xl p-5 shadow-sm border flex items-center transition-colors duration-300 ${card}`}>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4 ${dark ? 'bg-brand-900/40 text-brand-400' : 'bg-brand-50 text-brand-600'}`}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
           </div>
           <div>
-            <p className={`text-sm font-medium ${subText}`}>Total Subjects</p>
-            <h3 className={`text-3xl font-bold ${boldText}`}>{subjects.length}</h3>
+            <p className={`text-xs font-semibold uppercase tracking-wider ${subText}`}>Total Subjects</p>
+            <h3 className={`text-2xl font-bold ${boldText}`}>{subjects.length}</h3>
           </div>
         </div>
-        <div className={`rounded-2xl p-6 shadow-sm border flex items-center transition-colors duration-300 ${card}`}>
-          <div className={`w-14 h-14 rounded-xl flex items-center justify-center mr-4 ${dark ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-50 text-amber-500'}`}>
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+        <div className={`rounded-2xl p-5 shadow-sm border flex items-center transition-colors duration-300 ${card}`}>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4 ${dark ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-50 text-amber-500'}`}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
           </div>
           <div>
-            <p className={`text-sm font-medium ${subText}`}>Total Curriculum Units</p>
-            <h3 className={`text-3xl font-bold ${boldText}`}>{totalUnits}</h3>
+            <p className={`text-xs font-semibold uppercase tracking-wider ${subText}`}>Total Units</p>
+            <h3 className={`text-2xl font-bold ${boldText}`}>{totalUnits}</h3>
+          </div>
+        </div>
+        <div className={`rounded-2xl p-5 shadow-sm border flex items-center transition-colors duration-300 ${card}`}>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4 ${dark ? 'bg-green-900/40 text-green-400' : 'bg-green-50 text-green-600'}`}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          </div>
+          <div>
+            <p className={`text-xs font-semibold uppercase tracking-wider ${subText}`}>Scheduled</p>
+            <h3 className={`text-2xl font-bold ${boldText}`}>{scheduledCount}</h3>
+            <p className={`text-[10px] ${subText}`}>of {subjects.length} subjects</p>
+          </div>
+        </div>
+        <div className={`rounded-2xl p-5 shadow-sm border flex items-center transition-colors duration-300 ${card}`}>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4 ${dark ? 'bg-violet-900/40 text-violet-400' : 'bg-violet-50 text-violet-600'}`}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+          </div>
+          <div>
+            <p className={`text-xs font-semibold uppercase tracking-wider ${subText}`}>By Program</p>
+            <p className={`text-xs font-bold mt-0.5 ${boldText}`}>IT: {bsitSubjects} · CS: {bscsSubjects}</p>
+            <p className={`text-[10px] ${subText}`}>{subjects.filter(s => !s.program).length} unassigned</p>
           </div>
         </div>
       </div>
@@ -125,7 +160,7 @@ const InstructionModule = () => {
               </thead>
               <tbody className={`divide-y ${tbDivide}`}>
                 {subjects.map((subject) => (
-                  <tr key={subject.id} className={`transition-colors ${trHover}`}>
+                  <tr key={subject.id} onClick={() => openDetailModal(subject)} className={`transition-colors ${trHover}`}>
                     <td className="p-4">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-brand-500/15 text-brand-400">{subject.subject_code}</span>
                     </td>
@@ -143,7 +178,7 @@ const InstructionModule = () => {
                       )}
                     </td>
                     <td className="p-4 text-right">
-                      <div className="flex justify-end space-x-1">
+                      <div className="flex justify-end space-x-1" onClick={e => e.stopPropagation()}>
                         <button onClick={() => openEditModal(subject)} className={`p-2 transition-colors rounded-lg hover:bg-brand-500/10 ${dark ? 'text-slate-400 hover:text-brand-400' : 'text-slate-400 hover:text-brand-600'}`} title="Edit Subject">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                         </button>
@@ -181,6 +216,19 @@ const InstructionModule = () => {
             setSelectedSubject(null);
           }}
           onSuccess={fetchSubjects}
+        />
+      )}
+
+      {isDetailModalOpen && selectedSubject && (
+        <SubjectDetailModal
+          isOpen={isDetailModalOpen}
+          subject={selectedSubject}
+          allSchedules={schedules}
+          students={students}
+          onClose={() => {
+            setIsDetailModalOpen(false);
+            setSelectedSubject(null);
+          }}
         />
       )}
     </div>
