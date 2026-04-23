@@ -160,3 +160,15 @@ Route::get('/students/{student}/enrollments',   [EnrollmentController::class, 's
 Route::get('/enrollments',                              [EnrollmentController::class, 'allEnrollments']);
 Route::put('/enrollments/{enrollment}/assign-faculty',  [EnrollmentController::class, 'assignFaculty']);
 Route::put('/enrollments/{enrollment}',                 [EnrollmentController::class, 'updateEnrollment']);
+
+// ══════════════════════════════════════════════════════════════
+// TASKS ROUTES
+// Faculty assigns tasks; students view/complete them
+// ══════════════════════════════════════════════════════════════
+use App\Http\Controllers\TaskController;
+
+Route::get('/tasks',                                          [TaskController::class, 'facultyTasks']);
+Route::get('/students/{student}/tasks',                       [TaskController::class, 'index']);
+Route::post('/students/{student}/tasks',                      [TaskController::class, 'store']);
+Route::put('/students/{student}/tasks/{task}',                [TaskController::class, 'update']);
+Route::delete('/students/{student}/tasks/{task}',             [TaskController::class, 'destroy']);

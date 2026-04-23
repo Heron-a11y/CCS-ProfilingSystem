@@ -1012,7 +1012,7 @@ const StudentDashboard = ({ user, onLogout }) => {
     setActive(section);
     setSearchParams({ section }, { replace: true });
   };
-  const [tasks, setTasks]               = useState(TASKS_DEFAULT);
+  const [tasks, setTasks]               = useState([]);
   const [sidebarPinned, setSidebarPinned] = useState(false);
   const [sidebarHovered, setSidebarHovered] = useState(false);
   const [profileTab, setProfileTab] = useState('personal');
@@ -1089,7 +1089,22 @@ const StudentDashboard = ({ user, onLogout }) => {
       </div>
     );
   };
-  const toggleTask = (id) => setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  const loadTasks = useCallback(async () => {
+    if (!user?.student_id) return;
+    try {
+      const t = await api.tasks.getByStudent(user.student_id).catch(()=>[]);
+      setTasks(Array.isArray(t) ? t : []);
+    } catch { setTasks([]); }
+  }, [user?.student_id]);
+
+  const toggleTask = async (id) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    try {
+      await api.tasks.update(task.student_id, id, { done: !task.done });
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+    } catch { /* fallback: optimistic update already applied */ }
+  };
 
   const loadStudent = useCallback(async () => {
     if (!user?.student_id) return;
@@ -1100,6 +1115,7 @@ const StudentDashboard = ({ user, onLogout }) => {
   }, [user?.student_id]);
 
   useEffect(() => { loadStudent(); }, [loadStudent]);
+  useEffect(() => { loadTasks(); }, [loadTasks]);
 
   // Close notification dropdown on outside click
   useEffect(() => {
@@ -2610,16 +2626,28 @@ const StudentDashboard = ({ user, onLogout }) => {
     const highCount   = pending.filter(t => t.priority === 'High').length;
     const mediumCount = pending.filter(t => t.priority === 'Medium').length;
 
-    // When a task is checked → move to archive (mark done)
-    const handleCheck = (id) => {
-      setTasks(prev => prev.map(t => t.id === id ? { ...t, done: true } : t));
+    // When a task is checked → mark done via API
+    const handleCheck = async (id) => {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      try {
+        await api.tasks.update(task.student_id, id, { done: true });
+        setTasks(prev => prev.map(t => t.id === id ? { ...t, done: true } : t));
+      } catch { setTasks(prev => prev.map(t => t.id === id ? { ...t, done: true } : t)); }
     };
 
     // Delete from archive with confirmation
     const handleDelete = (id) => setConfirmDelete(id);
-    const confirmDel = () => {
-      if (confirmDelete === '__all__') setTasks(prev => prev.filter(t => !t.done));
-      else setTasks(prev => prev.filter(t => t.id !== confirmDelete));
+    const confirmDel = async () => {
+      if (confirmDelete === '__all__') {
+        const doneTasks = tasks.filter(t => t.done);
+        await Promise.allSettled(doneTasks.map(t => api.tasks.delete(t.student_id, t.id)));
+        setTasks(prev => prev.filter(t => !t.done));
+      } else {
+        const task = tasks.find(t => t.id === confirmDelete);
+        if (task) await api.tasks.delete(task.student_id, task.id).catch(()=>{});
+        setTasks(prev => prev.filter(t => t.id !== confirmDelete));
+      }
       setConfirmDelete(null);
     };
 

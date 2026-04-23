@@ -17,11 +17,12 @@ const ThemeCtx = createContext(true);
 const useTheme = () => useContext(ThemeCtx);
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard',   icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-  { id: 'profile',   label: 'My Profile',  icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-  { id: 'subjects',  label: 'My Subjects', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-  { id: 'schedule',  label: 'My Schedule', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-  { id: 'students',  label: 'My Students', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+  { id: 'dashboard', label: 'Dashboard',    icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+  { id: 'profile',   label: 'My Profile',   icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+  { id: 'subjects',  label: 'My Subjects',  icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+  { id: 'schedule',  label: 'My Schedule',  icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+  { id: 'students',  label: 'My Students',  icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+  { id: 'tasks',     label: 'Assign Tasks', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
 ];
 
 const ANNOUNCEMENTS = [
@@ -1321,6 +1322,208 @@ const StudentsPanel = ({facultyId,facultyName}) => {
   );
 };
 
+/* ════ ASSIGN TASKS PANEL ════ */
+const AssignTaskModal = ({students, facultyId, facultyName, task, onClose, onSaved}) => {
+  const dark=useTheme();
+  const empty={student_id:'',subject:'',title:'',description:'',due_date:'',priority:'Medium'};
+  const [form,setForm]=useState(task
+    ?{student_id:task.student_id,subject:task.subject,title:task.title,description:task.description??'',due_date:task.due_date?task.due_date.split('T')[0]:'',priority:task.priority}
+    :empty);
+  const [saving,setSaving]=useState(false);const [err,setErr]=useState(null);
+  const set=(k)=>(e)=>setForm(f=>({...f,[k]:e.target.value}));
+  const inp=mkInp(dark); const lbl=mkLbl(dark);
+
+  const save=async()=>{
+    if(!form.student_id||!form.title||!form.subject){setErr('Student, subject and title are required.');return;}
+    setSaving(true);setErr(null);
+    try{
+      const payload={...form,faculty_id:facultyId};
+      if(task) await api.tasks.update(form.student_id,task.id,payload);
+      else await api.tasks.create(form.student_id,payload);
+      onSaved();
+    }catch(ex){setErr(ex.message||'Failed to save.');}
+    finally{setSaving(false);}
+  };
+
+  return (
+    <FModal title={task?'Edit Task':'Assign New Task'} onClose={onClose}
+      footer={<><BtnGhost onClick={onClose}>Cancel</BtnGhost><BtnPrimary loading={saving} onClick={save}>Save Task</BtnPrimary></>}>
+      <ErrMsg msg={err}/>
+      <div className="space-y-3">
+        <div>
+          <label className={lbl}>Student *</label>
+          <select className={`${inp} appearance-none`} value={form.student_id} onChange={set('student_id')} disabled={!!task}>
+            <option value="">Select student...</option>
+            {students.map(s=><option key={s.id} value={s.id}>{s.first_name} {s.last_name} — {s.section||'No section'}</option>)}
+          </select>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className={lbl}>Subject *</label><input className={inp} value={form.subject} onChange={set('subject')} placeholder="e.g. IT 121"/></div>
+          <div>
+            <label className={lbl}>Priority</label>
+            <select className={`${inp} appearance-none`} value={form.priority} onChange={set('priority')}>
+              {['Low','Medium','High'].map(p=><option key={p}>{p}</option>)}
+            </select>
+          </div>
+        </div>
+        <div><label className={lbl}>Task Title *</label><input className={inp} value={form.title} onChange={set('title')} placeholder="e.g. Programming Lab Exercise 3"/></div>
+        <div><label className={lbl}>Description</label><textarea className={`${inp} resize-none`} rows={3} value={form.description} onChange={set('description')} placeholder="Optional details..."/></div>
+        <div><label className={lbl}>Due Date</label><input type="date" className={inp} value={form.due_date} onChange={set('due_date')}/></div>
+      </div>
+    </FModal>
+  );
+};
+
+const FacultyTasksPanel = ({facultyId,facultyName}) => {
+  const dark=useTheme();
+  const [tasks,setTasks]=useState([]);
+  const [students,setStudents]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [modal,setModal]=useState(null); // null | 'add' | task object
+  const [search,setSearch]=useState('');
+  const [filterStatus,setFilterStatus]=useState('All'); // All | Pending | Done
+  const [deleting,setDeleting]=useState(null);
+
+  const load=useCallback(async()=>{
+    setLoading(true);setErr(null);
+    try{
+      const [t,s]=await Promise.all([
+        api.tasks.getByFaculty(facultyId).catch(()=>[]),
+        fetchApi('/students').catch(()=>[]),
+      ]);
+      setTasks(Array.isArray(t)?t:[]);
+      setStudents(Array.isArray(s)?s:[]);
+    }catch{
+      // Non-critical — show empty state instead of error
+      setTasks([]);setStudents([]);
+    }finally{setLoading(false);}
+  },[facultyId]);
+
+  useEffect(()=>{load();},[load]);
+
+  const deleteTask=async(task)=>{
+    if(!window.confirm('Delete this task?')) return;
+    setDeleting(task.id);
+    try{await api.tasks.delete(task.student_id,task.id);await load();}
+    catch{alert('Failed to delete.');}
+    finally{setDeleting(null);}
+  };
+
+  const filtered=tasks.filter(t=>{
+    const matchSearch=t.title.toLowerCase().includes(search.toLowerCase())
+      ||(t.student?.first_name+' '+t.student?.last_name).toLowerCase().includes(search.toLowerCase())
+      ||t.subject.toLowerCase().includes(search.toLowerCase());
+    const matchStatus=filterStatus==='All'||(filterStatus==='Done'?t.done:!t.done);
+    return matchSearch&&matchStatus;
+  });
+
+  const pending=tasks.filter(t=>!t.done).length;
+  const done=tasks.filter(t=>t.done).length;
+
+  const priorityColor=(p)=>{
+    if(p==='High') return dark?'bg-red-900/40 text-red-300 border-red-700':'bg-red-100 text-red-700 border-red-200';
+    if(p==='Medium') return dark?'bg-amber-900/40 text-amber-300 border-amber-700':'bg-amber-100 text-amber-700 border-amber-200';
+    return dark?'bg-slate-700 text-slate-300 border-slate-600':'bg-slate-100 text-slate-600 border-slate-200';
+  };
+
+  if(loading) return <Spinner/>;
+
+  return (
+    <div className="space-y-5">
+      {modal&&<AssignTaskModal students={students} facultyId={facultyId} facultyName={facultyName} task={modal==='add'?null:modal} onClose={()=>setModal(null)} onSaved={()=>{setModal(null);load();}}/>}
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          {label:'Total Tasks',value:tasks.length,accent:'border-l-orange-500',iconBg:dark?'bg-orange-900/40 text-orange-400':'bg-orange-50 text-orange-500'},
+          {label:'Pending',value:pending,accent:'border-l-red-500',iconBg:dark?'bg-red-900/40 text-red-400':'bg-red-50 text-red-500'},
+          {label:'Completed',value:done,accent:'border-l-emerald-500',iconBg:dark?'bg-emerald-900/40 text-emerald-400':'bg-emerald-50 text-emerald-500'},
+        ].map(({label,value,accent,iconBg})=>(
+          <div key={label} className={`p-4 rounded-2xl border-l-4 border shadow-sm flex items-center gap-3 ${accent} ${dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-200'}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            </div>
+            <div>
+              <p className={`text-xs font-semibold uppercase tracking-wider ${dark?'text-slate-400':'text-slate-500'}`}>{label}</p>
+              <p className={`text-2xl font-bold ${dark?'text-slate-100':'text-slate-800'}`}>{value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+        <div className="relative flex-1">
+          <svg className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${dark?'text-slate-500':'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input className={`${mkInp(dark)} pl-9`} placeholder="Search by task, student or subject..." value={search} onChange={e=>setSearch(e.target.value)}/>
+        </div>
+        <div className={`flex rounded-xl border overflow-hidden shrink-0 ${dark?'border-slate-700':'border-slate-200'}`}>
+          {['All','Pending','Done'].map(s=>(
+            <button key={s} onClick={()=>setFilterStatus(s)} className={`px-3 py-2 text-xs font-semibold transition-colors ${filterStatus===s?dark?'bg-orange-500/20 text-orange-400':'bg-orange-50 text-orange-500':dark?'text-slate-500 hover:text-slate-300':'text-slate-400 hover:text-slate-600'}`}>{s}</button>
+          ))}
+        </div>
+        <button onClick={()=>setModal('add')} className="flex items-center gap-1.5 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xs rounded-xl transition-colors shadow-lg shadow-orange-500/30 shrink-0">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4"/></svg>
+          Assign Task
+        </button>
+      </div>
+
+      {/* Task list */}
+      {filtered.length===0?(
+        <div className={`rounded-2xl border p-12 flex flex-col items-center justify-center text-center ${dark?'bg-slate-900/60 border-slate-700/50':'bg-white border-slate-200'}`}>
+          <svg className={`w-10 h-10 mb-3 ${dark?'text-slate-600':'text-slate-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          <p className={`text-sm font-semibold ${dark?'text-slate-300':'text-slate-600'}`}>{search||filterStatus!=='All'?'No tasks match your filters.':'No tasks assigned yet. Click "Assign Task" to get started.'}</p>
+        </div>
+      ):(
+        <div className="space-y-3">
+          {filtered.map(t=>{
+            const studentName=t.student?`${t.student.first_name} ${t.student.last_name}`:'Unknown';
+            const photoSrc=t.student?.profile_photo?(t.student.profile_photo.startsWith('http')?t.student.profile_photo:`${import.meta.env.VITE_STORAGE_URL||'http://localhost:8000/storage'}/${t.student.profile_photo}`):null;
+            const initials=t.student?`${t.student.first_name?.[0]??''}${t.student.last_name?.[0]??''}`.toUpperCase():'?';
+            return (
+              <div key={t.id} className={`p-4 rounded-2xl border transition-all ${t.done?dark?'opacity-60 bg-slate-900 border-slate-700/40':'opacity-60 bg-white border-slate-100':dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-200 shadow-sm'}`}>
+                <div className="flex items-start gap-4">
+                  {/* Student avatar */}
+                  <div className="w-9 h-9 rounded-full shrink-0 overflow-hidden">
+                    {photoSrc?<img src={photoSrc} alt={initials} className="w-full h-full object-cover"/>
+                      :<div className={`w-full h-full flex items-center justify-center text-xs font-bold ${dark?'bg-orange-900/40 text-orange-300':'bg-orange-100 text-orange-600'}`}>{initials}</div>}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className={`text-sm font-bold ${t.done?dark?'line-through text-slate-500':'line-through text-slate-400':dark?'text-slate-100':'text-slate-800'}`}>{t.title}</p>
+                        <p className={`text-xs mt-0.5 ${dark?'text-slate-400':'text-slate-500'}`}>{studentName} · <span className={`font-semibold ${dark?'text-orange-400':'text-orange-600'}`}>{t.subject}</span></p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${priorityColor(t.priority)}`}>{t.priority}</span>
+                        {t.done
+                          ?<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${dark?'bg-emerald-900/40 text-emerald-300':'bg-emerald-100 text-emerald-700'}`}>Done</span>
+                          :<span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${dark?'bg-red-900/40 text-red-300':'bg-red-100 text-red-700'}`}>Pending</span>
+                        }
+                      </div>
+                    </div>
+                    {t.description&&<p className={`text-xs mt-1.5 ${dark?'text-slate-400':'text-slate-500'}`}>{t.description}</p>}
+                    <div className="flex items-center justify-between mt-2">
+                      <p className={`text-xs ${dark?'text-slate-500':'text-slate-400'}`}>{t.due_date?`Due: ${fmt(t.due_date)}`:'No due date'}</p>
+                      <div className="flex gap-1">
+                        <BtnEdit onClick={()=>setModal(t)} label="Edit"/>
+                        <BtnDanger onClick={()=>deleteTask(t)} loading={deleting===t.id}>
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                          Delete
+                        </BtnDanger>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 /* ════ FORCE CHANGE PASSWORD MODAL ════ */
 const FacultyForceChangePasswordModal = ({dark,onChanged}) => {
   const [newPw,setNewPw]=useState('');
@@ -1456,6 +1659,7 @@ const FacultyDashboard = ({user,onLogout}) => {
       case 'subjects':  return <SubjectsPanel facultyId={user?.faculty_id}/>;
       case 'schedule':  return <SchedulePanel facultyId={user?.faculty_id}/>;
       case 'students':  return <StudentsPanel facultyId={user?.faculty_id} facultyName={facultyName}/>;
+      case 'tasks':     return <FacultyTasksPanel facultyId={user?.faculty_id} facultyName={facultyName}/>;
       default:          return null;
     }
   };

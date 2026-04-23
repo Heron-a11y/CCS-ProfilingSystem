@@ -171,4 +171,11 @@ export const api = {
     delete: (id) => fetchApi(`/notifications/${id}`, { method: 'DELETE' }),
     clearAll: () => fetchApi('/notifications/clear-all', { method: 'DELETE' }),
   },
+  tasks: {
+    getByFaculty: (facultyId) => fetchApi(`/tasks?faculty_id=${facultyId}`),
+    getByStudent: (studentId) => fetchApi(`/students/${studentId}/tasks`),
+    create: (studentId, data) => fetchApi(`/students/${studentId}/tasks`, { method: 'POST', body: JSON.stringify(data) }),
+    update: (studentId, taskId, data) => fetchApi(`/students/${studentId}/tasks/${taskId}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (studentId, taskId) => fetchApi(`/students/${studentId}/tasks/${taskId}`, { method: 'DELETE' }),
+  },
 };
