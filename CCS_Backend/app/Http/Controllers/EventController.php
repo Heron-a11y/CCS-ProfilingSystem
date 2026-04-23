@@ -70,14 +70,7 @@ class EventController extends Controller
     public function destroy($id)
     {
         $event = \App\Models\Event::findOrFail($id);
-        $name  = $event->eventName;
         $event->delete();
-        NotificationController::push(
-            'event_deleted',
-            'Event Deleted',
-            "Event \"{$name}\" has been removed.",
-            []
-        );
         return response()->json(null, 204);
     }
 }

@@ -224,9 +224,10 @@ const EditFacultyModal = ({ isOpen, onClose, onFacultyUpdated, faculty }) => {
                     <input type="text" name="office_location" value={formData.office_location} onChange={handleChange} placeholder="e.g. Room 402" className={inp} />
                   </div>
                   <div className="md:col-span-3">
-                    <label className={lbl}>Consultation Hours</label>
-                    <input type="text" name="office_hours" value={formData.office_hours} onChange={handleChange} placeholder="e.g. Mon–Fri 9:00 AM – 12:00 PM, 1:00 PM – 5:00 PM" className={inp} />
-                    <p className={`text-xs mt-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Students will see this to know when to visit the CCS office.</p>
+                    <label className={lbl}>Consultation Hours <span className={`normal-case font-normal ${dark ? 'text-slate-500' : 'text-slate-400'}`}>(editable by faculty only)</span></label>
+                    <div className={`w-full px-3.5 py-2.5 rounded-xl border text-sm ${dark ? 'bg-slate-800/40 border-slate-700 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                      {formData.office_hours || 'Not set — faculty can update this from their dashboard.'}
+                    </div>
                   </div>
                 </div>
               </div>

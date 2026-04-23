@@ -42,7 +42,7 @@ const AdminDashboard = ({ students = [], faculties = [], events = [], loading: l
   const notEnrolled    = students.filter(s => s.enrollment_status !== 'Enrolled').length;
   const violations     = students.reduce((acc, s) => acc + (s.violations?.length || 0), 0);
   // All upcoming events (unsliced) for the stat card count
-  const allUpcoming    = events.filter(e => e.status === 'Upcoming');
+  const allUpcoming    = events.filter(e => e.status === 'Upcoming' || e.status === 'Ongoing');
   const upcomingEvents = allUpcoming.slice(0, 5);
   const recentStudents = [...students].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
 
@@ -304,7 +304,7 @@ const AdminDashboard = ({ students = [], faculties = [], events = [], loading: l
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${dark ? 'bg-violet-900/40 text-violet-400' : 'bg-violet-50 text-violet-500'}`}>
               <BellAlertIcon className="w-4 h-4" />
             </div>
-            <h2 className={`text-sm font-bold ${boldText}`}>Upcoming Events</h2>
+            <h2 className={`text-sm font-bold ${boldText}`}>Active Events</h2>
             <span className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{upcomingEvents.length}</span>
           </div>
           {upcomingEvents.length === 0

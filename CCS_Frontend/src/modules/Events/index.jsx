@@ -10,7 +10,7 @@ import {
   AcademicCapIcon, TrophyIcon, SparklesIcon, HeartIcon, StarIcon,
 } from '@heroicons/react/24/outline';
 
-const EventsModule = () => {
+const EventsModule = ({ events: propEvents = [], loading: propLoading = false, onReload }) => {
   const dark = useDarkMode();
   const card      = dark ? 'bg-slate-900 border-slate-700/60' : 'bg-white border-slate-100';
   const boldText  = dark ? 'text-slate-100' : 'text-slate-800';
@@ -19,23 +19,29 @@ const EventsModule = () => {
   const evCard    = dark ? 'bg-slate-800 border-slate-700/60' : 'bg-white border-slate-200';
   const infoBox   = dark ? 'bg-slate-700/50 border-slate-600 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600';
   const footerBdr = dark ? 'border-slate-700' : 'border-slate-100';
-  const [events, setEvents] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+
+  // Use prop-driven data (from App.jsx shared state) so the admin dashboard
+  // stays in sync. Fall back to local fetch only if no onReload is provided.
+  const [localEvents, setLocalEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(!onReload);
   const [error, setError] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
+  // If parent provides events via props, use those; otherwise use local state
+  const events = onReload ? propEvents : localEvents;
+
   useEffect(() => {
-    fetchEvents();
+    if (!onReload) fetchEventsLocal();
   }, []);
 
-  const fetchEvents = async () => {
+  const fetchEventsLocal = async () => {
     try {
       setIsLoading(true);
       const data = await api.events.getAll();
-      setEvents(data);
+      setLocalEvents(data);
       setError(null);
     } catch (err) {
       setError(err.message || 'Failed to load events.');
@@ -44,11 +50,16 @@ const EventsModule = () => {
     }
   };
 
+  const handleSuccess = () => {
+    if (onReload) onReload();
+    else fetchEventsLocal();
+  };
+
   const handleDeleteEvent = async (id) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
       try {
         await api.events.delete(id);
-        fetchEvents();
+        handleSuccess();
       } catch (err) {
         alert(err.message || 'Failed to delete event');
       }
@@ -143,7 +154,7 @@ const EventsModule = () => {
         )}
 
         <div className={`flex-1 overflow-y-auto p-6 ${dark ? 'bg-slate-950/30' : 'bg-slate-50/30'}`}>
-          {isLoading ? (
+          {(onReload ? propLoading : isLoading) ? (
             <div className="h-full flex items-center justify-center">
               <div className="w-10 h-10 border-4 border-slate-700 border-t-brand-500 rounded-full animate-spin"></div>
             </div>
@@ -243,7 +254,7 @@ const EventsModule = () => {
       <AddEventModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 
-        onSuccess={fetchEvents} 
+        onSuccess={handleSuccess} 
       />
 
       {isEditModalOpen && selectedEvent && (
@@ -254,7 +265,7 @@ const EventsModule = () => {
             setIsEditModalOpen(false);
             setSelectedEvent(null);
           }}
-          onSuccess={fetchEvents}
+          onSuccess={handleSuccess}
         />
       )}
 
