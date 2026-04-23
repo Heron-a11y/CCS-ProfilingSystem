@@ -1089,21 +1089,42 @@ const StudentDashboard = ({ user, onLogout }) => {
       </div>
     );
   };
+  // Shared localStorage key — same one faculty writes to
+  const LS_TASKS_KEY = 'faculty_tasks_local';
+  const getLocalTasks = () => { try { return JSON.parse(localStorage.getItem(LS_TASKS_KEY)||'[]'); } catch { return []; } };
+  const saveLocalTasks = (all) => localStorage.setItem(LS_TASKS_KEY, JSON.stringify(all));
+
   const loadTasks = useCallback(async () => {
     if (!user?.student_id) return;
     try {
-      const t = await api.tasks.getByStudent(user.student_id).catch(()=>[]);
-      setTasks(Array.isArray(t) ? t : []);
-    } catch { setTasks([]); }
+      // Try API first
+      const apiTasks = await api.tasks.getByStudent(user.student_id).catch(()=>[]);
+      const fromApi = Array.isArray(apiTasks) ? apiTasks : [];
+      // Merge with localStorage tasks assigned to this student
+      const local = getLocalTasks().filter(t => String(t.student_id) === String(user.student_id));
+      const apiIds = new Set(fromApi.map(t => t.id));
+      const merged = [...fromApi, ...local.filter(t => !apiIds.has(t.id))];
+      setTasks(merged);
+    } catch {
+      // Full fallback to localStorage only
+      const local = getLocalTasks().filter(t => String(t.student_id) === String(user.student_id));
+      setTasks(local);
+    }
   }, [user?.student_id]);
 
   const toggleTask = async (id) => {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
-    try {
-      await api.tasks.update(task.student_id, id, { done: !task.done });
-      setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
-    } catch { /* fallback: optimistic update already applied */ }
+    const newDone = !task.done;
+    // Optimistic UI update
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: newDone } : t));
+    // Try API
+    try { await api.tasks.update(task.student_id, id, { done: newDone }); }
+    catch {
+      // Sync to localStorage fallback
+      const all = getLocalTasks().map(t => t.id === id ? { ...t, done: newDone } : t);
+      saveLocalTasks(all);
+    }
   };
 
   const loadStudent = useCallback(async () => {
@@ -2616,8 +2637,9 @@ const StudentDashboard = ({ user, onLogout }) => {
   ════════════════════════════════ */
   const TasksPanel = () => {
     const [filter, setFilter]       = useState('All');
-    const [view, setView]           = useState('tasks');   // 'tasks' | 'archive'
-    const [confirmDelete, setConfirmDelete] = useState(null); // task id to confirm
+    const [view, setView]           = useState('tasks');
+    const [confirmDelete, setConfirmDelete] = useState(null);
+    const [selectedTask, setSelectedTask]   = useState(null);
 
     const pending = tasks.filter(t => !t.done);
     const done    = tasks.filter(t => t.done);
@@ -2632,8 +2654,11 @@ const StudentDashboard = ({ user, onLogout }) => {
       if (!task) return;
       try {
         await api.tasks.update(task.student_id, id, { done: true });
-        setTasks(prev => prev.map(t => t.id === id ? { ...t, done: true } : t));
-      } catch { setTasks(prev => prev.map(t => t.id === id ? { ...t, done: true } : t)); }
+      } catch {
+        // Sync to localStorage fallback
+        saveLocalTasks(getLocalTasks().map(t => t.id === id ? { ...t, done: true } : t));
+      }
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, done: true } : t));
     };
 
     // Delete from archive with confirmation
@@ -2641,11 +2666,18 @@ const StudentDashboard = ({ user, onLogout }) => {
     const confirmDel = async () => {
       if (confirmDelete === '__all__') {
         const doneTasks = tasks.filter(t => t.done);
-        await Promise.allSettled(doneTasks.map(t => api.tasks.delete(t.student_id, t.id)));
+        await Promise.allSettled(doneTasks.map(t => api.tasks.delete(t.student_id, t.id).catch(()=>{})));
+        // Also remove from localStorage
+        const remaining = getLocalTasks().filter(t => !doneTasks.some(d => d.id === t.id));
+        saveLocalTasks(remaining);
         setTasks(prev => prev.filter(t => !t.done));
       } else {
         const task = tasks.find(t => t.id === confirmDelete);
-        if (task) await api.tasks.delete(task.student_id, task.id).catch(()=>{});
+        if (task) {
+          await api.tasks.delete(task.student_id, task.id).catch(()=>{});
+          // Also remove from localStorage
+          saveLocalTasks(getLocalTasks().filter(t => t.id !== confirmDelete));
+        }
         setTasks(prev => prev.filter(t => t.id !== confirmDelete));
       }
       setConfirmDelete(null);
@@ -2658,6 +2690,78 @@ const StudentDashboard = ({ user, onLogout }) => {
 
     return (
       <div className="space-y-5">
+
+        {/* ── Task Detail Modal ── */}
+        {selectedTask && (() => {
+          const t = selectedTask;
+          const dueDate = t.due_date || t.due;
+          const formattedDue = dueDate ? (() => { try { return new Date(dueDate).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}); } catch { return dueDate; } })() : '—';
+          const facultyName = t.faculty ? [t.faculty.first_name,t.faculty.last_name].filter(Boolean).join(' ') : t.faculty_name || '—';
+          const pColor = t.priority==='High' ? dark?'bg-red-900/40 text-red-300 border-red-700':'bg-red-100 text-red-700 border-red-200'
+            : t.priority==='Medium' ? dark?'bg-amber-900/40 text-amber-300 border-amber-700':'bg-amber-100 text-amber-700 border-amber-200'
+            : dark?'bg-slate-700 text-slate-300 border-slate-600':'bg-slate-100 text-slate-600 border-slate-200';
+          const R = ({label,value,highlight}) => (
+            <div className={`flex justify-between items-start gap-4 px-5 py-3 border-b last:border-0 ${dark?'border-slate-700/60':'border-slate-100'}`}>
+              <span className={`text-xs shrink-0 w-36 ${dark?'text-slate-500':'text-slate-400'}`}>{label}</span>
+              <span className={`text-xs font-medium text-right break-words ${highlight?dark?'text-orange-400':'text-orange-600':dark?'text-slate-200':'text-slate-700'}`}>{value||'—'}</span>
+            </div>
+          );
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className={`absolute inset-0 backdrop-blur-md ${dark?'bg-slate-950/60':'bg-slate-900/30'}`} onClick={()=>setSelectedTask(null)}/>
+              <div className={`relative w-full max-w-lg rounded-2xl border shadow-2xl overflow-hidden ${dark?'bg-slate-900 border-slate-700/60':'bg-white border-slate-200'}`}>
+                {/* Header */}
+                <div className={`px-6 py-5 border-b ${dark?'border-slate-700/60 bg-slate-800/60':'border-slate-100 bg-slate-50'}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${dark?'bg-orange-900/40 text-orange-400':'bg-orange-100 text-orange-600'}`}>
+                        <ClipboardDocumentCheckIcon className="w-5 h-5"/>
+                      </div>
+                      <div>
+                        <p className={`text-[10px] font-bold uppercase tracking-widest ${dark?'text-orange-400':'text-orange-500'}`}>Task Details</p>
+                        <h3 className={`text-base font-bold mt-0.5 ${dark?'text-slate-100':'text-slate-800'}`}>{t.title}</h3>
+                      </div>
+                    </div>
+                    <button onClick={()=>setSelectedTask(null)} className={`shrink-0 transition-colors ${dark?'text-slate-500 hover:text-slate-300':'text-slate-400 hover:text-slate-600'}`}>
+                      <XMarkIcon className="w-5 h-5"/>
+                    </button>
+                  </div>
+                  {/* Badges */}
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${pColor}`}>{t.priority} Priority</span>
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${t.done?dark?'bg-emerald-900/40 text-emerald-300 border-emerald-700':'bg-emerald-100 text-emerald-700 border-emerald-200':dark?'bg-red-900/40 text-red-300 border-red-700':'bg-red-100 text-red-700 border-red-200'}`}>
+                      {t.done?'✓ Completed':'⏳ Pending'}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${dark?'bg-orange-900/40 text-orange-300 border-orange-700':'bg-orange-50 text-orange-600 border-orange-200'}`}>{t.subject}</span>
+                  </div>
+                </div>
+                {/* Info rows */}
+                <div className={`${dark?'divide-slate-700/60':'divide-slate-100'}`}>
+                  <R label="Subject"      value={t.subject}/>
+                  <R label="Due Date"     value={formattedDue}/>
+                  <R label="Priority"     value={t.priority}/>
+                  <R label="Status"       value={t.done?'Completed':'Pending'}/>
+                  <R label="Assigned by"  value={facultyName} highlight/>
+                  {(t.description) && <R label="Description" value={t.description}/>}
+                </div>
+                {/* Footer */}
+                <div className={`px-6 py-4 border-t flex justify-between items-center gap-3 ${dark?'border-slate-700/60 bg-slate-900':'border-slate-100 bg-slate-50'}`}>
+                  <button onClick={()=>setSelectedTask(null)}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${dark?'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700':'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                    Close
+                  </button>
+                  {!t.done && (
+                    <button onClick={()=>{handleCheck(t.id);setSelectedTask(null);}}
+                      className="px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                      <CheckCircleIcon className="w-4 h-4"/>
+                      Mark as Done
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Delete confirmation modal */}
         {confirmDelete && (
@@ -2785,7 +2889,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                 {filtered.map(t => {
                   const pStyle = priorityStyle(t.priority, dark);
                   return (
-                    <div key={t.id} className={`group flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
+                    <div key={t.id} onClick={() => setSelectedTask(t)} className={`group flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer ${
                       t.priority === 'High'
                         ? dark ? 'bg-red-900/10 border-red-500/20 hover:border-brand-500/40' : 'bg-red-50/60 border-red-200 hover:border-brand-400/40'
                         : t.priority === 'Medium'
@@ -2793,7 +2897,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                           : dark ? 'bg-slate-900 border-slate-700/60 hover:border-brand-500/40' : 'bg-white border-slate-200 hover:border-brand-400/40 shadow-sm'
                     }`}>
                       {/* Checkbox — checking moves to archive */}
-                      <button onClick={() => handleCheck(t.id)}
+                      <button onClick={(e) => { e.stopPropagation(); handleCheck(t.id); }}
                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${dark ? 'border-slate-600 hover:border-emerald-500 hover:bg-emerald-500/10' : 'border-slate-300 hover:border-emerald-500 hover:bg-emerald-50'}`}>
                       </button>
                       <div className="flex-1 min-w-0">

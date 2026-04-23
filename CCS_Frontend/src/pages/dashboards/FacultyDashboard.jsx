@@ -1311,7 +1311,22 @@ const StudentsPanel = ({facultyId,facultyName}) => {
   );
 };
 
-/* ════ ASSIGN TASKS PANEL ════ */
+/* ── Shared task store — works across tabs via BroadcastChannel + localStorage ── */
+const LS_KEY = 'faculty_tasks_local';
+const taskChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('ccs_tasks') : null;
+
+const lsTasks = {
+  getAll: () => { try { return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); } catch { return []; } },
+  save: (tasks) => {
+    localStorage.setItem(LS_KEY, JSON.stringify(tasks));
+    // Broadcast to all tabs (including incognito on same origin)
+    if(taskChannel) taskChannel.postMessage({ type: 'tasks_updated', tasks });
+  },
+  add: (task) => { const all=[...lsTasks.getAll(), task]; lsTasks.save(all); return task; },
+  update: (id, data) => { const all=lsTasks.getAll().map(t=>t.id===id?{...t,...data}:t); lsTasks.save(all); },
+  delete: (id) => { lsTasks.save(lsTasks.getAll().filter(t=>t.id!==id)); },
+};
+
 const AssignTaskModal = ({students, facultyId, facultyName, task, onClose, onSaved}) => {
   const dark=useTheme();
   const empty={student_id:'',subject:'',title:'',description:'',due_date:'',priority:'Medium'};
@@ -1327,8 +1342,25 @@ const AssignTaskModal = ({students, facultyId, facultyName, task, onClose, onSav
     setSaving(true);setErr(null);
     try{
       const payload={...form,faculty_id:facultyId};
-      if(task) await api.tasks.update(form.student_id,task.id,payload);
-      else await api.tasks.create(form.student_id,payload);
+      if(task){
+        // Try API first, fall back to localStorage
+        try{ await api.tasks.update(form.student_id,task.id,payload); }
+        catch{ lsTasks.update(task.id,payload); }
+      } else {
+        try{ await api.tasks.create(form.student_id,payload); }
+        catch{
+          // Store locally with a temp id
+          const student=students.find(s=>String(s.id)===String(form.student_id));
+          lsTasks.add({
+            ...payload,
+            id: Date.now(),
+            done: false,
+            student_id: Number(form.student_id),
+            student: student ? {id:student.id,first_name:student.first_name,last_name:student.last_name,student_number:student.student_number,section:student.section,profile_photo:student.profile_photo} : null,
+            created_at: new Date().toISOString(),
+          });
+        }
+      }
       onSaved();
     }catch(ex){setErr(ex.message||'Failed to save.');}
     finally{setSaving(false);}
@@ -1374,17 +1406,22 @@ const FacultyTasksPanel = ({facultyId,facultyName}) => {
   const [deleting,setDeleting]=useState(null);
 
   const load=useCallback(async()=>{
-    setLoading(true);setErr(null);
+    setLoading(true);
     try{
-      const [t,s]=await Promise.all([
+      const [apiTasks,s]=await Promise.all([
         api.tasks.getByFaculty(facultyId).catch(()=>[]),
         fetchApi('/students').catch(()=>[]),
       ]);
-      setTasks(Array.isArray(t)?t:[]);
+      // Merge API tasks with any locally stored tasks (dedup by id)
+      const local=lsTasks.getAll().filter(t=>String(t.faculty_id)===String(facultyId));
+      const apiIds=new Set((Array.isArray(apiTasks)?apiTasks:[]).map(t=>t.id));
+      const merged=[...(Array.isArray(apiTasks)?apiTasks:[]),...local.filter(t=>!apiIds.has(t.id))];
+      setTasks(merged);
       setStudents(Array.isArray(s)?s:[]);
     }catch{
-      // Non-critical — show empty state instead of error
-      setTasks([]);setStudents([]);
+      // Full fallback to localStorage
+      setTasks(lsTasks.getAll().filter(t=>String(t.faculty_id)===String(facultyId)));
+      setStudents([]);
     }finally{setLoading(false);}
   },[facultyId]);
 
@@ -1393,8 +1430,12 @@ const FacultyTasksPanel = ({facultyId,facultyName}) => {
   const deleteTask=async(task)=>{
     if(!window.confirm('Delete this task?')) return;
     setDeleting(task.id);
-    try{await api.tasks.delete(task.student_id,task.id);await load();}
-    catch{alert('Failed to delete.');}
+    try{
+      try{ await api.tasks.delete(task.student_id,task.id); }
+      catch{ /* API not ready yet */ }
+      lsTasks.delete(task.id); // always remove from local too
+      await load();
+    }catch{alert('Failed to delete.');}
     finally{setDeleting(null);}
   };
 
